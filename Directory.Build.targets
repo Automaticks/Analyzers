@@ -1,0 +1,23 @@
+<Project>
+
+    <!--
+        For Roslyn analyzer NuGet packages, the DLL must be placed under analyzers/dotnet/cs/
+        so that MSBuild/dotnet-build loads it via the -a: (analyzer) compiler flag.
+        Without this, the DLL lands in lib/netstandard2.0/ and is only referenced via -r:,
+        which means the analyzer never runs during dotnet build (only in IDE).
+
+        NU5128: analyzer packages intentionally have no lib/ folder; suppress the false positive.
+    -->
+    <PropertyGroup Condition="'$(IsAnalyzerProject)' == 'true'">
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+        <DevelopmentDependency>true</DevelopmentDependency>
+        <NoWarn>$(NoWarn);NU5128</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(IsAnalyzerProject)' == 'true'">
+        <None Include="$(TargetPath)" Pack="true" PackagePath="analyzers/dotnet/cs/" Visible="false" />
+        <None Include="$(DocumentationFile)" Pack="true" PackagePath="analyzers/dotnet/cs/" Visible="false"
+              Condition="'$(GenerateDocumentationFile)' == 'true' and '$(DocumentationFile)' != ''" />
+    </ItemGroup>
+
+</Project>
