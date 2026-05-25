@@ -1,0 +1,20 @@
+<Solution>
+  <Project Path="src/Automaticks.CSharp.Analyzers/Automaticks.CSharp.Analyzers.csproj" />
+  <Project Path="src/Automaticks.Threading.Tasks.Analyzers/Automaticks.Threading.Tasks.Analyzers.csproj" />
+  <Project Path="src/Automaticks.Linq.Analyzers/Automaticks.Linq.Analyzers.csproj" />
+  <Project Path="src/Automaticks.Reflection.Analyzers/Automaticks.Reflection.Analyzers.csproj" />
+  <Project Path="src/Automaticks.Extensions.Options.Analyzers/Automaticks.Extensions.Options.Analyzers.csproj" />
+  <Project Path="src/Automaticks.Diagnostics.CodeAnalysis.Analyzers/Automaticks.Diagnostics.CodeAnalysis.Analyzers.csproj" />
+  <Project Path="src/Automaticks.CommunityToolkit.Mvvm.Analyzers/Automaticks.CommunityToolkit.Mvvm.Analyzers.csproj" />
+  <Project Path="src/Automaticks.EntityFrameworkCore.Analyzers/Automaticks.EntityFrameworkCore.Analyzers.csproj" />
+  <Project Path="src/Automaticks.Testing.Analyzers/Automaticks.Testing.Analyzers.csproj" />
+  <Project Path="tests/Automaticks.CSharp.Analyzers.Tests/Automaticks.CSharp.Analyzers.Tests.csproj" />
+  <Project Path="tests/Automaticks.Threading.Tasks.Analyzers.Tests/Automaticks.Threading.Tasks.Analyzers.Tests.csproj" />
+  <Project Path="tests/Automaticks.Linq.Analyzers.Tests/Automaticks.Linq.Analyzers.Tests.csproj" />
+  <Project Path="tests/Automaticks.Reflection.Analyzers.Tests/Automaticks.Reflection.Analyzers.Tests.csproj" />
+  <Project Path="tests/Automaticks.Extensions.Options.Analyzers.Tests/Automaticks.Extensions.Options.Analyzers.Tests.csproj" />
+  <Project Path="tests/Automaticks.Diagnostics.CodeAnalysis.Analyzers.Tests/Automaticks.Diagnostics.CodeAnalysis.Analyzers.Tests.csproj" />
+  <Project Path="tests/Automaticks.CommunityToolkit.Mvvm.Analyzers.Tests/Automaticks.CommunityToolkit.Mvvm.Analyzers.Tests.csproj" />
+  <Project Path="tests/Automaticks.EntityFrameworkCore.Analyzers.Tests/Automaticks.EntityFrameworkCore.Analyzers.Tests.csproj" />
+  <Project Path="tests/Automaticks.Testing.Analyzers.Tests/Automaticks.Testing.Analyzers.Tests.csproj" />
+</Solution>

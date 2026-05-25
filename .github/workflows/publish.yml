@@ -1,0 +1,69 @@
+name: Publish NuGet Packages
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore -c Release
+
+      - name: Test
+        run: dotnet test --no-build -c Release
+
+      - name: Set version
+        id: version
+        run: echo "VERSION=$(date +'%Y.%-m.%-d.')$(date +'%H%M')" >> $GITHUB_OUTPUT
+
+      - name: Pack Automaticks.CSharp.Analyzers
+        run: dotnet pack src/Automaticks.CSharp.Analyzers/Automaticks.CSharp.Analyzers.csproj --no-build -c Release -p:Version=${{ steps.version.outputs.VERSION }} -o ./nupkg
+
+      - name: Pack Automaticks.Threading.Tasks.Analyzers
+        run: dotnet pack src/Automaticks.Threading.Tasks.Analyzers/Automaticks.Threading.Tasks.Analyzers.csproj --no-build -c Release -p:Version=${{ steps.version.outputs.VERSION }} -o ./nupkg
+
+      - name: Pack Automaticks.Linq.Analyzers
+        run: dotnet pack src/Automaticks.Linq.Analyzers/Automaticks.Linq.Analyzers.csproj --no-build -c Release -p:Version=${{ steps.version.outputs.VERSION }} -o ./nupkg
+
+      - name: Pack Automaticks.Reflection.Analyzers
+        run: dotnet pack src/Automaticks.Reflection.Analyzers/Automaticks.Reflection.Analyzers.csproj --no-build -c Release -p:Version=${{ steps.version.outputs.VERSION }} -o ./nupkg
+
+      - name: Pack Automaticks.Extensions.Options.Analyzers
+        run: dotnet pack src/Automaticks.Extensions.Options.Analyzers/Automaticks.Extensions.Options.Analyzers.csproj --no-build -c Release -p:Version=${{ steps.version.outputs.VERSION }} -o ./nupkg
+
+      - name: Pack Automaticks.Diagnostics.CodeAnalysis.Analyzers
+        run: dotnet pack src/Automaticks.Diagnostics.CodeAnalysis.Analyzers/Automaticks.Diagnostics.CodeAnalysis.Analyzers.csproj --no-build -c Release -p:Version=${{ steps.version.outputs.VERSION }} -o ./nupkg
+
+      - name: Pack Automaticks.CommunityToolkit.Mvvm.Analyzers
+        run: dotnet pack src/Automaticks.CommunityToolkit.Mvvm.Analyzers/Automaticks.CommunityToolkit.Mvvm.Analyzers.csproj --no-build -c Release -p:Version=${{ steps.version.outputs.VERSION }} -o ./nupkg
+
+      - name: Pack Automaticks.EntityFrameworkCore.Analyzers
+        run: dotnet pack src/Automaticks.EntityFrameworkCore.Analyzers/Automaticks.EntityFrameworkCore.Analyzers.csproj --no-build -c Release -p:Version=${{ steps.version.outputs.VERSION }} -o ./nupkg
+
+      - name: Pack Automaticks.Testing.Analyzers
+        run: dotnet pack src/Automaticks.Testing.Analyzers/Automaticks.Testing.Analyzers.csproj --no-build -c Release -p:Version=${{ steps.version.outputs.VERSION }} -o ./nupkg
+
+      - name: Push to GitHub Packages
+        run: |
+          dotnet nuget push ./nupkg/*.nupkg \
+            --api-key ${{ secrets.GITHUB_TOKEN }} \
+            --source "https://nuget.pkg.github.com/Automaticks/index.json" \
+            --skip-duplicate

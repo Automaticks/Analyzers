@@ -1,38 +1,40 @@
-# New Repo Project
+# Automaticks Analyzers
 
-The new-repo project is a default template for .NET Foundation projects. It's also probably a fine start for other .NET projects (have at it, but change the license). It contains the correct license, a decent README, and initial project structure (including a standard .gitignore for the Visual Studio family of products).
+Roslyn analyzers for C#, Entity Framework Core, CommunityToolkit.Mvvm, and more.
 
-You can learn more about the project from the project [Documentation](Documentation).
+## Packages
 
-## Using New Repo
-
-You can simply `git clone` this project to get started. It is recommended that you don't preserve history of the project (it isn't generally meaningful) for your repo, but make a copy and `git init` your project from source.
-
-Consult [CHECKLIST.md](CHECKLIST.md) for helpful suggestions on preparing your repo to go public.
+| Package | Description |
+|---|---|
+| `Automaticks.CSharp.Analyzers` | Analyzers for C# language rules — naming, syntax, documentation, complexity, and language feature usage |
+| `Automaticks.Threading.Tasks.Analyzers` | Analyzers targeting `System.Threading.Tasks` — async method conventions and task observability |
+| `Automaticks.Linq.Analyzers` | Analyzers targeting `System.Linq` usage |
+| `Automaticks.Reflection.Analyzers` | Analyzers targeting `System.Reflection` usage |
+| `Automaticks.Extensions.Options.Analyzers` | Analyzers targeting `Microsoft.Extensions.Options` usage |
+| `Automaticks.EntityFrameworkCore.Analyzers` | Analyzers and suppressors for Entity Framework Core |
+| `Automaticks.CommunityToolkit.Mvvm.Analyzers` | Analyzers for CommunityToolkit.Mvvm |
+| `Automaticks.Diagnostics.CodeAnalysis.Analyzers` | Analyzers targeting `System.Diagnostics.CodeAnalysis` — diagnostic suppression rules |
+| `Automaticks.Testing.Analyzers` | Analyzers for test projects — naming conventions, forbidden APIs, and test structure |
 
 ## Building
 
-You don't "build" New Repo, however, this will be meaningful for many other projects.
+```shell
+dotnet build -c Release
+```
+
+## Testing
+
+```shell
+dotnet test -c Release --no-build
+```
 
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for information on contributing to this project.
 
-This project has adopted the code of conduct defined by the [Contributor Covenant](http://contributor-covenant.org/) 
-to clarify expected behavior in our community. For more information, see the [.NET Foundation Code of Conduct](http://www.dotnetfoundation.org/code-of-conduct).
+This project has adopted the code of conduct defined by the [Contributor Covenant](https://www.contributor-covenant.org/)
+to clarify expected behavior in our community.
 
 ## License
 
-This project is licensed with the [MIT license](LICENSE).
-
-## .NET Foundation
-
-New Repo is a [.NET Foundation project](https://dotnetfoundation.org/projects).
-
-## Related Projects
-
-You should take a look at these related projects:
-
-- [.NET Core](https://github.com/dotnet/core)
-- [ASP.NET](https://github.com/aspnet)
-- [Mono](https://github.com/mono)
+This project is licensed under the [MIT license](LICENSE).

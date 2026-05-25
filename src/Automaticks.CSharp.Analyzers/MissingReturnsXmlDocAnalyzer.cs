@@ -1,0 +1,182 @@
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Diagnostics;
+using System;
+using System.Collections.Immutable;
+
+namespace Automaticks.CSharp;
+
+/// <summary>
+///     Flags public, protected, and protected-internal methods with a non-<c>void</c>
+///     return type that are missing a <c>&lt;returns&gt;</c> XML documentation element.
+///     Override members and members using <c>&lt;inheritdoc/&gt;</c> are exempt.
+/// </summary>
+[DiagnosticAnalyzer(LanguageNames.CSharp)]
+public sealed class MissingReturnsXmlDocAnalyzer : DiagnosticAnalyzer
+{
+    /// <summary>
+    ///     The diagnostic rule reported when a public or protected non-<c>void</c>
+    ///     method is missing a <c>&lt;returns&gt;</c> XML documentation element.
+    /// </summary>
+    public static readonly DiagnosticDescriptor Rule = new(
+        DiagnosticIds.CSharp.MissingReturnsXmlDoc,
+        "Public non-void method is missing a <returns> XML documentation element",
+        "'{0}' has a non-void return type but is missing a <returns> XML documentation element",
+        "CSharp",
+        DiagnosticSeverity.Warning,
+        true,
+        "Add a `/// <returns>Description of what is returned.</returns>` element to the existing XML doc comment. Every public, protected, and protected-internal non-void method must document its return value. Alternatively, use `/// <inheritdoc/>` to inherit documentation from a base or interface member.");
+
+    private const string ReturnsTag = "returns";
+    private const string InheritDocTag = "inheritdoc";
+
+    /// <inheritdoc />
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
+
+    /// <inheritdoc />
+    public override void Initialize(AnalysisContext context)
+    {
+        context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+        context.EnableConcurrentExecution();
+        context.RegisterSyntaxNodeAction(AnalyzeNode, SyntaxKind.MethodDeclaration);
+    }
+
+    private static void AnalyzeNode(SyntaxNodeAnalysisContext context)
+    {
+        var method = (MethodDeclarationSyntax)context.Node;
+
+        if (method.ReturnType is PredefinedTypeSyntax predefined &&
+            predefined.Keyword.IsKind(SyntaxKind.VoidKeyword))
+        {
+            return;
+        }
+
+        if (!ShouldRequireDocumentation(method))
+        {
+            return;
+        }
+
+        var docComment = GetDocumentationComment(method);
+
+        if (docComment != null && HasReturnsOrInheritDoc(docComment))
+        {
+            return;
+        }
+
+        context.ReportDiagnostic(
+            Diagnostic.Create(Rule, method.Identifier.GetLocation(), method.Identifier.ValueText));
+    }
+
+    private static bool ShouldRequireDocumentation(MethodDeclarationSyntax method)
+    {
+        return !HasOverrideModifier(method) &&
+               method.ExplicitInterfaceSpecifier == null &&
+               IsPublicOrProtected(method) &&
+               IsInPubliclyAccessibleContext(method);
+    }
+
+    private static bool HasOverrideModifier(MethodDeclarationSyntax method)
+    {
+        foreach (var modifier in method.Modifiers)
+        {
+            if (modifier.IsKind(SyntaxKind.OverrideKeyword))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool IsPublicOrProtected(MethodDeclarationSyntax method)
+    {
+        var hasPrivate = false;
+        var hasPublicOrProtected = false;
+
+        foreach (var modifier in method.Modifiers)
+        {
+            if (modifier.IsKind(SyntaxKind.PrivateKeyword))
+            {
+                hasPrivate = true;
+            }
+            else if (modifier.IsKind(SyntaxKind.PublicKeyword) || modifier.IsKind(SyntaxKind.ProtectedKeyword))
+            {
+                hasPublicOrProtected = true;
+            }
+        }
+
+        if (hasPrivate)
+        {
+            return false;
+        }
+
+        if (hasPublicOrProtected)
+        {
+            return true;
+        }
+
+        return method.Parent is InterfaceDeclarationSyntax;
+    }
+
+    private static DocumentationCommentTriviaSyntax? GetDocumentationComment(SyntaxNode node)
+    {
+        foreach (var trivia in node.GetLeadingTrivia())
+        {
+            if (trivia.GetStructure() is DocumentationCommentTriviaSyntax docComment)
+            {
+                return docComment;
+            }
+        }
+
+        return null;
+    }
+
+    private static bool HasReturnsOrInheritDoc(DocumentationCommentTriviaSyntax docComment)
+    {
+        foreach (var node in docComment.Content)
+        {
+            if (node is XmlElementSyntax element)
+            {
+                var localName = element.StartTag.Name.LocalName.ValueText;
+                if (localName.Equals(ReturnsTag, StringComparison.Ordinal) ||
+                    localName.Equals(InheritDocTag, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+            }
+            else if (node is XmlEmptyElementSyntax emptyElement)
+            {
+                var localName = emptyElement.Name.LocalName.ValueText;
+
+                if (localName.Equals(ReturnsTag, StringComparison.Ordinal) ||
+                    localName.Equals(InheritDocTag, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static bool IsInPubliclyAccessibleContext(SyntaxNode node)
+    {
+        var ancestor = node.Parent;
+
+        while (ancestor is BaseTypeDeclarationSyntax ancestorDecl)
+        {
+            foreach (var modifier in ancestorDecl.Modifiers)
+            {
+                if (modifier.IsKind(SyntaxKind.PrivateKeyword))
+                {
+                    return false;
+                }
+            }
+
+            ancestor = ancestor.Parent;
+        }
+
+        return true;
+    }
+}

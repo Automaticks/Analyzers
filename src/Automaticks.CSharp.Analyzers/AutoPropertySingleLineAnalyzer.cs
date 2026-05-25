@@ -1,0 +1,82 @@
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Diagnostics;
+using System.Collections.Immutable;
+
+namespace Automaticks.CSharp;
+
+/// <summary>
+///     Enforces that auto-implemented properties are declared on a single line.
+///     A property is considered auto-implemented when every accessor in its accessor list
+///     has neither a block body nor an expression body (e.g. <c>{ get; }</c>,
+///     <c>{ get; set; }</c>, <c>{ get; init; }</c>, <c>{ set; }</c>).
+///     Expression-bodied properties (<c>=> value</c>) have no accessor list and are exempt.
+///     Attribute lists attached to the property are excluded from the line-span check.
+/// </summary>
+[DiagnosticAnalyzer(LanguageNames.CSharp)]
+public sealed class AutoPropertySingleLineAnalyzer : DiagnosticAnalyzer
+{
+    /// <summary>
+    ///     The diagnostic rule reported when an auto-implemented property spans more than one line.
+    /// </summary>
+    public static readonly DiagnosticDescriptor Rule = new(
+        DiagnosticIds.CSharp.AutoPropertySingleLine,
+        "Auto-implemented property must be declared on a single line",
+        "Property '{0}' has only auto-implemented accessors and must be declared on a single line",
+        "Style",
+        DiagnosticSeverity.Error,
+        true,
+        "Collapse the auto-implemented property to a single line. Example: replace the multi-line `public string Foo { get; }` block with `public string Foo { get; }` on one line. This rule only applies to properties where every accessor has no body (no `=>` or `{ ... }` logic).");
+
+    /// <inheritdoc />
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
+
+    /// <inheritdoc />
+    public override void Initialize(AnalysisContext context)
+    {
+        context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+        context.EnableConcurrentExecution();
+        context.RegisterSyntaxNodeAction(AnalyzeProperty, SyntaxKind.PropertyDeclaration);
+    }
+
+    private static void AnalyzeProperty(SyntaxNodeAnalysisContext context)
+    {
+        var property = (PropertyDeclarationSyntax)context.Node;
+
+        if (property.AccessorList is not { } accessorList)
+        {
+            return;
+        }
+
+        if (!AllAccessorsAreAutoImplemented(accessorList))
+        {
+            return;
+        }
+
+        var startToken = property.Modifiers.Count > 0
+            ? property.Modifiers[0]
+            : property.Type.GetFirstToken();
+
+        var startLine = startToken.GetLocation().GetLineSpan().StartLinePosition.Line;
+        var endLine = accessorList.CloseBraceToken.GetLocation().GetLineSpan().StartLinePosition.Line;
+
+        if (startLine != endLine)
+        {
+            context.ReportDiagnostic(Diagnostic.Create(Rule, accessorList.OpenBraceToken.GetLocation(), property.Identifier.Text));
+        }
+    }
+
+    private static bool AllAccessorsAreAutoImplemented(AccessorListSyntax accessorList)
+    {
+        foreach (var accessor in accessorList.Accessors)
+        {
+            if (accessor.Body is not null || accessor.ExpressionBody is not null)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+}

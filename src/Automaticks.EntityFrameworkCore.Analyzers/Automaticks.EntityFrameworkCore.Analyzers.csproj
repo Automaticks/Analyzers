@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <IsAnalyzerProject>true</IsAnalyzerProject>
+        <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+        <NoWarn>$(NoWarn);RS2008</NoWarn>
+        <_RequiresILLinkPack>false</_RequiresILLinkPack>
+        <PackageId>Automaticks.EntityFrameworkCore.Analyzers</PackageId>
+        <Description>Roslyn analyzers and suppressors for Entity Framework Core.</Description>
+        <Authors>Automaticks</Authors>
+        <RepositoryUrl>https://github.com/Automaticks/Analyzers</RepositoryUrl>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.CodeAnalysis.Common" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.NETCore.Platforms" PrivateAssets="all" />
+        <PackageReference Include="System.Buffers" PrivateAssets="all" />
+        <PackageReference Include="System.Collections.Immutable" PrivateAssets="all" />
+        <PackageReference Include="System.Memory" PrivateAssets="all" />
+        <PackageReference Include="System.Numerics.Vectors" PrivateAssets="all" />
+        <PackageReference Include="System.Reflection.Metadata" PrivateAssets="all" />
+        <PackageReference Include="System.Runtime.CompilerServices.Unsafe" PrivateAssets="all" />
+        <PackageReference Include="System.Text.Encoding.CodePages" PrivateAssets="all" />
+        <PackageReference Include="System.Threading.Tasks.Extensions" PrivateAssets="all" />
+    </ItemGroup>
+
+</Project>
