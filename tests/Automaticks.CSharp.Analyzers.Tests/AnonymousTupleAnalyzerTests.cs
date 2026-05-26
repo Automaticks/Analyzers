@@ -1,13 +1,21 @@
 using Automaticks.CSharp;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Automaticks.CSharp.Analyzers.Tests;
 
+/// <summary>
+///     Tests for AnonymousTupleAnalyzer.
+/// </summary>
 public class AnonymousTupleAnalyzerTests
 {
+    /// <summary>
+    ///     Tests that Analyze_NamedTupleTypeDeclaration_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_NamedTupleTypeDeclaration_ReportsDiagnostic()
+    public async Task Analyze_NamedTupleTypeDeclaration_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -19,13 +27,19 @@ public class AnonymousTupleAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new AnonymousTupleAnalyzer(), source);
+        var analyzer = new AnonymousTupleAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS012")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS012")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_StronglyTypedRecord_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_StronglyTypedRecord_ReportsNoDiagnostic()
+    public async Task Analyze_StronglyTypedRecord_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -39,13 +53,19 @@ public class AnonymousTupleAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new AnonymousTupleAnalyzer(), source);
+        var analyzer = new AnonymousTupleAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS012")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS012")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_TupleDeconstruction_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_TupleDeconstruction_ReportsDiagnostic()
+    public async Task Analyze_TupleDeconstruction_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -62,13 +82,19 @@ public class AnonymousTupleAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new AnonymousTupleAnalyzer(), source);
+        var analyzer = new AnonymousTupleAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS012")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS012")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_TupleLiteral_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_TupleLiteral_ReportsDiagnostic()
+    public async Task Analyze_TupleLiteral_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -81,13 +107,19 @@ public class AnonymousTupleAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new AnonymousTupleAnalyzer(), source);
+        var analyzer = new AnonymousTupleAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS012")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS012")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_TupleParameter_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_TupleParameter_ReportsDiagnostic()
+    public async Task Analyze_TupleParameter_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -99,13 +131,19 @@ public class AnonymousTupleAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new AnonymousTupleAnalyzer(), source);
+        var analyzer = new AnonymousTupleAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS012")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS012")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_TupleReturnType_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_TupleReturnType_ReportsDiagnostic()
+    public async Task Analyze_TupleReturnType_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -118,13 +156,19 @@ public class AnonymousTupleAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new AnonymousTupleAnalyzer(), source);
+        var analyzer = new AnonymousTupleAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS012")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS012")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_TupleTypeDeclaration_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_TupleTypeDeclaration_ReportsDiagnostic()
+    public async Task Analyze_TupleTypeDeclaration_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -136,8 +180,9 @@ public class AnonymousTupleAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new AnonymousTupleAnalyzer(), source);
+        var analyzer = new AnonymousTupleAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS012")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS012")).IsTrue();
     }
 }

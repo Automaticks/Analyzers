@@ -1,187 +1,22 @@
 using Automaticks.CSharp;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Automaticks.CSharp.Analyzers.Tests;
 
+/// <summary>
+///     Tests for MissingParamXmlDocAnalyzer.
+/// </summary>
 public class MissingParamXmlDocAnalyzerTests
 {
+
+    /// <summary>
+    ///     Tests that Analyze_ExplicitInterfaceImplementationWithParams_NoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_PublicMethodWithParamsAndNoParamTags_ReportsDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Foo {
-                                      /// <summary>
-                                      ///     Does something.
-                                      /// </summary>
-                                      public void Bar(int value) {}
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new MissingParamXmlDocAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS052")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_PublicMethodWithParamTagForEachParam_NoDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Foo {
-                                      /// <summary>
-                                      ///     Does something.
-                                      /// </summary>
-                                      /// <param name="value">The value.</param>
-                                      public void Bar(int value) {}
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new MissingParamXmlDocAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS052")).IsFalse();
-    }
-
-    [Test]
-    public async Task Analyze_PublicMethodWithInheritDoc_NoDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Foo {
-                                      /// <inheritdoc/>
-                                      public void Bar(int value) {}
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new MissingParamXmlDocAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS052")).IsFalse();
-    }
-
-    [Test]
-    public async Task Analyze_OverrideMethodWithParamsAndNoParamTags_NoDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Base {
-                                      /// <summary>
-                                      ///     Does something.
-                                      /// </summary>
-                                      /// <param name="value">The value.</param>
-                                      public virtual void Bar(int value) {}
-                                  }
-
-                                  public class Derived : Base {
-                                      public override void Bar(int value) {}
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new MissingParamXmlDocAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS052")).IsFalse();
-    }
-
-    [Test]
-    public async Task Analyze_PublicMethodWithNoParams_NoDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Foo {
-                                      /// <summary>
-                                      ///     Does something.
-                                      /// </summary>
-                                      public void Bar() {}
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new MissingParamXmlDocAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS052")).IsFalse();
-    }
-
-    [Test]
-    public async Task Analyze_PublicMethodMissingOneOfMultipleParamTags_ReportsDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Foo {
-                                      /// <summary>
-                                      ///     Does something.
-                                      /// </summary>
-                                      /// <param name="first">The first.</param>
-                                      public void Bar(int first, int second) {}
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new MissingParamXmlDocAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS052")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_PublicConstructorWithParamsAndNoParamTags_ReportsDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Foo {
-                                      /// <summary>
-                                      ///     Initializes a new instance.
-                                      /// </summary>
-                                      public Foo(int value) {}
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new MissingParamXmlDocAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS052")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_PublicConstructorWithAllParamTags_NoDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Foo {
-                                      /// <summary>
-                                      ///     Initializes a new instance.
-                                      /// </summary>
-                                      /// <param name="value">The value.</param>
-                                      public Foo(int value) {}
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new MissingParamXmlDocAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS052")).IsFalse();
-    }
-
-    [Test]
-    public async Task Analyze_PrivateMethodWithParamsAndNoParamTags_NoDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Foo {
-                                      private void Bar(int value) {}
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new MissingParamXmlDocAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS052")).IsFalse();
-    }
-
-    [Test]
-    public async Task Analyze_ExplicitInterfaceImplementationWithParams_NoDiagnostic()
+    public async Task Analyze_ExplicitInterfaceImplementationWithParams_NoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -199,13 +34,44 @@ public class MissingParamXmlDocAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new MissingParamXmlDocAnalyzer(), source);
+        var analyzer = new MissingParamXmlDocAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS052")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS052")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_InterfaceMethodWithParamsAndNoParamTags_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_MultipleParamsAllDocumented_NoDiagnostic()
+    public async Task Analyze_InterfaceMethodWithParamsAndNoParamTags_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public interface IFoo {
+                                      /// <summary>
+                                      ///     Does something.
+                                      /// </summary>
+                                      void Bar(int value);
+                                  }
+                              }
+                              """;
+
+        var analyzer = new MissingParamXmlDocAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS052")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_MultipleParamsAllDocumented_NoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_MultipleParamsAllDocumented_NoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -220,27 +86,236 @@ public class MissingParamXmlDocAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new MissingParamXmlDocAnalyzer(), source);
+        var analyzer = new MissingParamXmlDocAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS052")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS052")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_OverrideMethodWithParamsAndNoParamTags_NoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_InterfaceMethodWithParamsAndNoParamTags_ReportsDiagnostic()
+    public async Task Analyze_OverrideMethodWithParamsAndNoParamTags_NoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
-                                  public interface IFoo {
+                                  public class Base {
                                       /// <summary>
                                       ///     Does something.
                                       /// </summary>
-                                      void Bar(int value);
+                                      /// <param name="value">The value.</param>
+                                      public virtual void Bar(int value) {}
+                                  }
+
+                                  public class Derived : Base {
+                                      public override void Bar(int value) {}
                                   }
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new MissingParamXmlDocAnalyzer(), source);
+        var analyzer = new MissingParamXmlDocAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS052")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS052")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_PrivateMethodWithParamsAndNoParamTags_NoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_PrivateMethodWithParamsAndNoParamTags_NoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo {
+                                      private void Bar(int value) {}
+                                  }
+                              }
+                              """;
+
+        var analyzer = new MissingParamXmlDocAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS052")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_PublicConstructorWithAllParamTags_NoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_PublicConstructorWithAllParamTags_NoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo {
+                                      /// <summary>
+                                      ///     Initializes a new instance.
+                                      /// </summary>
+                                      /// <param name="value">The value.</param>
+                                      public Foo(int value) {}
+                                  }
+                              }
+                              """;
+
+        var analyzer = new MissingParamXmlDocAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS052")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_PublicConstructorWithParamsAndNoParamTags_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_PublicConstructorWithParamsAndNoParamTags_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo {
+                                      /// <summary>
+                                      ///     Initializes a new instance.
+                                      /// </summary>
+                                      public Foo(int value) {}
+                                  }
+                              }
+                              """;
+
+        var analyzer = new MissingParamXmlDocAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS052")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_PublicMethodMissingOneOfMultipleParamTags_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_PublicMethodMissingOneOfMultipleParamTags_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo {
+                                      /// <summary>
+                                      ///     Does something.
+                                      /// </summary>
+                                      /// <param name="first">The first.</param>
+                                      public void Bar(int first, int second) {}
+                                  }
+                              }
+                              """;
+
+        var analyzer = new MissingParamXmlDocAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS052")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_PublicMethodWithInheritDoc_NoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_PublicMethodWithInheritDoc_NoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo {
+                                      /// <inheritdoc/>
+                                      public void Bar(int value) {}
+                                  }
+                              }
+                              """;
+
+        var analyzer = new MissingParamXmlDocAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS052")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_PublicMethodWithNoParams_NoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_PublicMethodWithNoParams_NoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo {
+                                      /// <summary>
+                                      ///     Does something.
+                                      /// </summary>
+                                      public void Bar() {}
+                                  }
+                              }
+                              """;
+
+        var analyzer = new MissingParamXmlDocAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS052")).IsFalse();
+    }
+    /// <summary>
+    ///     Tests that Analyze_PublicMethodWithParamsAndNoParamTags_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_PublicMethodWithParamsAndNoParamTags_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo {
+                                      /// <summary>
+                                      ///     Does something.
+                                      /// </summary>
+                                      public void Bar(int value) {}
+                                  }
+                              }
+                              """;
+
+        var analyzer = new MissingParamXmlDocAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS052")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_PublicMethodWithParamTagForEachParam_NoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_PublicMethodWithParamTagForEachParam_NoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo {
+                                      /// <summary>
+                                      ///     Does something.
+                                      /// </summary>
+                                      /// <param name="value">The value.</param>
+                                      public void Bar(int value) {}
+                                  }
+                              }
+                              """;
+
+        var analyzer = new MissingParamXmlDocAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS052")).IsFalse();
     }
 }

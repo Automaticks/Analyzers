@@ -1,13 +1,21 @@
 using Automaticks.CSharp;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Automaticks.CSharp.Analyzers.Tests;
 
+/// <summary>
+///     Tests for OutParameterAnalyzer.
+/// </summary>
 public class OutParameterAnalyzerTests
 {
+    /// <summary>
+    ///     Tests that Analyze_MethodWithNoOutParams_NoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_MethodWithNoOutParams_NoDiagnostic()
+    public async Task Analyze_MethodWithNoOutParams_NoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -17,13 +25,19 @@ public class OutParameterAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new OutParameterAnalyzer(), source);
+        var analyzer = new OutParameterAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS023" || d.Id == "ATXCS024")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasAnyId(diagnostics, ["ATXCS023", "ATXCS024"])).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_MethodWithOneOutParamLast_NoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_MethodWithOneOutParamLast_NoDiagnostic()
+    public async Task Analyze_MethodWithOneOutParamLast_NoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -33,13 +47,19 @@ public class OutParameterAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new OutParameterAnalyzer(), source);
+        var analyzer = new OutParameterAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS023" || d.Id == "ATXCS024")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasAnyId(diagnostics, ["ATXCS023", "ATXCS024"])).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_MethodWithOutParamNotLast_ReportsAtxCs024.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_MethodWithOutParamNotLast_ReportsAtxCs024()
+    public async Task Analyze_MethodWithOutParamNotLast_ReportsAtxCs024(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -49,13 +69,19 @@ public class OutParameterAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new OutParameterAnalyzer(), source);
+        var analyzer = new OutParameterAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS024")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS024")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_MethodWithTwoOutParams_ReportsAtxCs023.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_MethodWithTwoOutParams_ReportsAtxCs023()
+    public async Task Analyze_MethodWithTwoOutParams_ReportsAtxCs023(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -65,13 +91,19 @@ public class OutParameterAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new OutParameterAnalyzer(), source);
+        var analyzer = new OutParameterAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS023")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS023")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_MethodWithTwoOutParamsFirstNotLast_ReportsBothDiagnostics.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_MethodWithTwoOutParamsFirstNotLast_ReportsBothDiagnostics()
+    public async Task Analyze_MethodWithTwoOutParamsFirstNotLast_ReportsBothDiagnostics(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -81,9 +113,10 @@ public class OutParameterAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new OutParameterAnalyzer(), source);
+        var analyzer = new OutParameterAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS023")).IsTrue();
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS024")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS023")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS024")).IsTrue();
     }
 }

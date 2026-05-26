@@ -17,7 +17,9 @@ public static class DiagnosticIds
         /// </summary>
         public const string AsyncCancellationToken = "ATXTA008";
 
-        /// <summary>Diagnostic ID for <c>ATXTA010</c>: unobserved <see cref="System.Threading.Tasks.Task" /> invocation.</summary>
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXTA010</c>: unobserved <see cref="System.Threading.Tasks.Task" /> invocation.
+        /// </summary>
         public const string UnobservedTask = "ATXTA010";
     }
 }

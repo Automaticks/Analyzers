@@ -1,14 +1,147 @@
 using Automaticks.CSharp;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Automaticks.CSharp.Analyzers.Tests;
 
+/// <summary>
+///     Tests for ObjectInitializerCodeStyleAnalyzer.
+/// </summary>
 public class ObjectInitializerCodeStyleAnalyzerTests
 {
 
+    /// <summary>
+    ///     Tests that Analyze_ArrayInitializerFullyInline_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_MultiLineMemberEndingOnSameLineAsCloseBrace_ReportsDiagnostic()
+    public async Task Analyze_ArrayInitializerFullyInline_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Bar {
+                                      public void Run() {
+                                          var x = new int[] { 1, 2 };
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new ObjectInitializerCodeStyleAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS059")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_CollectionInitializerFullyInline_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_CollectionInitializerFullyInline_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System.Collections.Generic;
+                              namespace MyApp {
+                                  public class Bar {
+                                      public void Run() {
+                                          var x = new List<int> { 1, 2, 3 };
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new ObjectInitializerCodeStyleAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS059")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_EmptyCollectionInitializer_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_EmptyCollectionInitializer_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System.Collections.Generic;
+                              namespace MyApp {
+                                  public class Bar {
+                                      public void Run() {
+                                          var x = new List<int> { };
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new ObjectInitializerCodeStyleAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS060")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_EmptyObjectInitializer_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_EmptyObjectInitializer_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo { }
+                                  public class Bar {
+                                      public void Run() {
+                                          var x = new Foo { };
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new ObjectInitializerCodeStyleAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS060")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_EmptyWithInitializer_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_EmptyWithInitializer_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public record Foo(int X);
+                                  public class Bar {
+                                      public void Run() {
+                                          var a = new Foo(1);
+                                          var b = a with { };
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new ObjectInitializerCodeStyleAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS060")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_MultiLineMemberEndingOnSameLineAsCloseBrace_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_MultiLineMemberEndingOnSameLineAsCloseBrace_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -24,13 +157,19 @@ public class ObjectInitializerCodeStyleAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ObjectInitializerCodeStyleAnalyzer(), source);
+        var analyzer = new ObjectInitializerCodeStyleAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS059")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS059")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_MultiLineMemberEndingSameLineAsNextMemberStart_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_MultiLineMemberEndingSameLineAsNextMemberStart_ReportsDiagnostic()
+    public async Task Analyze_MultiLineMemberEndingSameLineAsNextMemberStart_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -47,155 +186,19 @@ public class ObjectInitializerCodeStyleAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ObjectInitializerCodeStyleAnalyzer(), source);
+        var analyzer = new ObjectInitializerCodeStyleAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS059")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS059")).IsTrue();
     }
 
-    // ── ATXCS059: format violations ────────────────────────────────────────
-
+    /// <summary>
+    ///     Tests that Analyze_NestedObjectInitializerInline_ReportsDiagnosticOnInner.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_ObjectInitializerFullyInline_ReportsDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Foo { public int A { get; set; } }
-                                  public class Bar {
-                                      public void Run() {
-                                          var x = new Foo { A = 1 };
-                                      }
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ObjectInitializerCodeStyleAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS059")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_ObjectInitializerOpenBraceOnSameLineAsType_ReportsDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Foo { public int A { get; set; } }
-                                  public class Bar {
-                                      public void Run() {
-                                          var x = new Foo {
-                                              A = 1
-                                          };
-                                      }
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ObjectInitializerCodeStyleAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS059")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_ObjectInitializerCloseBraceOnSameLineAsLastMember_ReportsDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Foo { public int A { get; set; } }
-                                  public class Bar {
-                                      public void Run() {
-                                          var x = new Foo
-                                          {
-                                              A = 1 };
-                                      }
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ObjectInitializerCodeStyleAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS059")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_ObjectInitializerMultipleMembersOnSameLine_ReportsDiagnosticOnEachOffender()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Foo { public int A { get; set; } public int B { get; set; } }
-                                  public class Bar {
-                                      public void Run() {
-                                          var x = new Foo
-                                          {
-                                              A = 1, B = 2
-                                          };
-                                      }
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ObjectInitializerCodeStyleAnalyzer(), source);
-
-        await Assert.That(diagnostics.Count(d => d.Id == "ATXCS059")).IsEqualTo(2);
-    }
-
-    [Test]
-    public async Task Analyze_CollectionInitializerFullyInline_ReportsDiagnostic()
-    {
-        const string source = """
-                              using System.Collections.Generic;
-                              namespace MyApp {
-                                  public class Bar {
-                                      public void Run() {
-                                          var x = new List<int> { 1, 2, 3 };
-                                      }
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ObjectInitializerCodeStyleAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS059")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_ArrayInitializerFullyInline_ReportsDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Bar {
-                                      public void Run() {
-                                          var x = new int[] { 1, 2 };
-                                      }
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ObjectInitializerCodeStyleAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS059")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_WithExpressionFullyInline_ReportsDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public record Foo(int X, int Y);
-                                  public class Bar {
-                                      public void Run() {
-                                          var a = new Foo(1, 2);
-                                          var b = a with { X = 10 };
-                                      }
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ObjectInitializerCodeStyleAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS059")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_NestedObjectInitializerInline_ReportsDiagnosticOnInner()
+    public async Task Analyze_NestedObjectInitializerInline_ReportsDiagnosticOnInner(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -212,94 +215,96 @@ public class ObjectInitializerCodeStyleAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ObjectInitializerCodeStyleAnalyzer(), source);
+        var analyzer = new ObjectInitializerCodeStyleAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS059")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS059")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_NoInitializer_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_SingleMemberCollectionInitializerInline_ReportsDiagnostic()
-    {
-        const string source = """
-                              using System.Collections.Generic;
-                              namespace MyApp {
-                                  public class Bar {
-                                      public void Run() {
-                                          var x = new List<int> { 1 };
-                                      }
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ObjectInitializerCodeStyleAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS059")).IsTrue();
-    }
-
-    // ── ATXCS060: empty braces ──────────────────────────────────────────────
-
-    [Test]
-    public async Task Analyze_EmptyObjectInitializer_ReportsDiagnostic()
+    public async Task Analyze_NoInitializer_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
                                   public class Foo { }
                                   public class Bar {
                                       public void Run() {
-                                          var x = new Foo { };
+                                          var x = new Foo();
                                       }
                                   }
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ObjectInitializerCodeStyleAnalyzer(), source);
+        var analyzer = new ObjectInitializerCodeStyleAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS060")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasAnyId(diagnostics, ["ATXCS059", "ATXCS060"])).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_ObjectInitializerCloseBraceOnSameLineAsLastMember_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_EmptyCollectionInitializer_ReportsDiagnostic()
-    {
-        const string source = """
-                              using System.Collections.Generic;
-                              namespace MyApp {
-                                  public class Bar {
-                                      public void Run() {
-                                          var x = new List<int> { };
-                                      }
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ObjectInitializerCodeStyleAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS060")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_EmptyWithInitializer_ReportsDiagnostic()
+    public async Task Analyze_ObjectInitializerCloseBraceOnSameLineAsLastMember_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
-                                  public record Foo(int X);
+                                  public class Foo { public int A { get; set; } }
                                   public class Bar {
                                       public void Run() {
-                                          var a = new Foo(1);
-                                          var b = a with { };
+                                          var x = new Foo
+                                          {
+                                              A = 1 };
                                       }
                                   }
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ObjectInitializerCodeStyleAnalyzer(), source);
+        var analyzer = new ObjectInitializerCodeStyleAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS060")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS059")).IsTrue();
     }
 
-    // ── GOOD: no diagnostic expected ──────────────────────────────────────────
-
+    /// <summary>
+    ///     Tests that Analyze_ObjectInitializerFullyInline_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_ProperlyFormattedObjectInitializer_ReportsNoDiagnostic()
+    public async Task Analyze_ObjectInitializerFullyInline_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo { public int A { get; set; } }
+                                  public class Bar {
+                                      public void Run() {
+                                          var x = new Foo { A = 1 };
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new ObjectInitializerCodeStyleAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS059")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_ObjectInitializerMultipleMembersOnSameLine_ReportsDiagnosticOnEachOffender.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ObjectInitializerMultipleMembersOnSameLine_ReportsDiagnosticOnEachOffender(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -308,21 +313,81 @@ public class ObjectInitializerCodeStyleAnalyzerTests
                                       public void Run() {
                                           var x = new Foo
                                           {
-                                              A = 1,
-                                              B = 2
+                                              A = 1, B = 2
                                           };
                                       }
                                   }
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ObjectInitializerCodeStyleAnalyzer(), source);
+        var analyzer = new ObjectInitializerCodeStyleAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS059" || d.Id == "ATXCS060")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.CountId(diagnostics, "ATXCS059")).IsEqualTo(2);
     }
 
+    /// <summary>
+    ///     Tests that Analyze_ObjectInitializerOpenBraceOnSameLineAsType_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_ProperlyFormattedCollectionInitializer_ReportsNoDiagnostic()
+    public async Task Analyze_ObjectInitializerOpenBraceOnSameLineAsType_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo { public int A { get; set; } }
+                                  public class Bar {
+                                      public void Run() {
+                                          var x = new Foo {
+                                              A = 1
+                                          };
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new ObjectInitializerCodeStyleAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS059")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_ProperlyFormattedArrayInitializer_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ProperlyFormattedArrayInitializer_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Bar {
+                                      public void Run() {
+                                          var x = new int[]
+                                          {
+                                              1,
+                                              2
+                                          };
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new ObjectInitializerCodeStyleAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasAnyId(diagnostics, ["ATXCS059", "ATXCS060"])).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_ProperlyFormattedCollectionInitializer_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ProperlyFormattedCollectionInitializer_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System.Collections.Generic;
@@ -340,77 +405,19 @@ public class ObjectInitializerCodeStyleAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ObjectInitializerCodeStyleAnalyzer(), source);
+        var analyzer = new ObjectInitializerCodeStyleAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS059" || d.Id == "ATXCS060")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasAnyId(diagnostics, ["ATXCS059", "ATXCS060"])).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_ProperlyFormattedNestedInitializer_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_ProperlyFormattedWithExpression_ReportsNoDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public record Foo(int X, int Y);
-                                  public class Bar {
-                                      public void Run() {
-                                          var a = new Foo(1, 2);
-                                          var b = a with
-                                          {
-                                              X = 10
-                                          };
-                                      }
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ObjectInitializerCodeStyleAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS059" || d.Id == "ATXCS060")).IsFalse();
-    }
-
-    [Test]
-    public async Task Analyze_NoInitializer_ReportsNoDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Foo { }
-                                  public class Bar {
-                                      public void Run() {
-                                          var x = new Foo();
-                                      }
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ObjectInitializerCodeStyleAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS059" || d.Id == "ATXCS060")).IsFalse();
-    }
-
-    [Test]
-    public async Task Analyze_ProperlyFormattedSingleMemberObjectInitializer_ReportsNoDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Foo { public int A { get; set; } }
-                                  public class Bar {
-                                      public void Run() {
-                                          var x = new Foo
-                                          {
-                                              A = 1
-                                          };
-                                      }
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ObjectInitializerCodeStyleAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS059" || d.Id == "ATXCS060")).IsFalse();
-    }
-
-    [Test]
-    public async Task Analyze_ProperlyFormattedNestedInitializer_ReportsNoDiagnostic()
+    public async Task Analyze_ProperlyFormattedNestedInitializer_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -430,30 +437,146 @@ public class ObjectInitializerCodeStyleAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ObjectInitializerCodeStyleAnalyzer(), source);
+        var analyzer = new ObjectInitializerCodeStyleAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS059" || d.Id == "ATXCS060")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasAnyId(diagnostics, ["ATXCS059", "ATXCS060"])).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_ProperlyFormattedObjectInitializer_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_ProperlyFormattedArrayInitializer_ReportsNoDiagnostic()
+    public async Task Analyze_ProperlyFormattedObjectInitializer_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
+                                  public class Foo { public int A { get; set; } public int B { get; set; } }
                                   public class Bar {
                                       public void Run() {
-                                          var x = new int[]
+                                          var x = new Foo
                                           {
-                                              1,
-                                              2
+                                              A = 1,
+                                              B = 2
                                           };
                                       }
                                   }
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ObjectInitializerCodeStyleAnalyzer(), source);
+        var analyzer = new ObjectInitializerCodeStyleAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS059" || d.Id == "ATXCS060")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasAnyId(diagnostics, ["ATXCS059", "ATXCS060"])).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_ProperlyFormattedSingleMemberObjectInitializer_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ProperlyFormattedSingleMemberObjectInitializer_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo { public int A { get; set; } }
+                                  public class Bar {
+                                      public void Run() {
+                                          var x = new Foo
+                                          {
+                                              A = 1
+                                          };
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new ObjectInitializerCodeStyleAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasAnyId(diagnostics, ["ATXCS059", "ATXCS060"])).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_ProperlyFormattedWithExpression_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ProperlyFormattedWithExpression_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public record Foo(int X, int Y);
+                                  public class Bar {
+                                      public void Run() {
+                                          var a = new Foo(1, 2);
+                                          var b = a with
+                                          {
+                                              X = 10
+                                          };
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new ObjectInitializerCodeStyleAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasAnyId(diagnostics, ["ATXCS059", "ATXCS060"])).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_SingleMemberCollectionInitializerInline_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_SingleMemberCollectionInitializerInline_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System.Collections.Generic;
+                              namespace MyApp {
+                                  public class Bar {
+                                      public void Run() {
+                                          var x = new List<int> { 1 };
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new ObjectInitializerCodeStyleAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS059")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_WithExpressionFullyInline_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_WithExpressionFullyInline_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public record Foo(int X, int Y);
+                                  public class Bar {
+                                      public void Run() {
+                                          var a = new Foo(1, 2);
+                                          var b = a with { X = 10 };
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new ObjectInitializerCodeStyleAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS059")).IsTrue();
     }
 }

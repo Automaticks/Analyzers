@@ -9,7 +9,7 @@ namespace Automaticks.EntityFrameworkCore;
 /// <summary>
 ///     Suppresses <c>ATXLQ002</c> (LinqUsage) in files that import <c>Microsoft.EntityFrameworkCore</c>
 ///     or any <c>Microsoft.EntityFrameworkCore.*</c> namespace.
-///     EF Core's LINQ provider operates on expression trees rather than in-memory collections,
+///     EF Core''s LINQ provider operates on expression trees rather than in-memory collections,
 ///     so LINQ queries in EF Core files are translated to SQL and do not carry the performance
 ///     concerns that ban LINQ in general production code.
 ///     Install both <c>Automaticks.Linq</c> and this package to enforce the
@@ -18,13 +18,16 @@ namespace Automaticks.EntityFrameworkCore;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class LinqUsageSuppressor : DiagnosticSuppressor
 {
-    private static readonly SuppressionDescriptor Rule = new(
-        id: SuppressionIds.EFCore.LinqUsage,
-        suppressedDiagnosticId: "ATXLQ002",
-        justification: "LINQ is permitted in files that import Microsoft.EntityFrameworkCore.");
+    private static readonly SuppressionDescriptor Rule;
 
-    /// <inheritdoc />
-    public override ImmutableArray<SuppressionDescriptor> SupportedSuppressions => [Rule];
+    static LinqUsageSuppressor()
+    {
+        var rule = new SuppressionDescriptor(
+            id: SuppressionIds.EFCore.LinqUsage,
+            suppressedDiagnosticId: "ATXLQ002",
+            justification: "LINQ is permitted in files that import Microsoft.EntityFrameworkCore.");
+        Rule = rule;
+    }
 
     /// <inheritdoc />
     public override void ReportSuppressions(SuppressionAnalysisContext context)
@@ -46,8 +49,8 @@ public sealed class LinqUsageSuppressor : DiagnosticSuppressor
             foreach (var usingDirective in compilationUnit.Usings)
             {
                 var name = usingDirective.Name?.ToString() ?? string.Empty;
-                if (name.Equals("Microsoft.EntityFrameworkCore", StringComparison.Ordinal) ||
-                    name.StartsWith("Microsoft.EntityFrameworkCore.", StringComparison.Ordinal))
+                if (name.Equals("Microsoft.EntityFrameworkCore", StringComparison.Ordinal)
+                    || name.StartsWith("Microsoft.EntityFrameworkCore.", StringComparison.Ordinal))
                 {
                     context.ReportSuppression(Suppression.Create(Rule, diagnostic));
                     break;
@@ -55,4 +58,7 @@ public sealed class LinqUsageSuppressor : DiagnosticSuppressor
             }
         }
     }
+
+    /// <inheritdoc />
+    public override ImmutableArray<SuppressionDescriptor> SupportedSuppressions => [Rule];
 }

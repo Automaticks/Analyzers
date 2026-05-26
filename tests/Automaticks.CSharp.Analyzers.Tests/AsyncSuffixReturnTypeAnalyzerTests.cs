@@ -1,129 +1,22 @@
 using Automaticks.CSharp;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Automaticks.CSharp.Analyzers.Tests;
 
+/// <summary>
+///     Tests for AsyncSuffixReturnTypeAnalyzer.
+/// </summary>
 public class AsyncSuffixReturnTypeAnalyzerTests
 {
+
+    /// <summary>
+    ///     Tests that Analyze_IAsyncEnumerableMethodWithAsyncSuffix_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_InterfaceVoidMethodWithAsyncSuffix_ReportsDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public interface IFoo {
-                                      void RequestAsync();
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new AsyncSuffixReturnTypeAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS009")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_SyncValueTypeMethodWithAsyncSuffix_ReportsDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Foo {
-                                      public int GetCountAsync() => 0;
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new AsyncSuffixReturnTypeAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS009")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_TaskMethodWithAsyncSuffix_ReportsNoDiagnostic()
-    {
-        const string source = """
-                              using System.Threading.Tasks;
-                              namespace MyApp {
-                                  public class Foo {
-                                      public Task DoWorkAsync() => Task.CompletedTask;
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new AsyncSuffixReturnTypeAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS009")).IsFalse();
-    }
-
-    [Test]
-    public async Task Analyze_TaskOfTMethodWithAsyncSuffix_ReportsNoDiagnostic()
-    {
-        const string source = """
-                              using System.Threading.Tasks;
-                              namespace MyApp {
-                                  public class Foo {
-                                      public Task<int> GetValueAsync() => Task.FromResult(0);
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new AsyncSuffixReturnTypeAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS009")).IsFalse();
-    }
-
-    [Test]
-    public async Task Analyze_ValueTaskMethodWithAsyncSuffix_ReportsNoDiagnostic()
-    {
-        const string source = """
-                              using System.Threading.Tasks;
-                              namespace MyApp {
-                                  public class Foo {
-                                      public ValueTask ProcessAsync() => ValueTask.CompletedTask;
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new AsyncSuffixReturnTypeAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS009")).IsFalse();
-    }
-
-    [Test]
-    public async Task Analyze_ValueTaskOfTMethodWithAsyncSuffix_ReportsNoDiagnostic()
-    {
-        const string source = """
-                              using System.Threading.Tasks;
-                              namespace MyApp {
-                                  public class Foo {
-                                      public ValueTask<string> FetchAsync() => ValueTask.FromResult(string.Empty);
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new AsyncSuffixReturnTypeAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS009")).IsFalse();
-    }
-
-    [Test]
-    public async Task Analyze_VoidMethodWithAsyncSuffix_ReportsDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Foo {
-                                      public void RequestAsync() {}
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new AsyncSuffixReturnTypeAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS009")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_IAsyncEnumerableMethodWithAsyncSuffix_ReportsNoDiagnostic()
+    public async Task Analyze_IAsyncEnumerableMethodWithAsyncSuffix_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System.Collections.Generic;
@@ -135,8 +28,166 @@ public class AsyncSuffixReturnTypeAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new AsyncSuffixReturnTypeAnalyzer(), source);
+        var analyzer = new AsyncSuffixReturnTypeAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS009")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS009")).IsFalse();
+    }
+    /// <summary>
+    ///     Tests that Analyze_InterfaceVoidMethodWithAsyncSuffix_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_InterfaceVoidMethodWithAsyncSuffix_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public interface IFoo {
+                                      void RequestAsync();
+                                  }
+                              }
+                              """;
+
+        var analyzer = new AsyncSuffixReturnTypeAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS009")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_SyncValueTypeMethodWithAsyncSuffix_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_SyncValueTypeMethodWithAsyncSuffix_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo {
+                                      public int GetCountAsync() => 0;
+                                  }
+                              }
+                              """;
+
+        var analyzer = new AsyncSuffixReturnTypeAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS009")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_TaskMethodWithAsyncSuffix_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_TaskMethodWithAsyncSuffix_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System.Threading.Tasks;
+                              namespace MyApp {
+                                  public class Foo {
+                                      public Task DoWorkAsync() => Task.CompletedTask;
+                                  }
+                              }
+                              """;
+
+        var analyzer = new AsyncSuffixReturnTypeAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS009")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_TaskOfGenericTypeMethodWithAsyncSuffix_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_TaskOfGenericTypeMethodWithAsyncSuffix_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System.Threading.Tasks;
+                              namespace MyApp {
+                                  public class Foo {
+                                      public Task<int> GetValueAsync() => Task.FromResult(0);
+                                  }
+                              }
+                              """;
+
+        var analyzer = new AsyncSuffixReturnTypeAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS009")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_ValueTaskMethodWithAsyncSuffix_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ValueTaskMethodWithAsyncSuffix_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System.Threading.Tasks;
+                              namespace MyApp {
+                                  public class Foo {
+                                      public ValueTask ProcessAsync() => ValueTask.CompletedTask;
+                                  }
+                              }
+                              """;
+
+        var analyzer = new AsyncSuffixReturnTypeAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS009")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_ValueTaskOfGenericTypeMethodWithAsyncSuffix_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ValueTaskOfGenericTypeMethodWithAsyncSuffix_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System.Threading.Tasks;
+                              namespace MyApp {
+                                  public class Foo {
+                                      public ValueTask<string> FetchAsync() => ValueTask.FromResult(string.Empty);
+                                  }
+                              }
+                              """;
+
+        var analyzer = new AsyncSuffixReturnTypeAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS009")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_VoidMethodWithAsyncSuffix_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_VoidMethodWithAsyncSuffix_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo {
+                                      public void RequestAsync() {}
+                                  }
+                              }
+                              """;
+
+        var analyzer = new AsyncSuffixReturnTypeAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS009")).IsTrue();
     }
 }

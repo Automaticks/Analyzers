@@ -9,9 +9,11 @@ public static class DiagnosticIds
     /// <summary>
     ///     Diagnostic IDs for CommunityToolkit.Mvvm usage rules.
     /// </summary>
-    public static class Mvvm
+    public static class ModelViewViewModel
     {
-        /// <summary>Diagnostic ID for <c>ATXMV001</c>: command constructors must use method groups, not lambdas.</summary>
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXMV001</c>: command constructors must use method groups, not lambdas.
+        /// </summary>
         public const string CommandLambda = "ATXMV001";
     }
 }

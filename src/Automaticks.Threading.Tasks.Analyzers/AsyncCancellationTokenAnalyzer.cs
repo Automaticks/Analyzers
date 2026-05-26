@@ -1,7 +1,6 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using System.Collections.Immutable;
-using static Automaticks.Threading.Tasks.AsyncReturnTypeHelper;
 
 namespace Automaticks.Threading.Tasks;
 
@@ -16,21 +15,20 @@ namespace Automaticks.Threading.Tasks;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class AsyncCancellationTokenAnalyzer : DiagnosticAnalyzer
 {
-    /// <summary>
-    ///     The diagnostic rule reported when an async-returning method is missing a
-    ///     <see cref="System.Threading.CancellationToken" /> last parameter.
-    /// </summary>
-    private static readonly DiagnosticDescriptor Rule = new(
-        DiagnosticIds.ThreadingTasks.AsyncCancellationToken,
-        "Async-returning methods must accept CancellationToken as the last parameter",
-        "Method '{0}' returns an async type but does not have CancellationToken as its last parameter",
-        "Threading.Tasks",
-        DiagnosticSeverity.Error,
-        true,
-        "Add `CancellationToken cancellationToken` as the last parameter and propagate it to all inner async calls. Exempt: constructors, property accessors, `Main` entry points, event handlers, and `override`/`explicit interface` implementations whose base signature does not include a token.");
+    private static readonly DiagnosticDescriptor Rule;
 
-    /// <inheritdoc />
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
+    static AsyncCancellationTokenAnalyzer()
+    {
+        var rule = new DiagnosticDescriptor(
+            DiagnosticIds.ThreadingTasks.AsyncCancellationToken,
+            "Async-returning methods must accept CancellationToken as the last parameter",
+            "Method '{0}' returns an async type but does not have CancellationToken as its last parameter",
+            "Threading.Tasks",
+            DiagnosticSeverity.Error,
+            true,
+            "Add `CancellationToken cancellationToken` as the last parameter and propagate it to all inner async calls. Exempt: constructors, property accessors, `Main` entry points, event handlers, and `override`/`explicit interface` implementations whose base signature does not include a token.");
+        Rule = rule;
+    }
 
     /// <inheritdoc />
     public override void Initialize(AnalysisContext context)
@@ -40,104 +38,98 @@ public sealed class AsyncCancellationTokenAnalyzer : DiagnosticAnalyzer
         context.RegisterSymbolAction(AnalyzeMethod, SymbolKind.Method);
     }
 
-    private static void AnalyzeMethod(SymbolAnalysisContext context)
+    /// <inheritdoc />
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
+
+    private void AnalyzeMethod(SymbolAnalysisContext context)
     {
-        var method = (IMethodSymbol)context.Symbol;
-
-        if (method.IsOverride && IsExternalOverride(method))
+        if (context.Symbol is not IMethodSymbol method)
         {
             return;
         }
 
-        if (method.ExplicitInterfaceImplementations.Length > 0)
-        {
-            foreach (var ifaceMethod in method.ExplicitInterfaceImplementations)
-            {
-                if (ifaceMethod.DeclaringSyntaxReferences.IsEmpty)
-                {
-                    return;
-                }
-            }
-        }
-
-        if (IsSignalRHubMethod(method, context.Compilation))
+        if (HasMethodExemption(method, context.Compilation))
         {
             return;
         }
 
-        if (IsImplicitExternalInterfaceImplementation(method))
+        if (!AsyncReturnTypeHelper.HasAsyncReturnType(method, context.Compilation))
         {
             return;
         }
 
-        if (!ReturnsAsyncType(method, context.Compilation))
+        if (HasTrailingCancellationToken(method, context.Compilation))
         {
             return;
         }
 
-        var parameters = method.Parameters;
-        if (parameters.Length > 0)
-        {
-            var cancellationTokenType = context.Compilation.GetTypeByMetadataName("System.Threading.CancellationToken");
-            if (cancellationTokenType is not null)
-            {
-                var lastParam = parameters[parameters.Length - 1];
-                if (SymbolEqualityComparer.Default.Equals(lastParam.Type, cancellationTokenType))
-                {
-                    return;
-                }
-            }
-        }
-
-        Location location;
-        if (method.Locations.Length > 0)
-        {
-            location = method.Locations[0];
-        }
-        else
-        {
-            location = Location.None;
-        }
-
-        context.ReportDiagnostic(Diagnostic.Create(Rule, location, method.Name));
+        context.ReportDiagnostic(Diagnostic.Create(Rule, GetMethodLocation(method), method.Name));
     }
 
-    private static bool IsExternalOverride(IMethodSymbol method)
+    private Location GetMethodLocation(IMethodSymbol method)
     {
-        var overridden = method.OverriddenMethod;
-        while (overridden is not null)
+        return method.Locations.Length > 0
+            ? method.Locations[0]
+            : Location.None;
+    }
+
+    private bool HasExplicitExternalInterfaceImplementation(IMethodSymbol method)
+    {
+        if (method.ExplicitInterfaceImplementations.Length == 0)
         {
-            if (overridden.DeclaringSyntaxReferences.IsEmpty)
+            return false;
+        }
+
+        foreach (var interfaceMethod in method.ExplicitInterfaceImplementations)
+        {
+            if (interfaceMethod.DeclaringSyntaxReferences.IsEmpty)
             {
                 return true;
             }
-
-            overridden = overridden.OverriddenMethod;
         }
 
         return false;
     }
 
-    private static bool IsImplicitExternalInterfaceImplementation(IMethodSymbol method)
+    private bool HasExternalOverride(IMethodSymbol method)
+    {
+        var overriddenMethod = method.OverriddenMethod;
+        while (overriddenMethod is not null)
+        {
+            if (overriddenMethod.DeclaringSyntaxReferences.IsEmpty)
+            {
+                return true;
+            }
+
+            overriddenMethod = overriddenMethod.OverriddenMethod;
+        }
+
+        return false;
+    }
+
+    private bool HasImplicitExternalInterfaceImplementation(IMethodSymbol method)
     {
         if (method.IsOverride)
         {
             return false;
         }
 
-        foreach (var iface in method.ContainingType.AllInterfaces)
+        foreach (var interfaceType in method.ContainingType.AllInterfaces)
         {
-            foreach (var member in iface.GetMembers())
+            foreach (var member in interfaceType.GetMembers())
             {
-                if (member is not IMethodSymbol ifaceMethod)
+                if (member is not IMethodSymbol interfaceMethod)
                 {
                     continue;
                 }
 
-                if (ifaceMethod.DeclaringSyntaxReferences.IsEmpty &&
-                    SymbolEqualityComparer.Default.Equals(
-                        method.ContainingType.FindImplementationForInterfaceMember(ifaceMethod),
-                        method))
+                if (!interfaceMethod.DeclaringSyntaxReferences.IsEmpty)
+                {
+                    continue;
+                }
+
+                var implementation = method.ContainingType.FindImplementationForInterfaceMember(interfaceMethod);
+                if (SymbolEqualityComparer.Default.Equals(implementation, method))
                 {
                     return true;
                 }
@@ -147,7 +139,15 @@ public sealed class AsyncCancellationTokenAnalyzer : DiagnosticAnalyzer
         return false;
     }
 
-    private static bool IsSignalRHubMethod(IMethodSymbol method, Compilation compilation)
+    private bool HasMethodExemption(IMethodSymbol method, Compilation compilation)
+    {
+        return method.IsOverride && HasExternalOverride(method)
+               || HasExplicitExternalInterfaceImplementation(method)
+               || HasImplicitExternalInterfaceImplementation(method)
+               || HasSignalRealtimeHubMethod(method, compilation);
+    }
+
+    private bool HasSignalRealtimeHubMethod(IMethodSymbol method, Compilation compilation)
     {
         var hubType = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.SignalR.Hub");
         if (hubType is null)
@@ -155,8 +155,7 @@ public sealed class AsyncCancellationTokenAnalyzer : DiagnosticAnalyzer
             return false;
         }
 
-        var containingType = method.ContainingType;
-        var baseType = containingType?.BaseType;
+        var baseType = method.ContainingType?.BaseType;
         while (baseType is not null)
         {
             if (SymbolEqualityComparer.Default.Equals(baseType.OriginalDefinition, hubType))
@@ -168,5 +167,23 @@ public sealed class AsyncCancellationTokenAnalyzer : DiagnosticAnalyzer
         }
 
         return false;
+    }
+
+    private bool HasTrailingCancellationToken(IMethodSymbol method, Compilation compilation)
+    {
+        var parameters = method.Parameters;
+        if (parameters.Length == 0)
+        {
+            return false;
+        }
+
+        var cancellationTokenType = compilation.GetTypeByMetadataName("System.Threading.CancellationToken");
+        if (cancellationTokenType is null)
+        {
+            return false;
+        }
+
+        var lastParameter = parameters[parameters.Length - 1];
+        return SymbolEqualityComparer.Default.Equals(lastParameter.Type, cancellationTokenType);
     }
 }

@@ -20,4 +20,73 @@
               Condition="'$(GenerateDocumentationFile)' == 'true' and '$(DocumentationFile)' != ''" />
     </ItemGroup>
 
+    <!--
+        Dogfooding for tests/ projects: all 9 analyzer projects are loaded as Roslyn analyzers via
+        ProjectReference with OutputItemType="Analyzer". No circular build dependency because test
+        projects do not reference each other.
+    -->
+    <ItemGroup Condition="'$(IsAnalyzerProject)' != 'true'">
+        <ProjectReference Include="$(MSBuildThisFileDirectory)src\Automaticks.CSharp.Analyzers\Automaticks.CSharp.Analyzers.csproj"
+                          OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+        <ProjectReference Include="$(MSBuildThisFileDirectory)src\Automaticks.CommunityToolkit.Mvvm.Analyzers\Automaticks.CommunityToolkit.Mvvm.Analyzers.csproj"
+                          OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+        <ProjectReference Include="$(MSBuildThisFileDirectory)src\Automaticks.Diagnostics.CodeAnalysis.Analyzers\Automaticks.Diagnostics.CodeAnalysis.Analyzers.csproj"
+                          OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+        <ProjectReference Include="$(MSBuildThisFileDirectory)src\Automaticks.EntityFrameworkCore.Analyzers\Automaticks.EntityFrameworkCore.Analyzers.csproj"
+                          OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+        <ProjectReference Include="$(MSBuildThisFileDirectory)src\Automaticks.Extensions.Options.Analyzers\Automaticks.Extensions.Options.Analyzers.csproj"
+                          OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+        <ProjectReference Include="$(MSBuildThisFileDirectory)src\Automaticks.Linq.Analyzers\Automaticks.Linq.Analyzers.csproj"
+                          OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+        <ProjectReference Include="$(MSBuildThisFileDirectory)src\Automaticks.Reflection.Analyzers\Automaticks.Reflection.Analyzers.csproj"
+                          OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+        <ProjectReference Include="$(MSBuildThisFileDirectory)src\Automaticks.Testing.Analyzers\Automaticks.Testing.Analyzers.csproj"
+                          OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+        <ProjectReference Include="$(MSBuildThisFileDirectory)src\Automaticks.Threading.Tasks.Analyzers\Automaticks.Threading.Tasks.Analyzers.csproj"
+                          OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    </ItemGroup>
+
+    <!--
+        Dogfooding for src/ (analyzer) projects: each project loads all OTHER analyzer DLLs from
+        a stable cache directory. Using cached copies avoids races with CoreClean removing sibling
+        outputs during a parallel solution build, while still allowing analyzer-to-analyzer
+        dogfooding after the cache has been populated once.
+    -->
+    <PropertyGroup Condition="'$(IsAnalyzerProject)' == 'true'">
+        <DogfoodAnalyzerCacheDirectory>$(MSBuildThisFileDirectory).dogfood\</DogfoodAnalyzerCacheDirectory>
+        <DogfoodAnalyzerCachePath>$(DogfoodAnalyzerCacheDirectory)$(MSBuildProjectName).dll</DogfoodAnalyzerCachePath>
+    </PropertyGroup>
+
+    <Target Name="AddSiblingAnalyzers" BeforeTargets="CoreCompile"
+            Condition="'$(IsAnalyzerProject)' == 'true'">
+        <ItemGroup>
+            <Analyzer Include="$(DogfoodAnalyzerCacheDirectory)Automaticks.CSharp.Analyzers.dll"
+                      Condition="'$(PackageId)' != 'Automaticks.CSharp.Analyzers' AND Exists('$(DogfoodAnalyzerCacheDirectory)Automaticks.CSharp.Analyzers.dll')" />
+            <Analyzer Include="$(DogfoodAnalyzerCacheDirectory)Automaticks.CommunityToolkit.Mvvm.Analyzers.dll"
+                      Condition="'$(PackageId)' != 'Automaticks.CommunityToolkit.Mvvm.Analyzers' AND Exists('$(DogfoodAnalyzerCacheDirectory)Automaticks.CommunityToolkit.Mvvm.Analyzers.dll')" />
+            <Analyzer Include="$(DogfoodAnalyzerCacheDirectory)Automaticks.Diagnostics.CodeAnalysis.Analyzers.dll"
+                      Condition="'$(PackageId)' != 'Automaticks.Diagnostics.CodeAnalysis.Analyzers' AND Exists('$(DogfoodAnalyzerCacheDirectory)Automaticks.Diagnostics.CodeAnalysis.Analyzers.dll')" />
+            <Analyzer Include="$(DogfoodAnalyzerCacheDirectory)Automaticks.EntityFrameworkCore.Analyzers.dll"
+                      Condition="'$(PackageId)' != 'Automaticks.EntityFrameworkCore.Analyzers' AND Exists('$(DogfoodAnalyzerCacheDirectory)Automaticks.EntityFrameworkCore.Analyzers.dll')" />
+            <Analyzer Include="$(DogfoodAnalyzerCacheDirectory)Automaticks.Extensions.Options.Analyzers.dll"
+                      Condition="'$(PackageId)' != 'Automaticks.Extensions.Options.Analyzers' AND Exists('$(DogfoodAnalyzerCacheDirectory)Automaticks.Extensions.Options.Analyzers.dll')" />
+            <Analyzer Include="$(DogfoodAnalyzerCacheDirectory)Automaticks.Linq.Analyzers.dll"
+                      Condition="'$(PackageId)' != 'Automaticks.Linq.Analyzers' AND Exists('$(DogfoodAnalyzerCacheDirectory)Automaticks.Linq.Analyzers.dll')" />
+            <Analyzer Include="$(DogfoodAnalyzerCacheDirectory)Automaticks.Reflection.Analyzers.dll"
+                      Condition="'$(PackageId)' != 'Automaticks.Reflection.Analyzers' AND Exists('$(DogfoodAnalyzerCacheDirectory)Automaticks.Reflection.Analyzers.dll')" />
+            <Analyzer Include="$(DogfoodAnalyzerCacheDirectory)Automaticks.Testing.Analyzers.dll"
+                      Condition="'$(PackageId)' != 'Automaticks.Testing.Analyzers' AND Exists('$(DogfoodAnalyzerCacheDirectory)Automaticks.Testing.Analyzers.dll')" />
+            <Analyzer Include="$(DogfoodAnalyzerCacheDirectory)Automaticks.Threading.Tasks.Analyzers.dll"
+                      Condition="'$(PackageId)' != 'Automaticks.Threading.Tasks.Analyzers' AND Exists('$(DogfoodAnalyzerCacheDirectory)Automaticks.Threading.Tasks.Analyzers.dll')" />
+        </ItemGroup>
+    </Target>
+
+    <Target Name="UpdateDogfoodAnalyzerCache" AfterTargets="Build"
+            Condition="'$(IsAnalyzerProject)' == 'true' and Exists('$(TargetPath)')">
+        <MakeDir Directories="$(DogfoodAnalyzerCacheDirectory)" />
+        <Copy SourceFiles="$(TargetPath)"
+              DestinationFiles="$(DogfoodAnalyzerCachePath)"
+              SkipUnchangedFiles="true" />
+    </Target>
+
 </Project>

@@ -1,29 +1,22 @@
 using Automaticks.CSharp;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Automaticks.CSharp.Analyzers.Tests;
 
+/// <summary>
+///     Tests for ParamsParameterAnalyzer.
+/// </summary>
 public class ParamsParameterAnalyzerTests
 {
+
+    /// <summary>
+    ///     Tests that Analyze_MethodWithoutParams_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_MethodWithParamsArray_ReportsDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Foo {
-                                      public void Bar(params int[] values) { }
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ParamsParameterAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS055")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_MethodWithoutParams_ReportsNoDiagnostic()
+    public async Task Analyze_MethodWithoutParams_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System.Collections.Generic;
@@ -34,8 +27,30 @@ public class ParamsParameterAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ParamsParameterAnalyzer(), source);
+        var analyzer = new ParamsParameterAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS055")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS055")).IsFalse();
+    }
+    /// <summary>
+    ///     Tests that Analyze_MethodWithParamsArray_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_MethodWithParamsArray_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo {
+                                      public void Bar(params int[] values) { }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new ParamsParameterAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS055")).IsTrue();
     }
 }

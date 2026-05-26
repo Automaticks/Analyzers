@@ -1,13 +1,21 @@
 using Automaticks.CSharp;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Automaticks.CSharp.Analyzers.Tests;
 
+/// <summary>
+///     Tests for GenericDelegateAnalyzer.
+/// </summary>
 public class GenericDelegateAnalyzerTests
 {
+    /// <summary>
+    ///     Tests that Analyze_ActionAsGenericTypeArgument_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_ActionAsGenericTypeArgument_ReportsDiagnostic()
+    public async Task Analyze_ActionAsGenericTypeArgument_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System;
@@ -19,13 +27,19 @@ public class GenericDelegateAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new GenericDelegateAnalyzer(), source);
+        var analyzer = new GenericDelegateAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS020")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS020")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_ActionParameter_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_ActionParameter_ReportsDiagnostic()
+    public async Task Analyze_ActionParameter_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System;
@@ -39,13 +53,19 @@ public class GenericDelegateAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new GenericDelegateAnalyzer(), source);
+        var analyzer = new GenericDelegateAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS020")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS020")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_ActionReturnType_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_ActionReturnType_ReportsDiagnostic()
+    public async Task Analyze_ActionReturnType_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System;
@@ -59,13 +79,19 @@ public class GenericDelegateAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new GenericDelegateAnalyzer(), source);
+        var analyzer = new GenericDelegateAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS020")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS020")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_AliasUsageWhereAliasWrapsAction_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_AliasUsageWhereAliasWrapsAction_ReportsDiagnostic()
+    public async Task Analyze_AliasUsageWhereAliasWrapsAction_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using MyFunc = System.Func<int, bool>;
@@ -76,13 +102,19 @@ public class GenericDelegateAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new GenericDelegateAnalyzer(), source);
+        var analyzer = new GenericDelegateAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS020")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS020")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_ComparisonParameter_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_ComparisonParameter_ReportsDiagnostic()
+    public async Task Analyze_ComparisonParameter_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System;
@@ -95,13 +127,19 @@ public class GenericDelegateAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new GenericDelegateAnalyzer(), source);
+        var analyzer = new GenericDelegateAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS020")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS020")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_ConverterLocalVariable_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_ConverterLocalVariable_ReportsDiagnostic()
+    public async Task Analyze_ConverterLocalVariable_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System;
@@ -115,13 +153,19 @@ public class GenericDelegateAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new GenericDelegateAnalyzer(), source);
+        var analyzer = new GenericDelegateAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS020")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS020")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_CustomDelegateField_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_CustomDelegateField_ReportsNoDiagnostic()
+    public async Task Analyze_CustomDelegateField_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -132,13 +176,19 @@ public class GenericDelegateAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new GenericDelegateAnalyzer(), source);
+        var analyzer = new GenericDelegateAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS020")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS020")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_CustomDelegateParameter_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_CustomDelegateParameter_ReportsNoDiagnostic()
+    public async Task Analyze_CustomDelegateParameter_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -151,13 +201,19 @@ public class GenericDelegateAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new GenericDelegateAnalyzer(), source);
+        var analyzer = new GenericDelegateAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS020")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS020")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_EventHandlerOnEvent_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_EventHandlerOnEvent_ReportsNoDiagnostic()
+    public async Task Analyze_EventHandlerOnEvent_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System;
@@ -168,13 +224,19 @@ public class GenericDelegateAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new GenericDelegateAnalyzer(), source);
+        var analyzer = new GenericDelegateAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS020")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS020")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_FuncField_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_FuncField_ReportsDiagnostic()
+    public async Task Analyze_FuncField_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System;
@@ -185,13 +247,19 @@ public class GenericDelegateAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new GenericDelegateAnalyzer(), source);
+        var analyzer = new GenericDelegateAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS020")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS020")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_FuncLocalVariable_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_FuncLocalVariable_ReportsDiagnostic()
+    public async Task Analyze_FuncLocalVariable_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System;
@@ -205,13 +273,19 @@ public class GenericDelegateAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new GenericDelegateAnalyzer(), source);
+        var analyzer = new GenericDelegateAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS020")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS020")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_FuncProperty_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_FuncProperty_ReportsDiagnostic()
+    public async Task Analyze_FuncProperty_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System;
@@ -222,13 +296,19 @@ public class GenericDelegateAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new GenericDelegateAnalyzer(), source);
+        var analyzer = new GenericDelegateAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS020")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS020")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_GenericActionParameter_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_GenericActionParameter_ReportsDiagnostic()
+    public async Task Analyze_GenericActionParameter_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System;
@@ -242,13 +322,19 @@ public class GenericDelegateAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new GenericDelegateAnalyzer(), source);
+        var analyzer = new GenericDelegateAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS020")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS020")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_GenericEventHandlerOnEvent_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_GenericEventHandlerOnEvent_ReportsNoDiagnostic()
+    public async Task Analyze_GenericEventHandlerOnEvent_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System;
@@ -259,13 +345,19 @@ public class GenericDelegateAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new GenericDelegateAnalyzer(), source);
+        var analyzer = new GenericDelegateAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS020")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS020")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_LambdaPassedToExternalLinqMethod_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_LambdaPassedToExternalLinqMethod_ReportsNoDiagnostic()
+    public async Task Analyze_LambdaPassedToExternalLinqMethod_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System.Collections.Generic;
@@ -280,13 +372,19 @@ public class GenericDelegateAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new GenericDelegateAnalyzer(), source);
+        var analyzer = new GenericDelegateAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS020")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS020")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_MultipleViolationsInSameFile_ReportsMultipleDiagnostics.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_MultipleViolationsInSameFile_ReportsMultipleDiagnostics()
+    public async Task Analyze_MultipleViolationsInSameFile_ReportsMultipleDiagnostics(CancellationToken cancellationToken)
     {
         const string source = """
                               using System;
@@ -300,13 +398,19 @@ public class GenericDelegateAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new GenericDelegateAnalyzer(), source);
+        var analyzer = new GenericDelegateAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Count(d => d.Id == "ATXCS020")).IsEqualTo(2);
+        await Assert.That(DiagnosticCollectionAssertions.CountId(diagnostics, "ATXCS020")).IsEqualTo(2);
     }
 
+    /// <summary>
+    ///     Tests that Analyze_PredicateParameter_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_PredicateParameter_ReportsDiagnostic()
+    public async Task Analyze_PredicateParameter_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System;
@@ -319,13 +423,19 @@ public class GenericDelegateAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new GenericDelegateAnalyzer(), source);
+        var analyzer = new GenericDelegateAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS020")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS020")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_QualifiedActionName_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_QualifiedActionName_ReportsDiagnostic()
+    public async Task Analyze_QualifiedActionName_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -338,13 +448,19 @@ public class GenericDelegateAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new GenericDelegateAnalyzer(), source);
+        var analyzer = new GenericDelegateAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS020")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS020")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_UsingAliasDeclaration_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_UsingAliasDeclaration_ReportsDiagnostic()
+    public async Task Analyze_UsingAliasDeclaration_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using MyAction = System.Action<int>;
@@ -358,8 +474,9 @@ public class GenericDelegateAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new GenericDelegateAnalyzer(), source);
+        var analyzer = new GenericDelegateAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS020")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS020")).IsTrue();
     }
 }

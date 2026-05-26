@@ -9,16 +9,19 @@ namespace Automaticks.Threading.Tasks;
 public static class AsyncReturnTypeHelper
 {
     /// <summary>
-    ///     Returns <see langword="true" /> if <paramref name="method" /> returns an async type.
+    ///     Returns <see langword="true" /> when <paramref name="method" /> returns an async type.
     /// </summary>
-    public static bool ReturnsAsyncType(IMethodSymbol method, Compilation compilation)
+    /// <param name="method">The method symbol to inspect.</param>
+    /// <param name="compilation">The compilation that provides framework type symbols.</param>
+    /// <returns><see langword="true" /> when the method returns an async type; otherwise, <see langword="false" />.</returns>
+    public static bool HasAsyncReturnType(IMethodSymbol method, Compilation compilation)
     {
         var returnType = method.ReturnType;
 
         var taskType = compilation.GetTypeByMetadataName("System.Threading.Tasks.Task");
-        var taskOfTType = compilation.GetTypeByMetadataName("System.Threading.Tasks.Task`1");
+        var taskOfGenericType = compilation.GetTypeByMetadataName("System.Threading.Tasks.Task`1");
         var valueTaskType = compilation.GetTypeByMetadataName("System.Threading.Tasks.ValueTask");
-        var valueTaskOfTType = compilation.GetTypeByMetadataName("System.Threading.Tasks.ValueTask`1");
+        var valueTaskOfGenericType = compilation.GetTypeByMetadataName("System.Threading.Tasks.ValueTask`1");
 
         if (SymbolEqualityComparer.Default.Equals(returnType, taskType))
         {
@@ -36,21 +39,20 @@ public static class AsyncReturnTypeHelper
         }
 
         var unboundType = namedType.ConstructUnboundGenericType();
-
-        if (SymbolEqualityComparer.Default.Equals(unboundType, taskOfTType?.ConstructUnboundGenericType()))
+        if (SymbolEqualityComparer.Default.Equals(unboundType, taskOfGenericType?.ConstructUnboundGenericType()))
         {
             return true;
         }
 
-        if (SymbolEqualityComparer.Default.Equals(unboundType, valueTaskOfTType?.ConstructUnboundGenericType()))
+        if (SymbolEqualityComparer.Default.Equals(unboundType, valueTaskOfGenericType?.ConstructUnboundGenericType()))
         {
             return true;
         }
 
-        return IsIAsyncEnumerable(namedType);
+        return HasAsyncEnumerableType(namedType);
     }
 
-    private static bool IsIAsyncEnumerable(INamedTypeSymbol type)
+    private static bool HasAsyncEnumerableType(INamedTypeSymbol type)
     {
         return type.Name == "IAsyncEnumerable"
                && type.TypeArguments.Length == 1

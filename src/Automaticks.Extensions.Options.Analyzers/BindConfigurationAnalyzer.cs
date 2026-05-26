@@ -16,29 +16,38 @@ namespace Automaticks.Extensions.Options;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class BindConfigurationAnalyzer : DiagnosticAnalyzer
 {
-    private static readonly DiagnosticDescriptor Rule = new(
-        DiagnosticIds.Options.BindConfiguration,
-        "BindConfiguration is forbidden",
-        "Use 'Configure<T>(configuration.GetRequiredSection(...))' instead of 'AddOptions<T>().BindConfiguration(...)'. GetRequiredSection fails fast when the section is missing.",
-        "Extensions.Options",
-        DiagnosticSeverity.Error,
-        true,
-        "Replace `services.AddOptions<T>().BindConfiguration(\"Section\")` with `services.Configure<T>(configuration.GetRequiredSection(\"Section\"))`. `GetRequiredSection` throws `InvalidOperationException` at application startup when the configuration section is absent, preventing misconfigured deployments. `BindConfiguration` silently falls back to defaults.");
+    private static readonly DiagnosticDescriptor Rule;
 
-    /// <inheritdoc />
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
+    static BindConfigurationAnalyzer()
+    {
+        var rule = new DiagnosticDescriptor(
+            DiagnosticIds.Options.BindConfiguration,
+            "BindConfiguration is forbidden",
+            "Use 'Configure<T>(configuration.GetRequiredSection(...))' instead of 'AddOptions<T>().BindConfiguration(...)'. GetRequiredSection fails fast when the section is missing.",
+            "Extensions.Options",
+            DiagnosticSeverity.Error,
+            true,
+            "Replace `services.AddOptions<T>().BindConfiguration(\"Section\")` with `services.Configure<T>(configuration.GetRequiredSection(\"Section\"))`. `GetRequiredSection` throws `InvalidOperationException` at application startup when the configuration section is absent, preventing misconfigured deployments. `BindConfiguration` silently falls back to defaults.");
+        Rule = rule;
+    }
 
     /// <inheritdoc />
     public override void Initialize(AnalysisContext context)
     {
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
         context.EnableConcurrentExecution();
-        context.RegisterSyntaxNodeAction(Analyze, SyntaxKind.InvocationExpression);
+        context.RegisterSyntaxNodeAction(AnalyzeInvocation, SyntaxKind.InvocationExpression);
     }
 
-    private static void Analyze(SyntaxNodeAnalysisContext context)
+    /// <inheritdoc />
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
+
+    private void AnalyzeInvocation(SyntaxNodeAnalysisContext context)
     {
-        var invocation = (InvocationExpressionSyntax)context.Node;
+        if (context.Node is not InvocationExpressionSyntax invocation)
+        {
+            return;
+        }
 
         if (invocation.Expression is not MemberAccessExpressionSyntax memberAccess)
         {
@@ -56,7 +65,7 @@ public sealed class BindConfigurationAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        if (!IsOptionsBuilderType(receiverType))
+        if (!HasOptionsBuilderType(receiverType))
         {
             return;
         }
@@ -64,7 +73,7 @@ public sealed class BindConfigurationAnalyzer : DiagnosticAnalyzer
         context.ReportDiagnostic(Diagnostic.Create(Rule, invocation.GetLocation()));
     }
 
-    private static bool IsOptionsBuilderType(ITypeSymbol type)
+    private bool HasOptionsBuilderType(ITypeSymbol type)
     {
         if (type is not INamedTypeSymbol namedType)
         {

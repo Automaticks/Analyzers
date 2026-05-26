@@ -2,7 +2,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
-using System;
 using System.Collections.Immutable;
 
 namespace Automaticks.CSharp;
@@ -57,9 +56,7 @@ public sealed class MissingReturnsXmlDocAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        var docComment = GetDocumentationComment(method);
-
-        if (docComment != null && HasReturnsOrInheritDoc(docComment))
+        if (DocumentationCommentText.HasReturnsOrInheritDoc(method))
         {
             return;
         }
@@ -117,47 +114,6 @@ public sealed class MissingReturnsXmlDocAnalyzer : DiagnosticAnalyzer
         }
 
         return method.Parent is InterfaceDeclarationSyntax;
-    }
-
-    private static DocumentationCommentTriviaSyntax? GetDocumentationComment(SyntaxNode node)
-    {
-        foreach (var trivia in node.GetLeadingTrivia())
-        {
-            if (trivia.GetStructure() is DocumentationCommentTriviaSyntax docComment)
-            {
-                return docComment;
-            }
-        }
-
-        return null;
-    }
-
-    private static bool HasReturnsOrInheritDoc(DocumentationCommentTriviaSyntax docComment)
-    {
-        foreach (var node in docComment.Content)
-        {
-            if (node is XmlElementSyntax element)
-            {
-                var localName = element.StartTag.Name.LocalName.ValueText;
-                if (localName.Equals(ReturnsTag, StringComparison.Ordinal) ||
-                    localName.Equals(InheritDocTag, StringComparison.Ordinal))
-                {
-                    return true;
-                }
-            }
-            else if (node is XmlEmptyElementSyntax emptyElement)
-            {
-                var localName = emptyElement.Name.LocalName.ValueText;
-
-                if (localName.Equals(ReturnsTag, StringComparison.Ordinal) ||
-                    localName.Equals(InheritDocTag, StringComparison.Ordinal))
-                {
-                    return true;
-                }
-            }
-        }
-
-        return false;
     }
 
     private static bool IsInPubliclyAccessibleContext(SyntaxNode node)

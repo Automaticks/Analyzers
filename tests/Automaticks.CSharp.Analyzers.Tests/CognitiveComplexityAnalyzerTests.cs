@@ -1,14 +1,22 @@
 using Automaticks.CSharp;
 using System.Globalization;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Automaticks.CSharp.Analyzers.Tests;
 
+/// <summary>
+///     Tests for CognitiveComplexityAnalyzer.
+/// </summary>
 public class CognitiveComplexityAnalyzerTests
 {
+    /// <summary>
+    ///     Tests that Analyze_AboveThreshold_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_AboveThreshold_ReportsDiagnostic()
+    public async Task Analyze_AboveThreshold_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -35,13 +43,19 @@ public class CognitiveComplexityAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new CognitiveComplexityAnalyzer(), source);
+        var analyzer = new CognitiveComplexityAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS033")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS033")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_AbstractMethod_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_AbstractMethod_ReportsNoDiagnostic()
+    public async Task Analyze_AbstractMethod_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -51,13 +65,19 @@ public class CognitiveComplexityAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new CognitiveComplexityAnalyzer(), source);
+        var analyzer = new CognitiveComplexityAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS033")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS033")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_AtThreshold_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_AtThreshold_ReportsNoDiagnostic()
+    public async Task Analyze_AtThreshold_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -83,13 +103,19 @@ public class CognitiveComplexityAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new CognitiveComplexityAnalyzer(), source);
+        var analyzer = new CognitiveComplexityAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS033")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS033")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_BelowThreshold_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_BelowThreshold_ReportsNoDiagnostic()
+    public async Task Analyze_BelowThreshold_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -114,13 +140,19 @@ public class CognitiveComplexityAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new CognitiveComplexityAnalyzer(), source);
+        var analyzer = new CognitiveComplexityAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS033")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS033")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_CatchClause_IncrementsWithoutNestingPenalty.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_CatchClause_IncrementsWithoutNestingPenalty()
+    public async Task Analyze_CatchClause_IncrementsWithoutNestingPenalty(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -135,13 +167,19 @@ public class CognitiveComplexityAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new CognitiveComplexityAnalyzer(), source);
+        var analyzer = new CognitiveComplexityAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS033")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS033")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_ConditionalExpression_IncrementsWithNestingPenalty.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_ConditionalExpression_IncrementsWithNestingPenalty()
+    public async Task Analyze_ConditionalExpression_IncrementsWithNestingPenalty(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -153,13 +191,19 @@ public class CognitiveComplexityAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new CognitiveComplexityAnalyzer(), source);
+        var analyzer = new CognitiveComplexityAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS033")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS033")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_DiagnosticMessage_ContainsMethodNameAndScore.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_DiagnosticMessage_ContainsMethodNameAndScore()
+    public async Task Analyze_DiagnosticMessage_ContainsMethodNameAndScore(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -186,16 +230,22 @@ public class CognitiveComplexityAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new CognitiveComplexityAnalyzer(), source);
-        var message = diagnostics.Single(d => d.Id == "ATXCS033")
+        var analyzer = new CognitiveComplexityAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+        var message = DiagnosticCollectionAssertions.GetSingleById(diagnostics, "ATXCS033")
                                  .GetMessage(CultureInfo.InvariantCulture);
 
         await Assert.That(message)
                     .IsEqualTo("Method 'ComplexMethod' has a cognitive complexity of 16, which exceeds the maximum of 15");
     }
 
+    /// <summary>
+    ///     Tests that Analyze_ElseIfChain_DoesNotDoublePenalizeElseBranches.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_ElseIfChain_DoesNotDoublePenalizeElseBranches()
+    public async Task Analyze_ElseIfChain_DoesNotDoublePenalizeElseBranches(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -210,13 +260,19 @@ public class CognitiveComplexityAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new CognitiveComplexityAnalyzer(), source);
+        var analyzer = new CognitiveComplexityAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS033")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS033")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_ExpressionBodiedMethod_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_ExpressionBodiedMethod_ReportsNoDiagnostic()
+    public async Task Analyze_ExpressionBodiedMethod_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -226,13 +282,19 @@ public class CognitiveComplexityAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new CognitiveComplexityAnalyzer(), source);
+        var analyzer = new CognitiveComplexityAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS033")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS033")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_ForeachLoop_IncrementsScore.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_ForeachLoop_IncrementsScore()
+    public async Task Analyze_ForeachLoop_IncrementsScore(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -244,13 +306,19 @@ public class CognitiveComplexityAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new CognitiveComplexityAnalyzer(), source);
+        var analyzer = new CognitiveComplexityAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS033")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS033")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_LambdaBody_IncrementsNestingForInnerControlFlow.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_LambdaBody_IncrementsNestingForInnerControlFlow()
+    public async Task Analyze_LambdaBody_IncrementsNestingForInnerControlFlow(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -264,13 +332,19 @@ public class CognitiveComplexityAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new CognitiveComplexityAnalyzer(), source);
+        var analyzer = new CognitiveComplexityAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS033")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS033")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_LocalFunction_ContributesToEnclosingMethodScore.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_LocalFunction_ContributesToEnclosingMethodScore()
+    public async Task Analyze_LocalFunction_ContributesToEnclosingMethodScore(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -286,13 +360,19 @@ public class CognitiveComplexityAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new CognitiveComplexityAnalyzer(), source);
+        var analyzer = new CognitiveComplexityAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS033")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS033")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_LogicalAndSequence_CountsAsOne.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_LogicalAndSequence_CountsAsOne()
+    public async Task Analyze_LogicalAndSequence_CountsAsOne(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -304,13 +384,19 @@ public class CognitiveComplexityAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new CognitiveComplexityAnalyzer(), source);
+        var analyzer = new CognitiveComplexityAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS033")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS033")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_LogicalOperatorTransitions_CountSeparately.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_LogicalOperatorTransitions_CountSeparately()
+    public async Task Analyze_LogicalOperatorTransitions_CountSeparately(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -322,13 +408,19 @@ public class CognitiveComplexityAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new CognitiveComplexityAnalyzer(), source);
+        var analyzer = new CognitiveComplexityAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS033")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS033")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_NestingPenalty_NestedIfCostsMoreThanFlatIf.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_NestingPenalty_NestedIfCostsMoreThanFlatIf()
+    public async Task Analyze_NestingPenalty_NestedIfCostsMoreThanFlatIf(CancellationToken cancellationToken)
     {
         const string nestedSource = """
                                     namespace MyApp {
@@ -353,15 +445,21 @@ public class CognitiveComplexityAnalyzerTests
                                   }
                                   """;
 
-        var nestedDiagnostics = await AnalyzerTestRunner.AnalyzeAsync(new CognitiveComplexityAnalyzer(), nestedSource);
-        var flatDiagnostics = await AnalyzerTestRunner.AnalyzeAsync(new CognitiveComplexityAnalyzer(), flatSource);
+        var analyzer = new CognitiveComplexityAnalyzer();
+        var nestedDiagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, nestedSource, cancellationToken);
+        var flatDiagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, flatSource, cancellationToken);
 
-        await Assert.That(nestedDiagnostics.Any(d => d.Id == "ATXCS033")).IsFalse();
-        await Assert.That(flatDiagnostics.Any(d => d.Id == "ATXCS033")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(nestedDiagnostics, "ATXCS033")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(flatDiagnostics, "ATXCS033")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_NestingPenalty_ScoreReflectsDepth.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_NestingPenalty_ScoreReflectsDepth()
+    public async Task Analyze_NestingPenalty_ScoreReflectsDepth(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -383,13 +481,19 @@ public class CognitiveComplexityAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new CognitiveComplexityAnalyzer(), source);
+        var analyzer = new CognitiveComplexityAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS033")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS033")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_SwitchStatement_IncrementsScore.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_SwitchStatement_IncrementsScore()
+    public async Task Analyze_SwitchStatement_IncrementsScore(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -405,13 +509,19 @@ public class CognitiveComplexityAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new CognitiveComplexityAnalyzer(), source);
+        var analyzer = new CognitiveComplexityAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS033")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS033")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_WhileAndDoLoops_IncrementScore.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_WhileAndDoLoops_IncrementScore()
+    public async Task Analyze_WhileAndDoLoops_IncrementScore(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -424,8 +534,9 @@ public class CognitiveComplexityAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new CognitiveComplexityAnalyzer(), source);
+        var analyzer = new CognitiveComplexityAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS033")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS033")).IsFalse();
     }
 }

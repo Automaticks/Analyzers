@@ -1,13 +1,21 @@
 using Automaticks.CommunityToolkit.Mvvm;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Automaticks.CommunityToolkit.Mvvm.Analyzers.Tests;
 
+/// <summary>
+///     Tests for CommandLambdaAnalyzer.
+/// </summary>
 public class CommandLambdaAnalyzerTests
 {
+    /// <summary>
+    ///     Tests that Analyze_AsyncRelayCommandWithLambda_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_AsyncRelayCommandWithLambda_ReportsDiagnostic()
+    public async Task Analyze_AsyncRelayCommandWithLambda_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System.Threading;
@@ -27,13 +35,19 @@ public class CommandLambdaAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new CommandLambdaAnalyzer(), source);
+        var analyzer = new CommandLambdaAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXMV001")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXMV001")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_AsyncRelayCommandWithMethodGroup_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_AsyncRelayCommandWithMethodGroup_ReportsNoDiagnostic()
+    public async Task Analyze_AsyncRelayCommandWithMethodGroup_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System.Threading;
@@ -53,13 +67,19 @@ public class CommandLambdaAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new CommandLambdaAnalyzer(), source);
+        var analyzer = new CommandLambdaAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXMV001")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXMV001")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_RelayCommandWithLambda_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_RelayCommandWithLambda_ReportsDiagnostic()
+    public async Task Analyze_RelayCommandWithLambda_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace CommunityToolkit.Mvvm.Input {
@@ -77,13 +97,19 @@ public class CommandLambdaAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new CommandLambdaAnalyzer(), source);
+        var analyzer = new CommandLambdaAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXMV001")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXMV001")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_RelayCommandWithMethodGroup_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_RelayCommandWithMethodGroup_ReportsNoDiagnostic()
+    public async Task Analyze_RelayCommandWithMethodGroup_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace CommunityToolkit.Mvvm.Input {
@@ -101,8 +127,9 @@ public class CommandLambdaAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new CommandLambdaAnalyzer(), source);
+        var analyzer = new CommandLambdaAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXMV001")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXMV001")).IsFalse();
     }
 }

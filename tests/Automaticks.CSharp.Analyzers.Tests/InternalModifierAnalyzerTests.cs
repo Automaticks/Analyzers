@@ -1,13 +1,21 @@
 using Automaticks.CSharp;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Automaticks.CSharp.Analyzers.Tests;
 
+/// <summary>
+///     Tests for InternalModifierAnalyzer.
+/// </summary>
 public class InternalModifierAnalyzerTests
 {
+    /// <summary>
+    ///     Tests that Analyze_InternalClass_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_InternalClass_ReportsDiagnostic()
+    public async Task Analyze_InternalClass_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -15,13 +23,19 @@ public class InternalModifierAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new InternalModifierAnalyzer(), source);
+        var analyzer = new InternalModifierAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS013")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS013")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_InternalClassInTestProject_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_InternalClassInTestProject_ReportsDiagnostic()
+    public async Task Analyze_InternalClassInTestProject_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp.Tests {
@@ -29,13 +43,23 @@ public class InternalModifierAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new InternalModifierAnalyzer(), source, true);
+        var analyzer = new InternalModifierAnalyzer();
+        var options = new AnalysisOptions
+{
+    IsTestProject = true
+};
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, options, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS013")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS013")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_InternalEnum_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_InternalEnum_ReportsDiagnostic()
+    public async Task Analyze_InternalEnum_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -43,13 +67,19 @@ public class InternalModifierAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new InternalModifierAnalyzer(), source);
+        var analyzer = new InternalModifierAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS013")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS013")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_InternalEvent_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_InternalEvent_ReportsDiagnostic()
+    public async Task Analyze_InternalEvent_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System;
@@ -60,13 +90,19 @@ public class InternalModifierAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new InternalModifierAnalyzer(), source);
+        var analyzer = new InternalModifierAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS013")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS013")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_InternalField_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_InternalField_ReportsDiagnostic()
+    public async Task Analyze_InternalField_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -76,13 +112,19 @@ public class InternalModifierAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new InternalModifierAnalyzer(), source);
+        var analyzer = new InternalModifierAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS013")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS013")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_InternalInterface_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_InternalInterface_ReportsDiagnostic()
+    public async Task Analyze_InternalInterface_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -90,13 +132,19 @@ public class InternalModifierAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new InternalModifierAnalyzer(), source);
+        var analyzer = new InternalModifierAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS013")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS013")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_InternalMethod_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_InternalMethod_ReportsDiagnostic()
+    public async Task Analyze_InternalMethod_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -106,13 +154,19 @@ public class InternalModifierAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new InternalModifierAnalyzer(), source);
+        var analyzer = new InternalModifierAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS013")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS013")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_InternalProperty_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_InternalProperty_ReportsDiagnostic()
+    public async Task Analyze_InternalProperty_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -122,13 +176,19 @@ public class InternalModifierAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new InternalModifierAnalyzer(), source);
+        var analyzer = new InternalModifierAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS013")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS013")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_InternalStruct_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_InternalStruct_ReportsDiagnostic()
+    public async Task Analyze_InternalStruct_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -136,13 +196,19 @@ public class InternalModifierAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new InternalModifierAnalyzer(), source);
+        var analyzer = new InternalModifierAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS013")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS013")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_PrivateMethod_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_PrivateMethod_ReportsNoDiagnostic()
+    public async Task Analyze_PrivateMethod_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -152,13 +218,19 @@ public class InternalModifierAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new InternalModifierAnalyzer(), source);
+        var analyzer = new InternalModifierAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS013")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS013")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_PublicClass_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_PublicClass_ReportsNoDiagnostic()
+    public async Task Analyze_PublicClass_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -166,8 +238,9 @@ public class InternalModifierAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new InternalModifierAnalyzer(), source);
+        var analyzer = new InternalModifierAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS013")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS013")).IsFalse();
     }
 }

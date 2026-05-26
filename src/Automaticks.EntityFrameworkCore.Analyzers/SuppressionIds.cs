@@ -11,7 +11,9 @@ public static class SuppressionIds
     /// </summary>
     public static class EFCore
     {
-        /// <summary>Diagnostic ID for <c>ATXLQ002</c>: LINQ is not allowed in production code.</summary>
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXLQ002</c>: LINQ is not allowed in production code.
+        /// </summary>
         public const string LinqUsage = "ATXLQ002";
     }
 }

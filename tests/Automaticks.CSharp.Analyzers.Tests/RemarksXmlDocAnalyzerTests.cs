@@ -1,70 +1,22 @@
 using Automaticks.CSharp;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Automaticks.CSharp.Analyzers.Tests;
 
+/// <summary>
+///     Tests for RemarksXmlDocAnalyzer.
+/// </summary>
 public class RemarksXmlDocAnalyzerTests
 {
 
+    /// <summary>
+    ///     Tests that Analyze_MultipleRemarksElements_ReportsOneDiagnosticPerElement.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_RemarksElementOnClass_ReportsDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  /// <summary>
-                                  ///     A class.
-                                  /// </summary>
-                                  /// <remarks>Extra notes.</remarks>
-                                  public class Foo {}
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new RemarksXmlDocAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS038")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_RemarksElementOnMethod_ReportsDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Foo {
-                                      /// <summary>
-                                      ///     Does something.
-                                      /// </summary>
-                                      /// <remarks>Additional detail.</remarks>
-                                      public void Bar() {}
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new RemarksXmlDocAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS038")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_SelfClosingRemarks_ReportsDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  /// <summary>
-                                  ///     A class.
-                                  /// </summary>
-                                  /// <remarks/>
-                                  public class Foo {}
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new RemarksXmlDocAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS038")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_MultipleRemarksElements_ReportsOneDiagnosticPerElement()
+    public async Task Analyze_MultipleRemarksElements_ReportsOneDiagnosticPerElement(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -79,44 +31,113 @@ public class RemarksXmlDocAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new RemarksXmlDocAnalyzer(), source);
+        var analyzer = new RemarksXmlDocAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Count(d => d.Id == "ATXCS038")).IsEqualTo(2);
+        await Assert.That(DiagnosticCollectionAssertions.CountId(diagnostics, "ATXCS038")).IsEqualTo(2);
     }
 
+    /// <summary>
+    ///     Tests that Analyze_NoDocComment_NoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_SummaryOnly_NoDiagnostic()
+    public async Task Analyze_NoDocComment_NoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo {}
+                              }
+                              """;
+
+        var analyzer = new RemarksXmlDocAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS038")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_RemarksElementOnClass_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_RemarksElementOnClass_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
                                   /// <summary>
                                   ///     A class.
                                   /// </summary>
+                                  /// <remarks>Extra notes.</remarks>
                                   public class Foo {}
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new RemarksXmlDocAnalyzer(), source);
+        var analyzer = new RemarksXmlDocAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS038")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS038")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_RemarksElementOnMethod_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_NoDocComment_NoDiagnostic()
+    public async Task Analyze_RemarksElementOnMethod_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
+                                  public class Foo {
+                                      /// <summary>
+                                      ///     Does something.
+                                      /// </summary>
+                                      /// <remarks>Additional detail.</remarks>
+                                      public void Bar() {}
+                                  }
+                              }
+                              """;
+
+        var analyzer = new RemarksXmlDocAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS038")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_SelfClosingRemarks_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_SelfClosingRemarks_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  /// <summary>
+                                  ///     A class.
+                                  /// </summary>
+                                  /// <remarks/>
                                   public class Foo {}
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new RemarksXmlDocAnalyzer(), source);
+        var analyzer = new RemarksXmlDocAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS038")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS038")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_SummaryAndParamOnly_NoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_SummaryAndParamOnly_NoDiagnostic()
+    public async Task Analyze_SummaryAndParamOnly_NoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -130,8 +151,32 @@ public class RemarksXmlDocAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new RemarksXmlDocAnalyzer(), source);
+        var analyzer = new RemarksXmlDocAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS038")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS038")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_SummaryOnly_NoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_SummaryOnly_NoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  /// <summary>
+                                  ///     A class.
+                                  /// </summary>
+                                  public class Foo {}
+                              }
+                              """;
+
+        var analyzer = new RemarksXmlDocAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS038")).IsFalse();
     }
 }

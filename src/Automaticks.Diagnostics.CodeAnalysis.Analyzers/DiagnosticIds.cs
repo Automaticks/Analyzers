@@ -11,13 +11,19 @@ public static class DiagnosticIds
     /// </summary>
     public static class DiagnosticsCodeAnalysis
     {
-        /// <summary>Diagnostic ID for <c>ATXDC018</c>: <c>#pragma warning disable</c> suppression directives are forbidden.</summary>
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXDC018</c>: <c>#pragma warning disable</c> suppression directives are forbidden.
+        /// </summary>
         public const string SuppressionPragma = "ATXDC018";
 
-        /// <summary>Diagnostic ID for <c>ATXDC019</c>: <c>// ReSharper disable</c> suppression comments are forbidden.</summary>
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXDC019</c>: <c>// ReSharper disable</c> suppression comments are forbidden.
+        /// </summary>
         public const string SuppressionReSharper = "ATXDC019";
 
-        /// <summary>Diagnostic ID for <c>ATXDC056</c>: <c>[SuppressMessage]</c> attribute is forbidden — fix the root cause instead.</summary>
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXDC056</c>: <c>[SuppressMessage]</c> attribute is forbidden — fix the root cause instead.
+        /// </summary>
         public const string SuppressMessage = "ATXDC056";
     }
 }

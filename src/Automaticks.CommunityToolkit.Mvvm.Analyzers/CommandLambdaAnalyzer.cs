@@ -15,29 +15,28 @@ namespace Automaticks.CommunityToolkit.Mvvm;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class CommandLambdaAnalyzer : DiagnosticAnalyzer
 {
-    private static readonly string[] CommandTypeMetadataNames =
-    [
-        "CommunityToolkit.Mvvm.Input.RelayCommand",
-        "CommunityToolkit.Mvvm.Input.RelayCommand`1",
-        "CommunityToolkit.Mvvm.Input.AsyncRelayCommand",
-        "CommunityToolkit.Mvvm.Input.AsyncRelayCommand`1"
-    ];
+    private static readonly string[] CommandTypeMetadataNames;
+    private static readonly DiagnosticDescriptor Rule;
 
-    /// <summary>
-    ///     The diagnostic rule reported when a command constructor receives a lambda or
-    ///     anonymous method as an argument.
-    /// </summary>
-    private static readonly DiagnosticDescriptor Rule = new(
-        DiagnosticIds.Mvvm.CommandLambda,
-        "Command constructors must use method groups, not lambdas",
-        "Argument to '{0}' constructor is a lambda expression. Use a named method group instead.",
-        "CommunityToolkit.Mvvm",
-        DiagnosticSeverity.Error,
-        true,
-        "Replace the lambda expression with a named method group. Example: change `new RelayCommand(() => Execute())` to `new RelayCommand(Execute)` where `Execute` is a named method on the same class. This applies to all `RelayCommand` and `AsyncRelayCommand` constructor arguments.");
-
-    /// <inheritdoc />
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
+    static CommandLambdaAnalyzer()
+    {
+        CommandTypeMetadataNames =
+        [
+            "CommunityToolkit.Mvvm.Input.RelayCommand",
+            "CommunityToolkit.Mvvm.Input.RelayCommand`1",
+            "CommunityToolkit.Mvvm.Input.AsyncRelayCommand",
+            "CommunityToolkit.Mvvm.Input.AsyncRelayCommand`1"
+        ];
+        var rule = new DiagnosticDescriptor(
+            DiagnosticIds.ModelViewViewModel.CommandLambda,
+            "Command constructors must use method groups, not lambdas",
+            "Argument to '{0}' constructor is a lambda expression. Use a named method group instead.",
+            "CommunityToolkit.Mvvm",
+            DiagnosticSeverity.Error,
+            true,
+            "Replace the lambda expression with a named method group. Example: change `new RelayCommand(() => Execute())` to `new RelayCommand(Execute)` where `Execute` is a named method on the same class. This applies to all `RelayCommand` and `AsyncRelayCommand` constructor arguments.");
+        Rule = rule;
+    }
 
     /// <inheritdoc />
     public override void Initialize(AnalysisContext context)
@@ -47,9 +46,16 @@ public sealed class CommandLambdaAnalyzer : DiagnosticAnalyzer
         context.RegisterSyntaxNodeAction(AnalyzeObjectCreation, SyntaxKind.ObjectCreationExpression);
     }
 
-    private static void AnalyzeObjectCreation(SyntaxNodeAnalysisContext context)
+    /// <inheritdoc />
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
+
+    private void AnalyzeObjectCreation(SyntaxNodeAnalysisContext context)
     {
-        var creation = (ObjectCreationExpressionSyntax)context.Node;
+        if (context.Node is not ObjectCreationExpressionSyntax creation)
+        {
+            return;
+        }
+
         var typeInfo = context.SemanticModel.GetTypeInfo(creation);
 
         if (typeInfo.Type is not INamedTypeSymbol createdType)
@@ -57,7 +63,7 @@ public sealed class CommandLambdaAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        if (!IsCommandType(createdType))
+        if (!HasCommandType(createdType))
         {
             return;
         }
@@ -76,17 +82,17 @@ public sealed class CommandLambdaAnalyzer : DiagnosticAnalyzer
         }
     }
 
-    private static bool IsCommandType(INamedTypeSymbol type)
+    private bool HasCommandType(INamedTypeSymbol type)
     {
-        var ns = type.ContainingNamespace?.ToDisplayString() ?? string.Empty;
+        var namespaceName = type.ContainingNamespace?.ToDisplayString() ?? string.Empty;
         string metadataName;
         if (type.IsGenericType)
         {
-            metadataName = $"{ns}.{type.MetadataName}";
+            metadataName = $"{namespaceName}.{type.MetadataName}";
         }
         else
         {
-            metadataName = $"{ns}.{type.Name}";
+            metadataName = $"{namespaceName}.{type.Name}";
         }
 
         foreach (var name in CommandTypeMetadataNames)

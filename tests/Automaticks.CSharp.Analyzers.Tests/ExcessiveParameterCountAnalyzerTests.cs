@@ -1,13 +1,21 @@
 using Automaticks.CSharp;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Automaticks.CSharp.Analyzers.Tests;
 
+/// <summary>
+///     Tests for ExcessiveParameterCountAnalyzer.
+/// </summary>
 public class ExcessiveParameterCountAnalyzerTests
 {
+    /// <summary>
+    ///     Tests that Analyze_AnonymousMethodWith5Params_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_AnonymousMethodWith5Params_ReportsDiagnostic()
+    public async Task Analyze_AnonymousMethodWith5Params_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System;
@@ -21,13 +29,19 @@ public class ExcessiveParameterCountAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ExcessiveParameterCountAnalyzer(), source);
+        var analyzer = new ExcessiveParameterCountAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS022")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS022")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_ConstructorWith4Params_NoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_ConstructorWith4Params_NoDiagnostic()
+    public async Task Analyze_ConstructorWith4Params_NoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -37,13 +51,19 @@ public class ExcessiveParameterCountAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ExcessiveParameterCountAnalyzer(), source);
+        var analyzer = new ExcessiveParameterCountAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS022")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS022")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_ExplicitInterfaceImplWith4Params_NoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_ExplicitInterfaceImplWith4Params_NoDiagnostic()
+    public async Task Analyze_ExplicitInterfaceImplWith4Params_NoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System.Collections.Generic;
@@ -55,13 +75,19 @@ public class ExcessiveParameterCountAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ExcessiveParameterCountAnalyzer(), source);
+        var analyzer = new ExcessiveParameterCountAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS022")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS022")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_ImplicitExternalInterfaceImplWith4Params_NoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_ImplicitExternalInterfaceImplWith4Params_NoDiagnostic()
+    public async Task Analyze_ImplicitExternalInterfaceImplWith4Params_NoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System.Runtime.Serialization;
@@ -73,13 +99,19 @@ public class ExcessiveParameterCountAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ExcessiveParameterCountAnalyzer(), source);
+        var analyzer = new ExcessiveParameterCountAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS022")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS022")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_IndexerWith4Params_NoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_IndexerWith4Params_NoDiagnostic()
+    public async Task Analyze_IndexerWith4Params_NoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -89,13 +121,19 @@ public class ExcessiveParameterCountAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ExcessiveParameterCountAnalyzer(), source);
+        var analyzer = new ExcessiveParameterCountAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS022")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS022")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_IndexerWith5Params_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_IndexerWith5Params_ReportsDiagnostic()
+    public async Task Analyze_IndexerWith5Params_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -105,13 +143,19 @@ public class ExcessiveParameterCountAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ExcessiveParameterCountAnalyzer(), source);
+        var analyzer = new ExcessiveParameterCountAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS022")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS022")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_LambdaWith5Params_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_LambdaWith5Params_ReportsDiagnostic()
+    public async Task Analyze_LambdaWith5Params_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System;
@@ -125,13 +169,19 @@ public class ExcessiveParameterCountAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ExcessiveParameterCountAnalyzer(), source);
+        var analyzer = new ExcessiveParameterCountAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS022")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS022")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_LocalFunctionWith5Params_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_LocalFunctionWith5Params_ReportsDiagnostic()
+    public async Task Analyze_LocalFunctionWith5Params_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -144,13 +194,19 @@ public class ExcessiveParameterCountAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ExcessiveParameterCountAnalyzer(), source);
+        var analyzer = new ExcessiveParameterCountAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS022")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS022")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_MethodWith4Params_NoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_MethodWith4Params_NoDiagnostic()
+    public async Task Analyze_MethodWith4Params_NoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -160,13 +216,19 @@ public class ExcessiveParameterCountAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ExcessiveParameterCountAnalyzer(), source);
+        var analyzer = new ExcessiveParameterCountAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS022")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS022")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_MethodWith5Params_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_MethodWith5Params_ReportsDiagnostic()
+    public async Task Analyze_MethodWith5Params_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -176,13 +238,19 @@ public class ExcessiveParameterCountAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ExcessiveParameterCountAnalyzer(), source);
+        var analyzer = new ExcessiveParameterCountAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS022")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS022")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_OperatorWith2Params_NoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_OperatorWith2Params_NoDiagnostic()
+    public async Task Analyze_OperatorWith2Params_NoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -193,13 +261,19 @@ public class ExcessiveParameterCountAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ExcessiveParameterCountAnalyzer(), source);
+        var analyzer = new ExcessiveParameterCountAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS022")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS022")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_OverrideOfExternalMethodWith4Params_NoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_OverrideOfExternalMethodWith4Params_NoDiagnostic()
+    public async Task Analyze_OverrideOfExternalMethodWith4Params_NoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -218,8 +292,9 @@ public class ExcessiveParameterCountAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ExcessiveParameterCountAnalyzer(), source);
+        var analyzer = new ExcessiveParameterCountAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS022")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS022")).IsFalse();
     }
 }

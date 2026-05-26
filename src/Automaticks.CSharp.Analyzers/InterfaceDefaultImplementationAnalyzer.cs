@@ -3,7 +3,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using System.Collections.Immutable;
-using System.Linq;
 
 namespace Automaticks.CSharp;
 
@@ -14,20 +13,20 @@ namespace Automaticks.CSharp;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class InterfaceDefaultImplementationAnalyzer : DiagnosticAnalyzer
 {
-    /// <summary>
-    ///     The diagnostic rule reported when an interface member has a default implementation or is static.
-    /// </summary>
-    public static readonly DiagnosticDescriptor Rule = new(
-        DiagnosticIds.CSharp.InterfaceDefaultImplementation,
-        "Interface default implementations are forbidden",
-        "Member '{0}' in interface '{1}' must not have an implementation body. Remove the body and define it in implementing types.",
-        "CSharp",
-        DiagnosticSeverity.Error,
-        true,
-        "Default interface implementations (method bodies, property accessor bodies, static members) couple the contract to an implementation detail and undermine the purpose of an interface. Remove the implementation body entirely and move the logic to the types that implement the interface.");
+    private static readonly DiagnosticDescriptor Rule;
 
-    /// <inheritdoc />
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
+    static InterfaceDefaultImplementationAnalyzer()
+    {
+        var rule = new DiagnosticDescriptor(
+            DiagnosticIds.CSharp.InterfaceDefaultImplementation,
+            "Interface default implementations are forbidden",
+            "Member '{0}' in interface '{1}' must not have an implementation body. Remove the body and define it in implementing types.",
+            "CSharp",
+            DiagnosticSeverity.Error,
+            true,
+            "Default interface implementations (method bodies, property accessor bodies, static members) couple the contract to an implementation detail and undermine the purpose of an interface. Remove the implementation body entirely and move the logic to the types that implement the interface.");
+        Rule = rule;
+    }
 
     /// <inheritdoc />
     public override void Initialize(AnalysisContext context)
@@ -37,12 +36,19 @@ public sealed class InterfaceDefaultImplementationAnalyzer : DiagnosticAnalyzer
         context.RegisterSyntaxNodeAction(AnalyzeInterface, SyntaxKind.InterfaceDeclaration);
     }
 
-    private static void AnalyzeInterface(SyntaxNodeAnalysisContext context)
-    {
-        var interfaceDecl = (InterfaceDeclarationSyntax)context.Node;
-        var interfaceName = interfaceDecl.Identifier.Text;
+    /// <inheritdoc />
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
 
-        foreach (var member in interfaceDecl.Members)
+    private void AnalyzeInterface(SyntaxNodeAnalysisContext context)
+    {
+        if (context.Node is not InterfaceDeclarationSyntax interfaceDeclaration)
+        {
+            return;
+        }
+
+        var interfaceName = interfaceDeclaration.Identifier.Text;
+
+        foreach (var member in interfaceDeclaration.Members)
         {
             switch (member)
             {
@@ -54,16 +60,16 @@ public sealed class InterfaceDefaultImplementationAnalyzer : DiagnosticAnalyzer
                     context.ReportDiagnostic(Diagnostic.Create(Rule, property.Identifier.GetLocation(), property.Identifier.Text, interfaceName));
                     break;
 
-                case EventDeclarationSyntax eventDecl when HasImplementation(eventDecl):
-                    context.ReportDiagnostic(Diagnostic.Create(Rule, eventDecl.Identifier.GetLocation(), eventDecl.Identifier.Text, interfaceName));
+                case EventDeclarationSyntax eventDeclaration when HasImplementation(eventDeclaration):
+                    context.ReportDiagnostic(Diagnostic.Create(Rule, eventDeclaration.Identifier.GetLocation(), eventDeclaration.Identifier.Text, interfaceName));
                     break;
 
-                case OperatorDeclarationSyntax operatorDecl when operatorDecl.Body != null || operatorDecl.ExpressionBody != null:
-                    context.ReportDiagnostic(Diagnostic.Create(Rule, operatorDecl.OperatorToken.GetLocation(), operatorDecl.OperatorToken.Text, interfaceName));
+                case OperatorDeclarationSyntax operatorDeclaration when operatorDeclaration.Body != null || operatorDeclaration.ExpressionBody != null:
+                    context.ReportDiagnostic(Diagnostic.Create(Rule, operatorDeclaration.OperatorToken.GetLocation(), operatorDeclaration.OperatorToken.Text, interfaceName));
                     break;
 
-                case ConversionOperatorDeclarationSyntax convDecl when convDecl.Body != null || convDecl.ExpressionBody != null:
-                    context.ReportDiagnostic(Diagnostic.Create(Rule, convDecl.Type.GetLocation(), convDecl.Type.ToString(), interfaceName));
+                case ConversionOperatorDeclarationSyntax conversionOperatorDeclaration when conversionOperatorDeclaration.Body != null || conversionOperatorDeclaration.ExpressionBody != null:
+                    context.ReportDiagnostic(Diagnostic.Create(Rule, conversionOperatorDeclaration.Type.GetLocation(), conversionOperatorDeclaration.Type.ToString(), interfaceName));
                     break;
 
                 case FieldDeclarationSyntax field:
@@ -71,14 +77,15 @@ public sealed class InterfaceDefaultImplementationAnalyzer : DiagnosticAnalyzer
                     {
                         context.ReportDiagnostic(Diagnostic.Create(Rule, variable.Identifier.GetLocation(), variable.Identifier.Text, interfaceName));
                     }
+
                     break;
 
-                case EventFieldDeclarationSyntax staticEvent
-                    when staticEvent.Modifiers.Any(SyntaxKind.StaticKeyword):
+                case EventFieldDeclarationSyntax staticEvent when HasStaticModifier(staticEvent.Modifiers):
                     foreach (var variable in staticEvent.Declaration.Variables)
                     {
                         context.ReportDiagnostic(Diagnostic.Create(Rule, variable.Identifier.GetLocation(), variable.Identifier.Text, interfaceName));
                     }
+
                     break;
 
                 case IndexerDeclarationSyntax indexer when HasImplementation(indexer):
@@ -88,42 +95,25 @@ public sealed class InterfaceDefaultImplementationAnalyzer : DiagnosticAnalyzer
         }
     }
 
-    private static bool HasImplementation(MethodDeclarationSyntax method)
+    private bool HasImplementation(EventDeclarationSyntax eventDeclaration)
     {
-        return method.Body != null
-            || method.ExpressionBody != null
-            || (method.Modifiers.Any(SyntaxKind.StaticKeyword)
-                && !method.Modifiers.Any(SyntaxKind.AbstractKeyword));
-    }
-
-    private static bool HasImplementation(PropertyDeclarationSyntax property)
-    {
-        if (property.ExpressionBody != null
-            || (property.Modifiers.Any(SyntaxKind.StaticKeyword)
-                && !property.Modifiers.Any(SyntaxKind.AbstractKeyword)))
-        {
-            return true;
-        }
-
-        if (property.AccessorList == null)
+        if (eventDeclaration.AccessorList == null)
         {
             return false;
         }
 
-        return property.AccessorList.Accessors.Any(a => a.Body != null || a.ExpressionBody != null);
-    }
-
-    private static bool HasImplementation(EventDeclarationSyntax eventDecl)
-    {
-        if (eventDecl.AccessorList == null)
+        foreach (var accessor in eventDeclaration.AccessorList.Accessors)
         {
-            return false;
+            if (accessor.Body != null || accessor.ExpressionBody != null)
+            {
+                return true;
+            }
         }
 
-        return eventDecl.AccessorList.Accessors.Any(a => a.Body != null || a.ExpressionBody != null);
+        return false;
     }
 
-    private static bool HasImplementation(IndexerDeclarationSyntax indexer)
+    private bool HasImplementation(IndexerDeclarationSyntax indexer)
     {
         if (indexer.ExpressionBody != null)
         {
@@ -135,6 +125,71 @@ public sealed class InterfaceDefaultImplementationAnalyzer : DiagnosticAnalyzer
             return false;
         }
 
-        return indexer.AccessorList.Accessors.Any(a => a.Body != null || a.ExpressionBody != null);
+        foreach (var accessor in indexer.AccessorList.Accessors)
+        {
+            if (accessor.Body != null || accessor.ExpressionBody != null)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool HasImplementation(MethodDeclarationSyntax method)
+    {
+        return method.Body != null
+               || method.ExpressionBody != null
+               || (HasStaticModifier(method.Modifiers) && !HasAbstractModifier(method.Modifiers));
+    }
+
+    private bool HasImplementation(PropertyDeclarationSyntax property)
+    {
+        if (property.ExpressionBody != null
+            || (HasStaticModifier(property.Modifiers) && !HasAbstractModifier(property.Modifiers)))
+        {
+            return true;
+        }
+
+        if (property.AccessorList == null)
+        {
+            return false;
+        }
+
+        foreach (var accessor in property.AccessorList.Accessors)
+        {
+            if (accessor.Body != null || accessor.ExpressionBody != null)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool HasAbstractModifier(SyntaxTokenList modifiers)
+    {
+        foreach (var modifier in modifiers)
+        {
+            if (modifier.IsKind(SyntaxKind.AbstractKeyword))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool HasStaticModifier(SyntaxTokenList modifiers)
+    {
+        foreach (var modifier in modifiers)
+        {
+            if (modifier.IsKind(SyntaxKind.StaticKeyword))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
