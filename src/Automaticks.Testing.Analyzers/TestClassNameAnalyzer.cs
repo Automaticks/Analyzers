@@ -15,89 +15,42 @@ namespace Automaticks.Testing;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class TestClassNameAnalyzer : DiagnosticAnalyzer
 {
-    private static readonly Regex PascalWordPattern = new("[A-Z][a-z0-9]*", RegexOptions.Compiled);
+    private static readonly Regex PascalWordPattern;
+    private static readonly DiagnosticDescriptor Rule;
 
-    /// <summary>
-    ///     The diagnostic rule reported when a test class name cannot be matched to a type
-    ///     in the compilation.
-    /// </summary>
-    private static readonly DiagnosticDescriptor Rule = new(
-        DiagnosticIds.Testing.TestClassName,
-        "Test class name must match the class under test",
-        "Test class '{0}' does not match any type in the compilation. Expected a class named after the type under test (e.g. 'FooTests' for type 'Foo').",
-        "Testing",
-        DiagnosticSeverity.Warning,
-        true,
-        "Rename the test class to follow the pattern `{TypeUnderTest}Tests`. For example, a test class for `FooService` must be named `FooServiceTests`. A qualifier suffix is allowed: `FooService{Qualifier}Tests`. The type `{TypeUnderTest}` must be an actual type present in the compilation.");
-
-    /// <inheritdoc />
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
+    static TestClassNameAnalyzer()
+    {
+        var pascalWordPattern = new Regex("[A-Z][a-z0-9]*", RegexOptions.Compiled);
+        PascalWordPattern = pascalWordPattern;
+        var rule = new DiagnosticDescriptor(
+            DiagnosticIds.Testing.TestClassName,
+            "Test class name must match the class under test",
+            "Test class '{0}' does not match any type in the compilation. Expected a class named after the type under test (e.g. 'FooTests' for type 'Foo').",
+            "Testing",
+            DiagnosticSeverity.Warning,
+            true,
+            "Rename the test class to follow the pattern `{TypeUnderTest}Tests`. For example, a test class for `FooService` must be named `FooServiceTests`. A qualifier suffix is allowed: `FooService{Qualifier}Tests`. The type `{TypeUnderTest}` must be an actual type present in the compilation.");
+        Rule = rule;
+    }
 
     /// <inheritdoc />
     public override void Initialize(AnalysisContext context)
     {
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
         context.EnableConcurrentExecution();
-        context.RegisterCompilationStartAction(compilationContext =>
-        {
-            var typeNames = BuildTypeNameSet(compilationContext.Compilation);
-            compilationContext.RegisterSymbolAction(
-                symbolContext => AnalyzeType(symbolContext, typeNames),
-                SymbolKind.NamedType);
-        });
+        context.RegisterCompilationStartAction(RegisterCompilationStart);
     }
 
-    private static ImmutableHashSet<string> BuildTypeNameSet(Compilation compilation)
-    {
-        var builder = ImmutableHashSet.CreateBuilder<string>(StringComparer.Ordinal);
+    /// <inheritdoc />
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
 
-        foreach (var symbol in compilation.GetSymbolsWithName(_ => true, SymbolFilter.Type))
+    private void AnalyzeType(SymbolAnalysisContext context, ImmutableHashSet<string> typeNames)
+    {
+        if (context.Symbol is not INamedTypeSymbol typeSymbol)
         {
-            builder.Add(symbol.Name);
+            return;
         }
 
-        foreach (var reference in compilation.References)
-        {
-            if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assembly
-                && !IsFrameworkAssembly(assembly))
-            {
-                CollectTypeNames(assembly.GlobalNamespace, builder);
-            }
-        }
-
-        return builder.ToImmutable();
-    }
-
-    private static bool IsFrameworkAssembly(IAssemblySymbol assembly)
-    {
-        var name = assembly.Identity.Name;
-        return name.StartsWith("System", StringComparison.Ordinal)
-               || name.StartsWith("Microsoft", StringComparison.Ordinal)
-               || name.StartsWith("mscorlib", StringComparison.Ordinal)
-               || name.StartsWith("netstandard", StringComparison.Ordinal)
-               || name.StartsWith("WindowsBase", StringComparison.Ordinal)
-               || name.StartsWith("TUnit", StringComparison.Ordinal)
-               || name.StartsWith("Avalonia", StringComparison.Ordinal)
-               || name.StartsWith("CommunityToolkit", StringComparison.Ordinal)
-               || name.StartsWith("SonarAnalyzer", StringComparison.Ordinal);
-    }
-
-    private static void CollectTypeNames(INamespaceSymbol ns, ImmutableHashSet<string>.Builder builder)
-    {
-        foreach (var type in ns.GetTypeMembers())
-        {
-            builder.Add(type.Name);
-        }
-
-        foreach (var child in ns.GetNamespaceMembers())
-        {
-            CollectTypeNames(child, builder);
-        }
-    }
-
-    private static void AnalyzeType(SymbolAnalysisContext context, ImmutableHashSet<string> typeNames)
-    {
-        var typeSymbol = (INamedTypeSymbol)context.Symbol;
         if (!typeSymbol.Name.EndsWith("Tests", StringComparison.Ordinal))
         {
             return;
@@ -126,29 +79,70 @@ public sealed class TestClassNameAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        for (var len = parts.Count; len >= 1; len--)
+        for (var length = parts.Count; length >= 1; length--)
         {
-            var candidate = string.Concat(parts.GetRange(0, len));
+            var candidate = string.Concat(parts.GetRange(0, length));
             if (typeNames.Contains(candidate))
             {
                 return;
             }
         }
 
-        Location location;
-        if (typeSymbol.Locations.Length > 0)
-        {
-            location = typeSymbol.Locations[0];
-        }
-        else
-        {
-            location = Location.None;
-        }
-
+        var location = typeSymbol.Locations.Length > 0
+            ? typeSymbol.Locations[0]
+            : Location.None;
         context.ReportDiagnostic(Diagnostic.Create(Rule, location, typeSymbol.Name));
     }
 
-    private static bool HasTestMethod(INamedTypeSymbol typeSymbol)
+    private ImmutableHashSet<string> BuildTypeNameSet(Compilation compilation)
+    {
+        var builder = ImmutableHashSet.CreateBuilder<string>(StringComparer.Ordinal);
+
+        foreach (var symbol in compilation.GetSymbolsWithName(static _ => true, SymbolFilter.Type))
+        {
+            builder.Add(symbol.Name);
+        }
+
+        foreach (var reference in compilation.References)
+        {
+            if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assembly
+                && !HasFrameworkAssembly(assembly))
+            {
+                CollectTypeNames(assembly.GlobalNamespace, builder);
+            }
+        }
+
+        return builder.ToImmutable();
+    }
+
+    private void CollectTypeNames(INamespaceSymbol namespaceSymbol, ImmutableHashSet<string>.Builder builder)
+    {
+        foreach (var type in namespaceSymbol.GetTypeMembers())
+        {
+            builder.Add(type.Name);
+        }
+
+        foreach (var childNamespace in namespaceSymbol.GetNamespaceMembers())
+        {
+            CollectTypeNames(childNamespace, builder);
+        }
+    }
+
+    private bool HasFrameworkAssembly(IAssemblySymbol assembly)
+    {
+        var name = assembly.Identity.Name;
+        return name.StartsWith("System", StringComparison.Ordinal)
+               || name.StartsWith("Microsoft", StringComparison.Ordinal)
+               || name.StartsWith("mscorlib", StringComparison.Ordinal)
+               || name.StartsWith("netstandard", StringComparison.Ordinal)
+               || name.StartsWith("WindowsBase", StringComparison.Ordinal)
+               || name.StartsWith("TUnit", StringComparison.Ordinal)
+               || name.StartsWith("Avalonia", StringComparison.Ordinal)
+               || name.StartsWith("CommunityToolkit", StringComparison.Ordinal)
+               || name.StartsWith("SonarAnalyzer", StringComparison.Ordinal);
+    }
+
+    private bool HasTestMethod(INamedTypeSymbol typeSymbol)
     {
         foreach (var member in typeSymbol.GetMembers())
         {
@@ -157,9 +151,9 @@ public sealed class TestClassNameAnalyzer : DiagnosticAnalyzer
                 continue;
             }
 
-            foreach (var attr in method.GetAttributes())
+            foreach (var attribute in method.GetAttributes())
             {
-                if (attr.AttributeClass?.Name == "TestAttribute")
+                if (attribute.AttributeClass?.Name == "TestAttribute")
                 {
                     return true;
                 }
@@ -167,5 +161,13 @@ public sealed class TestClassNameAnalyzer : DiagnosticAnalyzer
         }
 
         return false;
+    }
+
+    private void RegisterCompilationStart(CompilationStartAnalysisContext compilationContext)
+    {
+        var typeNames = BuildTypeNameSet(compilationContext.Compilation);
+        compilationContext.RegisterSymbolAction(
+            symbolContext => AnalyzeType(symbolContext, typeNames),
+            SymbolKind.NamedType);
     }
 }

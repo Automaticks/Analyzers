@@ -16,32 +16,57 @@ namespace Automaticks.Reflection;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class ReflectionAnalyzer : DiagnosticAnalyzer
 {
-    /// <summary>The diagnostic rule reported when a reflection API is used.</summary>
-    public static readonly DiagnosticDescriptor Rule = new(
-        DiagnosticIds.Reflection.ReflectionUsage,
-        "Reflection is forbidden",
-        "Use of reflection ('{0}') is forbidden. Auto-exempted only in IServiceCollection extension methods and DispatchProxy subclasses.",
-        "Reflection",
-        DiagnosticSeverity.Error,
-        true,
-        "Remove the reflective API call and redesign using dependency injection interfaces, compile-time generics, or source generators. Reflection bypasses static type safety, breaks ahead-of-time compilation, and complicates trimming. Auto-exemptions: reflection inside `IServiceCollection` extension methods and `DispatchProxy` subclasses is allowed.");
+    private static readonly ImmutableHashSet<string> BannedReflectionTypeNames;
+    private static readonly ImmutableHashSet<string> BannedTypeMethodNames;
+    private static readonly DiagnosticDescriptor Rule;
 
-    private static readonly ImmutableHashSet<string> BannedReflectionTypeNames =
-    [
-        "Assembly", "BindingFlags", "ConstructorInfo", "EventInfo", "FieldInfo",
-        "MemberInfo", "MethodBase", "MethodInfo", "ParameterInfo", "PropertyInfo", "TypeInfo"
-    ];
+    static ReflectionAnalyzer()
+    {
+        var bannedReflectionTypeNames = ImmutableHashSet.CreateBuilder<string>(StringComparer.Ordinal);
+        bannedReflectionTypeNames.Add("Assembly");
+        bannedReflectionTypeNames.Add("BindingFlags");
+        bannedReflectionTypeNames.Add("ConstructorInfo");
+        bannedReflectionTypeNames.Add("EventInfo");
+        bannedReflectionTypeNames.Add("FieldInfo");
+        bannedReflectionTypeNames.Add("MemberInfo");
+        bannedReflectionTypeNames.Add("MethodBase");
+        bannedReflectionTypeNames.Add("MethodInfo");
+        bannedReflectionTypeNames.Add("ParameterInfo");
+        bannedReflectionTypeNames.Add("PropertyInfo");
+        bannedReflectionTypeNames.Add("TypeInfo");
+        BannedReflectionTypeNames = bannedReflectionTypeNames.ToImmutable();
 
-    private static readonly ImmutableHashSet<string> BannedTypeMethodNames =
-    [
-        "GetConstructor", "GetConstructors", "GetEvent", "GetEvents", "GetField", "GetFields",
-        "GetGenericArguments", "GetGenericTypeDefinition", "GetInterface", "GetInterfaces",
-        "GetMember", "GetMembers", "GetMethod", "GetMethods", "GetProperty", "GetProperties",
-        "GetTypeInfo", "MakeGenericType"
-    ];
+        var bannedTypeMethodNames = ImmutableHashSet.CreateBuilder<string>(StringComparer.Ordinal);
+        bannedTypeMethodNames.Add("GetConstructor");
+        bannedTypeMethodNames.Add("GetConstructors");
+        bannedTypeMethodNames.Add("GetEvent");
+        bannedTypeMethodNames.Add("GetEvents");
+        bannedTypeMethodNames.Add("GetField");
+        bannedTypeMethodNames.Add("GetFields");
+        bannedTypeMethodNames.Add("GetGenericArguments");
+        bannedTypeMethodNames.Add("GetGenericTypeDefinition");
+        bannedTypeMethodNames.Add("GetInterface");
+        bannedTypeMethodNames.Add("GetInterfaces");
+        bannedTypeMethodNames.Add("GetMember");
+        bannedTypeMethodNames.Add("GetMembers");
+        bannedTypeMethodNames.Add("GetMethod");
+        bannedTypeMethodNames.Add("GetMethods");
+        bannedTypeMethodNames.Add("GetProperty");
+        bannedTypeMethodNames.Add("GetProperties");
+        bannedTypeMethodNames.Add("GetTypeInfo");
+        bannedTypeMethodNames.Add("MakeGenericType");
+        BannedTypeMethodNames = bannedTypeMethodNames.ToImmutable();
 
-    /// <inheritdoc />
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
+        var rule = new DiagnosticDescriptor(
+            DiagnosticIds.Reflection.ReflectionUsage,
+            "Reflection is forbidden",
+            "Use of reflection ('{0}') is forbidden. Auto-exempted only in IServiceCollection extension methods and DispatchProxy subclasses.",
+            "Reflection",
+            DiagnosticSeverity.Error,
+            true,
+            "Remove the reflective API call and redesign using dependency injection interfaces, compile-time generics, or source generators. Reflection bypasses static type safety, breaks ahead-of-time compilation, and complicates trimming. Auto-exemptions: reflection inside `IServiceCollection` extension methods and `DispatchProxy` subclasses is allowed.");
+        Rule = rule;
+    }
 
     /// <inheritdoc />
     public override void Initialize(AnalysisContext context)
@@ -51,37 +76,21 @@ public sealed class ReflectionAnalyzer : DiagnosticAnalyzer
         context.RegisterCompilationStartAction(RegisterPerCompilation);
     }
 
-    private static void RegisterPerCompilation(CompilationStartAnalysisContext compilationContext)
-    {
-        var serviceCollectionType = compilationContext.Compilation.GetTypeByMetadataName(
-            "Microsoft.Extensions.DependencyInjection.IServiceCollection");
-        var dispatchProxyType = compilationContext.Compilation.GetTypeByMetadataName(
-            "System.Reflection.DispatchProxy");
-        var methodInfoType = compilationContext.Compilation.GetTypeByMetadataName(
-            "System.Reflection.MethodInfo");
-        var systemTypeSymbol = compilationContext.Compilation.GetTypeByMetadataName("System.Type");
+    /// <inheritdoc />
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
 
-        compilationContext.RegisterSyntaxNodeAction(
-            ctx => AnalyzeIdentifier(ctx, serviceCollectionType, dispatchProxyType, methodInfoType, systemTypeSymbol),
-            SyntaxKind.IdentifierName);
-        compilationContext.RegisterSyntaxNodeAction(
-            ctx => AnalyzeInvocation(ctx, serviceCollectionType, dispatchProxyType, methodInfoType, systemTypeSymbol),
-            SyntaxKind.InvocationExpression);
-    }
-
-    private static void AnalyzeIdentifier(
-        SyntaxNodeAnalysisContext context,
-        INamedTypeSymbol? serviceCollectionType,
-        INamedTypeSymbol? dispatchProxyType,
-        INamedTypeSymbol? methodInfoType,
-        INamedTypeSymbol? systemTypeSymbol)
+    private void AnalyzeIdentifier(SyntaxNodeAnalysisContext context, CompilationSymbols symbols)
     {
-        if (IsInExemptContext(context, serviceCollectionType, dispatchProxyType, methodInfoType, systemTypeSymbol))
+        if (HasExemptContext(context, symbols))
         {
             return;
         }
 
-        var identifier = (IdentifierNameSyntax)context.Node;
+        if (context.Node is not IdentifierNameSyntax identifier)
+        {
+            return;
+        }
+
         if (context.SemanticModel.GetSymbolInfo(identifier).Symbol is not ITypeSymbol typeSymbol)
         {
             return;
@@ -99,195 +108,42 @@ public sealed class ReflectionAnalyzer : DiagnosticAnalyzer
         }
     }
 
-    private static void AnalyzeInvocation(
-        SyntaxNodeAnalysisContext context,
-        INamedTypeSymbol? serviceCollectionType,
-        INamedTypeSymbol? dispatchProxyType,
-        INamedTypeSymbol? methodInfoType,
-        INamedTypeSymbol? systemTypeSymbol)
+    private void AnalyzeInvocation(SyntaxNodeAnalysisContext context, CompilationSymbols symbols)
     {
-        if (IsInExemptContext(context, serviceCollectionType, dispatchProxyType, methodInfoType, systemTypeSymbol))
+        if (HasExemptContext(context, symbols))
         {
             return;
         }
 
-        var invocation = (InvocationExpressionSyntax)context.Node;
+        if (context.Node is not InvocationExpressionSyntax invocation)
+        {
+            return;
+        }
+
         if (context.SemanticModel.GetSymbolInfo(invocation).Symbol is not IMethodSymbol methodSymbol)
         {
             return;
         }
 
-        if (IsReflectionNamespaceMethod(methodSymbol))
+        if (HasReflectionNamespaceMethod(methodSymbol))
         {
-            Report(context, invocation, $"{methodSymbol.ContainingType.Name}.{methodSymbol.Name}");
+            ReportDiagnostic(context, invocation, $"{methodSymbol.ContainingType.Name}.{methodSymbol.Name}");
             return;
         }
 
-        if (IsBannedTypeMethod(methodSymbol))
+        if (HasBannedTypeMethod(methodSymbol))
         {
-            Report(context, invocation, $"Type.{methodSymbol.Name}");
+            ReportDiagnostic(context, invocation, $"Type.{methodSymbol.Name}");
             return;
         }
 
-        if (IsBannedActivatorCall(methodSymbol))
+        if (HasBannedActivatorCall(methodSymbol))
         {
-            Report(context, invocation, "Activator.CreateInstance");
+            ReportDiagnostic(context, invocation, "Activator.CreateInstance");
         }
     }
 
-    private static bool IsInExemptContext(
-        SyntaxNodeAnalysisContext context,
-        INamedTypeSymbol? serviceCollectionType,
-        INamedTypeSymbol? dispatchProxyType,
-        INamedTypeSymbol? methodInfoType,
-        INamedTypeSymbol? systemTypeSymbol)
-    {
-        return IsInServiceCollectionExtension(context, serviceCollectionType)
-               || IsInDispatchProxySubclass(context, dispatchProxyType)
-               || IsInDispatchProxyHelperClass(context, methodInfoType)
-               || IsInTypeExtensionClass(context, systemTypeSymbol);
-    }
-
-    private static bool IsInServiceCollectionExtension(
-        SyntaxNodeAnalysisContext context,
-        INamedTypeSymbol? serviceCollectionType)
-    {
-        if (serviceCollectionType is null)
-        {
-            return false;
-        }
-
-        var methodDecl = context.Node.FirstAncestorOrSelf<MethodDeclarationSyntax>();
-        if (methodDecl is null)
-        {
-            return false;
-        }
-
-        if (context.SemanticModel.GetDeclaredSymbol(methodDecl) is not IMethodSymbol methodSymbol)
-        {
-            return false;
-        }
-
-        if (!methodSymbol.ContainingType.IsStatic)
-        {
-            return false;
-        }
-
-        foreach (var param in methodSymbol.Parameters)
-        {
-            if (SymbolEqualityComparer.Default.Equals(param.Type.OriginalDefinition, serviceCollectionType))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static bool IsInDispatchProxySubclass(
-        SyntaxNodeAnalysisContext context,
-        INamedTypeSymbol? dispatchProxyType)
-    {
-        if (dispatchProxyType is null)
-        {
-            return false;
-        }
-
-        var classDecl = context.Node.FirstAncestorOrSelf<ClassDeclarationSyntax>();
-        if (classDecl is null)
-        {
-            return false;
-        }
-
-        if (context.SemanticModel.GetDeclaredSymbol(classDecl) is not INamedTypeSymbol classSymbol)
-        {
-            return false;
-        }
-
-        var baseType = classSymbol.BaseType;
-        while (baseType is not null)
-        {
-            if (SymbolEqualityComparer.Default.Equals(baseType.OriginalDefinition, dispatchProxyType))
-            {
-                return true;
-            }
-
-            baseType = baseType.BaseType;
-        }
-
-        return false;
-    }
-
-    private static bool IsInDispatchProxyHelperClass(
-        SyntaxNodeAnalysisContext context,
-        INamedTypeSymbol? methodInfoType)
-    {
-        if (methodInfoType is null)
-        {
-            return false;
-        }
-
-        var methodDecl = context.Node.FirstAncestorOrSelf<MethodDeclarationSyntax>();
-        if (methodDecl is null)
-        {
-            return false;
-        }
-
-        if (context.SemanticModel.GetDeclaredSymbol(methodDecl) is not IMethodSymbol methodSymbol)
-        {
-            return false;
-        }
-
-        if (!methodSymbol.ContainingType.IsStatic)
-        {
-            return false;
-        }
-
-        foreach (var param in methodSymbol.Parameters)
-        {
-            if (SymbolEqualityComparer.Default.Equals(param.Type.OriginalDefinition, methodInfoType))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static bool IsInTypeExtensionClass(
-        SyntaxNodeAnalysisContext context,
-        INamedTypeSymbol? systemTypeSymbol)
-    {
-        if (systemTypeSymbol is null)
-        {
-            return false;
-        }
-
-        var methodDecl = context.Node.FirstAncestorOrSelf<MethodDeclarationSyntax>();
-        if (methodDecl is null)
-        {
-            return false;
-        }
-
-        if (context.SemanticModel.GetDeclaredSymbol(methodDecl) is not IMethodSymbol methodSymbol)
-        {
-            return false;
-        }
-
-        if (!methodSymbol.IsExtensionMethod)
-        {
-            return false;
-        }
-
-        if (methodSymbol.Parameters.IsEmpty)
-        {
-            return false;
-        }
-
-        return SymbolEqualityComparer.Default.Equals(methodSymbol.Parameters[0].Type.OriginalDefinition, systemTypeSymbol);
-    }
-
-    private static bool IsBannedActivatorCall(IMethodSymbol methodSymbol)
+    private bool HasBannedActivatorCall(IMethodSymbol methodSymbol)
     {
         if (methodSymbol.IsGenericMethod || methodSymbol.Parameters.Length == 0)
         {
@@ -309,7 +165,7 @@ public sealed class ReflectionAnalyzer : DiagnosticAnalyzer
         return methodSymbol.Parameters[0].Type is INamedTypeSymbol { Name: "Type" };
     }
 
-    private static bool IsBannedTypeMethod(IMethodSymbol methodSymbol)
+    private bool HasBannedTypeMethod(IMethodSymbol methodSymbol)
     {
         var containingType = methodSymbol.ContainingType;
         if (containingType is null)
@@ -323,14 +179,191 @@ public sealed class ReflectionAnalyzer : DiagnosticAnalyzer
                && BannedTypeMethodNames.Contains(methodSymbol.Name);
     }
 
-    private static bool IsReflectionNamespaceMethod(IMethodSymbol methodSymbol)
+    private bool HasDispatchProxyHelperClassContext(SyntaxNodeAnalysisContext context, CompilationSymbols symbols)
+    {
+        if (symbols.MethodInfoType is null)
+        {
+            return false;
+        }
+
+        var methodDeclaration = context.Node.FirstAncestorOrSelf<MethodDeclarationSyntax>();
+        if (methodDeclaration is null)
+        {
+            return false;
+        }
+
+        if (context.SemanticModel.GetDeclaredSymbol(methodDeclaration) is not IMethodSymbol methodSymbol)
+        {
+            return false;
+        }
+
+        if (!methodSymbol.ContainingType.IsStatic)
+        {
+            return false;
+        }
+
+        foreach (var parameter in methodSymbol.Parameters)
+        {
+            if (SymbolEqualityComparer.Default.Equals(parameter.Type.OriginalDefinition, symbols.MethodInfoType))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool HasDispatchProxySubclassContext(SyntaxNodeAnalysisContext context, CompilationSymbols symbols)
+    {
+        if (symbols.DispatchProxyType is null)
+        {
+            return false;
+        }
+
+        var classDeclaration = context.Node.FirstAncestorOrSelf<ClassDeclarationSyntax>();
+        if (classDeclaration is null)
+        {
+            return false;
+        }
+
+        if (context.SemanticModel.GetDeclaredSymbol(classDeclaration) is not INamedTypeSymbol classSymbol)
+        {
+            return false;
+        }
+
+        var baseType = classSymbol.BaseType;
+        while (baseType is not null)
+        {
+            if (SymbolEqualityComparer.Default.Equals(baseType.OriginalDefinition, symbols.DispatchProxyType))
+            {
+                return true;
+            }
+
+            baseType = baseType.BaseType;
+        }
+
+        return false;
+    }
+
+    private bool HasExemptContext(SyntaxNodeAnalysisContext context, CompilationSymbols symbols)
+    {
+        return HasDispatchProxyHelperClassContext(context, symbols)
+               || HasDispatchProxySubclassContext(context, symbols)
+               || HasServiceCollectionExtensionContext(context, symbols)
+               || HasTypeExtensionClassContext(context, symbols);
+    }
+
+    private bool HasReflectionNamespaceMethod(IMethodSymbol methodSymbol)
     {
         var namespaceName = methodSymbol.ContainingType?.ContainingNamespace?.ToDisplayString() ?? string.Empty;
         return namespaceName.StartsWith("System.Reflection", StringComparison.Ordinal);
     }
 
-    private static void Report(SyntaxNodeAnalysisContext context, SyntaxNode node, string reflectionItem)
+    private bool HasServiceCollectionExtensionContext(SyntaxNodeAnalysisContext context, CompilationSymbols symbols)
+    {
+        if (symbols.ServiceCollectionType is null)
+        {
+            return false;
+        }
+
+        var methodDeclaration = context.Node.FirstAncestorOrSelf<MethodDeclarationSyntax>();
+        if (methodDeclaration is null)
+        {
+            return false;
+        }
+
+        if (context.SemanticModel.GetDeclaredSymbol(methodDeclaration) is not IMethodSymbol methodSymbol)
+        {
+            return false;
+        }
+
+        if (!methodSymbol.ContainingType.IsStatic)
+        {
+            return false;
+        }
+
+        foreach (var parameter in methodSymbol.Parameters)
+        {
+            if (SymbolEqualityComparer.Default.Equals(parameter.Type.OriginalDefinition, symbols.ServiceCollectionType))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool HasTypeExtensionClassContext(SyntaxNodeAnalysisContext context, CompilationSymbols symbols)
+    {
+        if (symbols.SystemTypeSymbol is null)
+        {
+            return false;
+        }
+
+        var methodDeclaration = context.Node.FirstAncestorOrSelf<MethodDeclarationSyntax>();
+        if (methodDeclaration is null)
+        {
+            return false;
+        }
+
+        if (context.SemanticModel.GetDeclaredSymbol(methodDeclaration) is not IMethodSymbol methodSymbol)
+        {
+            return false;
+        }
+
+        if (!methodSymbol.IsExtensionMethod)
+        {
+            return false;
+        }
+
+        if (methodSymbol.Parameters.IsEmpty)
+        {
+            return false;
+        }
+
+        return SymbolEqualityComparer.Default.Equals(methodSymbol.Parameters[0].Type.OriginalDefinition, symbols.SystemTypeSymbol);
+    }
+
+    private void RegisterPerCompilation(CompilationStartAnalysisContext compilationContext)
+    {
+        var symbols = new CompilationSymbols(
+            compilationContext.Compilation.GetTypeByMetadataName("Microsoft.Extensions.DependencyInjection.IServiceCollection"),
+            compilationContext.Compilation.GetTypeByMetadataName("System.Reflection.DispatchProxy"),
+            compilationContext.Compilation.GetTypeByMetadataName("System.Reflection.MethodInfo"),
+            compilationContext.Compilation.GetTypeByMetadataName("System.Type"));
+        compilationContext.RegisterSyntaxNodeAction(
+            context => AnalyzeIdentifier(context, symbols),
+            SyntaxKind.IdentifierName);
+        compilationContext.RegisterSyntaxNodeAction(
+            context => AnalyzeInvocation(context, symbols),
+            SyntaxKind.InvocationExpression);
+    }
+
+    private void ReportDiagnostic(SyntaxNodeAnalysisContext context, SyntaxNode node, string reflectionItem)
     {
         context.ReportDiagnostic(Diagnostic.Create(Rule, node.GetLocation(), reflectionItem));
+    }
+
+    private readonly struct CompilationSymbols
+    {
+        public INamedTypeSymbol? DispatchProxyType { get; }
+
+        public INamedTypeSymbol? MethodInfoType { get; }
+
+        public INamedTypeSymbol? ServiceCollectionType { get; }
+
+        public INamedTypeSymbol? SystemTypeSymbol { get; }
+
+        public CompilationSymbols(
+            INamedTypeSymbol? serviceCollectionType,
+            INamedTypeSymbol? dispatchProxyType,
+            INamedTypeSymbol? methodInfoType,
+            INamedTypeSymbol? systemTypeSymbol)
+        {
+            ServiceCollectionType = serviceCollectionType;
+            DispatchProxyType = dispatchProxyType;
+            MethodInfoType = methodInfoType;
+            SystemTypeSymbol = systemTypeSymbol;
+        }
     }
 }

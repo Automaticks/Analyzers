@@ -1,13 +1,21 @@
 using Automaticks.CSharp;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Automaticks.CSharp.Analyzers.Tests;
 
+/// <summary>
+///     Tests for RefParameterAnalyzer.
+/// </summary>
 public class RefParameterAnalyzerTests
 {
+    /// <summary>
+    ///     Tests that Analyze_MethodWithRefNotFirst_ReportsAtxCs026.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_MethodWithRefNotFirst_ReportsAtxCs026()
+    public async Task Analyze_MethodWithRefNotFirst_ReportsAtxCs026(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -17,13 +25,19 @@ public class RefParameterAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new RefParameterAnalyzer(), source);
+        var analyzer = new RefParameterAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS026")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS026")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_MethodWithTwoRefs_ReportsAtxCs027.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_MethodWithTwoRefs_ReportsAtxCs027()
+    public async Task Analyze_MethodWithTwoRefs_ReportsAtxCs027(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -33,13 +47,19 @@ public class RefParameterAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new RefParameterAnalyzer(), source);
+        var analyzer = new RefParameterAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS027")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS027")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_NonSetPropertyWithRef_ReportsAtxCs025.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_NonSetPropertyWithRef_ReportsAtxCs025()
+    public async Task Analyze_NonSetPropertyWithRef_ReportsAtxCs025(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -49,13 +69,19 @@ public class RefParameterAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new RefParameterAnalyzer(), source);
+        var analyzer = new RefParameterAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS025")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS025")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_SetPropertyWithOneRefFirst_NoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_SetPropertyWithOneRefFirst_NoDiagnostic()
+    public async Task Analyze_SetPropertyWithOneRefFirst_NoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -65,13 +91,19 @@ public class RefParameterAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new RefParameterAnalyzer(), source);
+        var analyzer = new RefParameterAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id is "ATXCS025" or "ATXCS026" or "ATXCS027")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasAnyId(diagnostics, ["ATXCS025", "ATXCS026", "ATXCS027"])).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_SetPropertyWithRefNotFirst_ReportsAtxCs026.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_SetPropertyWithRefNotFirst_ReportsAtxCs026()
+    public async Task Analyze_SetPropertyWithRefNotFirst_ReportsAtxCs026(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -81,14 +113,20 @@ public class RefParameterAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new RefParameterAnalyzer(), source);
+        var analyzer = new RefParameterAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS025")).IsFalse();
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS026")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS025")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS026")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_SetPropertyWithTwoRefs_ReportsAtxCs027.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_SetPropertyWithTwoRefs_ReportsAtxCs027()
+    public async Task Analyze_SetPropertyWithTwoRefs_ReportsAtxCs027(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -98,9 +136,10 @@ public class RefParameterAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new RefParameterAnalyzer(), source);
+        var analyzer = new RefParameterAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS025")).IsFalse();
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS027")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS025")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS027")).IsTrue();
     }
 }

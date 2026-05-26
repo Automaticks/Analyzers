@@ -1,13 +1,21 @@
 using Automaticks.Reflection;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Automaticks.Reflection.Analyzers.Tests;
 
+/// <summary>
+///     Tests for ReflectionAnalyzer.
+/// </summary>
 public class ReflectionAnalyzerTests
 {
+    /// <summary>
+    ///     Tests that Analyze_ActivatorCreateInstanceGeneric_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_ActivatorCreateInstanceGeneric_ReportsNoDiagnostic()
+    public async Task Analyze_ActivatorCreateInstanceGeneric_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System;
@@ -22,13 +30,19 @@ public class ReflectionAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ReflectionAnalyzer(), source);
+        var analyzer = new ReflectionAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXRF030")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXRF030")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_ActivatorCreateInstanceWithType_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_ActivatorCreateInstanceWithType_ReportsDiagnostic()
+    public async Task Analyze_ActivatorCreateInstanceWithType_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System;
@@ -42,13 +56,19 @@ public class ReflectionAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ReflectionAnalyzer(), source);
+        var analyzer = new ReflectionAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXRF030")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXRF030")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_BindingFlagsTypeReference_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_BindingFlagsTypeReference_ReportsDiagnostic()
+    public async Task Analyze_BindingFlagsTypeReference_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System.Reflection;
@@ -62,13 +82,19 @@ public class ReflectionAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ReflectionAnalyzer(), source);
+        var analyzer = new ReflectionAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXRF030")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXRF030")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_GetGenericTypeDefinitionCall_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_GetGenericTypeDefinitionCall_ReportsDiagnostic()
+    public async Task Analyze_GetGenericTypeDefinitionCall_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System;
@@ -82,13 +108,19 @@ public class ReflectionAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ReflectionAnalyzer(), source);
+        var analyzer = new ReflectionAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXRF030")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXRF030")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_GetInterfacesCall_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_GetInterfacesCall_ReportsDiagnostic()
+    public async Task Analyze_GetInterfacesCall_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System;
@@ -102,13 +134,19 @@ public class ReflectionAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ReflectionAnalyzer(), source);
+        var analyzer = new ReflectionAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXRF030")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXRF030")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_GetMethodCall_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_GetMethodCall_ReportsDiagnostic()
+    public async Task Analyze_GetMethodCall_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -121,13 +159,19 @@ public class ReflectionAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ReflectionAnalyzer(), source);
+        var analyzer = new ReflectionAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXRF030")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXRF030")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_GetTypeMethod_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_GetTypeMethod_ReportsNoDiagnostic()
+    public async Task Analyze_GetTypeMethod_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -140,13 +184,19 @@ public class ReflectionAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ReflectionAnalyzer(), source);
+        var analyzer = new ReflectionAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXRF030")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXRF030")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_IsGenericTypeProperty_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_IsGenericTypeProperty_ReportsNoDiagnostic()
+    public async Task Analyze_IsGenericTypeProperty_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System;
@@ -160,13 +210,19 @@ public class ReflectionAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ReflectionAnalyzer(), source);
+        var analyzer = new ReflectionAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXRF030")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXRF030")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_MakeGenericTypeCall_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_MakeGenericTypeCall_ReportsDiagnostic()
+    public async Task Analyze_MakeGenericTypeCall_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System;
@@ -180,13 +236,19 @@ public class ReflectionAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ReflectionAnalyzer(), source);
+        var analyzer = new ReflectionAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXRF030")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXRF030")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_MethodInfoTypeReference_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_MethodInfoTypeReference_ReportsDiagnostic()
+    public async Task Analyze_MethodInfoTypeReference_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System.Reflection;
@@ -197,77 +259,19 @@ public class ReflectionAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ReflectionAnalyzer(), source);
+        var analyzer = new ReflectionAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXRF030")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXRF030")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_ReflectionInUnrelatedMethodOfDiExtensionClass_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_SuppressMessageOnClass_ReportsNoDiagnostic()
-    {
-        const string source = """
-                              using System.Diagnostics.CodeAnalysis;
-                              using System.Reflection;
-                              namespace MyApp {
-                                  [SuppressMessage("Architecture", "ATXRF030", Justification = "DI registration")]
-                                  public static class ServiceRegistration {
-                                      public static MethodInfo? GetInfo()
-                                      {
-                                          return typeof(ServiceRegistration).GetMethod("GetInfo");
-                                      }
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ReflectionAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXRF030")).IsFalse();
-    }
-
-    [Test]
-    public async Task Analyze_SuppressMessageOnMethod_ReportsNoDiagnostic()
-    {
-        const string source = """
-                              using System.Diagnostics.CodeAnalysis;
-                              using System.Reflection;
-                              namespace MyApp {
-                                  public static class Foo {
-                                      [SuppressMessage("Architecture", "ATXRF030", Justification = "DI only")]
-                                      public static MethodInfo? GetInfo()
-                                      {
-                                          return typeof(Foo).GetMethod("GetInfo");
-                                      }
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ReflectionAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXRF030")).IsFalse();
-    }
-
-    [Test]
-    public async Task Analyze_TypeofExpression_ReportsNoDiagnostic()
-    {
-        const string source = """
-                              using System;
-                              namespace MyApp {
-                                  public static class Foo {
-                                      public static Type GetType()
-                                      {
-                                          return typeof(Foo);
-                                      }
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ReflectionAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXRF030")).IsFalse();
-    }
-
-    [Test]
-    public async Task Analyze_ReflectionInUnrelatedMethodOfDiExtensionClass_ReportsDiagnostic()
+    public async Task Analyze_ReflectionInUnrelatedMethodOfDiExtensionClass_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System;
@@ -291,8 +295,95 @@ public class ReflectionAnalyzerTests
                                                                      public interface IServiceCollection { }
                                                                  }
                                                                  """);
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ReflectionAnalyzer(), source, [externalRef]);
+        var analyzer = new ReflectionAnalyzer();
+        var options = new AnalysisOptions
+{
+    AdditionalReferences = [externalRef]
+};
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, options, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXRF030")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXRF030")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_SuppressMessageOnClass_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_SuppressMessageOnClass_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System.Diagnostics.CodeAnalysis;
+                              using System.Reflection;
+                              namespace MyApp {
+                                  [SuppressMessage("Architecture", "ATXRF030", Justification = "DI registration")]
+                                  public static class ServiceRegistration {
+                                      public static MethodInfo? GetInfo()
+                                      {
+                                          return typeof(ServiceRegistration).GetMethod("GetInfo");
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new ReflectionAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXRF030")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_SuppressMessageOnMethod_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_SuppressMessageOnMethod_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System.Diagnostics.CodeAnalysis;
+                              using System.Reflection;
+                              namespace MyApp {
+                                  public static class Foo {
+                                      [SuppressMessage("Architecture", "ATXRF030", Justification = "DI only")]
+                                      public static MethodInfo? GetInfo()
+                                      {
+                                          return typeof(Foo).GetMethod("GetInfo");
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new ReflectionAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXRF030")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_TypeofExpression_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_TypeofExpression_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System;
+                              namespace MyApp {
+                                  public static class Foo {
+                                      public static Type GetType()
+                                      {
+                                          return typeof(Foo);
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new ReflectionAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXRF030")).IsFalse();
     }
 }

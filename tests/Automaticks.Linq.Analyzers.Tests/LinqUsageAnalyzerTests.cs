@@ -1,13 +1,21 @@
 using Automaticks.Linq;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Automaticks.Linq.Analyzers.Tests;
 
+/// <summary>
+///     Tests for LinqUsageAnalyzer.
+/// </summary>
 public class LinqUsageAnalyzerTests
 {
+    /// <summary>
+    ///     Tests that Analyze_LinqUsingDirective_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_LinqUsingDirective_ReportsDiagnostic()
+    public async Task Analyze_LinqUsingDirective_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System.Linq;
@@ -16,13 +24,19 @@ public class LinqUsageAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new LinqUsageAnalyzer(), source);
+        var analyzer = new LinqUsageAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXLQ002")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXLQ002")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_NoLinqUsing_NoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_NoLinqUsing_NoDiagnostic()
+    public async Task Analyze_NoLinqUsing_NoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System.Collections.Generic;
@@ -31,8 +45,9 @@ public class LinqUsageAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new LinqUsageAnalyzer(), source);
+        var analyzer = new LinqUsageAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXLQ002")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXLQ002")).IsFalse();
     }
 }

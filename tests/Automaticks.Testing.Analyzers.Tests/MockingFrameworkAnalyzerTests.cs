@@ -1,13 +1,21 @@
 using Automaticks.Testing;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Automaticks.Testing.Analyzers.Tests;
 
+/// <summary>
+///     Tests for MockingFrameworkAnalyzer.
+/// </summary>
 public class MockingFrameworkAnalyzerTests
 {
+    /// <summary>
+    ///     Tests that Analyze_TestProjectUsingMoq_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_TestProjectUsingMoq_ReportsDiagnostic()
+    public async Task Analyze_TestProjectUsingMoq_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using Moq;
@@ -16,28 +24,23 @@ public class MockingFrameworkAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new MockingFrameworkAnalyzer(), source, true);
+        var analyzer = new MockingFrameworkAnalyzer();
+        var options = new AnalysisOptions
+{
+    IsTestProject = true
+};
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, options, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXTST001")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTST001")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_TestProjectUsingRegularNamespace_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_TestProjectUsingNSubstitute_ReportsDiagnostic()
-    {
-        const string source = """
-                              using NSubstitute;
-                              namespace MyApp.Tests {
-                                  public class FooTests {}
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new MockingFrameworkAnalyzer(), source, true);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXTST001")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_TestProjectUsingRegularNamespace_ReportsNoDiagnostic()
+    public async Task Analyze_TestProjectUsingRegularNamespace_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System.Collections.Generic;
@@ -46,8 +49,38 @@ public class MockingFrameworkAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new MockingFrameworkAnalyzer(), source, true);
+        var analyzer = new MockingFrameworkAnalyzer();
+        var options = new AnalysisOptions
+{
+    IsTestProject = true
+};
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, options, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXTST001")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTST001")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_TestProjectUsingSubstituteFramework_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_TestProjectUsingSubstituteFramework_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using NSubstitute;
+                              namespace MyApp.Tests {
+                                  public class FooTests {}
+                              }
+                              """;
+
+        var analyzer = new MockingFrameworkAnalyzer();
+        var options = new AnalysisOptions
+{
+    IsTestProject = true
+};
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, options, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTST001")).IsTrue();
     }
 }

@@ -1,13 +1,68 @@
 using Automaticks.Threading.Tasks;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Automaticks.Threading.Tasks.Analyzers.Tests;
 
+/// <summary>
+///     Tests for AsyncCancellationTokenAnalyzer.
+/// </summary>
 public class AsyncCancellationTokenAnalyzerTests
 {
+
+    /// <summary>
+    ///     Tests that Analyze_IAsyncEnumerableMethodWithCancellationToken_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_OverrideOfExternalTaskMethod_ReportsNoDiagnostic()
+    public async Task Analyze_IAsyncEnumerableMethodWithCancellationToken_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System.Collections.Generic;
+                              using System.Threading;
+                              namespace MyApp {
+                                  public class Foo {
+                                      public IAsyncEnumerable<int> GetItemsAsync(CancellationToken ct) => throw new System.NotImplementedException();
+                                  }
+                              }
+                              """;
+
+        var analyzer = new AsyncCancellationTokenAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTA008")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_IAsyncEnumerableMethodWithoutCancellationToken_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_IAsyncEnumerableMethodWithoutCancellationToken_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System.Collections.Generic;
+                              namespace MyApp {
+                                  public class Foo {
+                                      public IAsyncEnumerable<int> GetItemsAsync() => throw new System.NotImplementedException();
+                                  }
+                              }
+                              """;
+
+        var analyzer = new AsyncCancellationTokenAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTA008")).IsTrue();
+    }
+    /// <summary>
+    ///     Tests that Analyze_OverrideOfExternalTaskMethod_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_OverrideOfExternalTaskMethod_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System.Threading.Tasks;
@@ -28,13 +83,19 @@ public class AsyncCancellationTokenAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new AsyncCancellationTokenAnalyzer(), source);
+        var analyzer = new AsyncCancellationTokenAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXTA008")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTA008")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_PrivateTaskMethodWithoutCancellationToken_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_PrivateTaskMethodWithoutCancellationToken_ReportsDiagnostic()
+    public async Task Analyze_PrivateTaskMethodWithoutCancellationToken_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System.Threading.Tasks;
@@ -45,13 +106,19 @@ public class AsyncCancellationTokenAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new AsyncCancellationTokenAnalyzer(), source);
+        var analyzer = new AsyncCancellationTokenAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXTA008")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTA008")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_PublicTaskMethodWithCancellationToken_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_PublicTaskMethodWithCancellationToken_ReportsNoDiagnostic()
+    public async Task Analyze_PublicTaskMethodWithCancellationToken_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System.Threading;
@@ -63,13 +130,19 @@ public class AsyncCancellationTokenAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new AsyncCancellationTokenAnalyzer(), source);
+        var analyzer = new AsyncCancellationTokenAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXTA008")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTA008")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_PublicTaskMethodWithoutCancellationToken_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_PublicTaskMethodWithoutCancellationToken_ReportsDiagnostic()
+    public async Task Analyze_PublicTaskMethodWithoutCancellationToken_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System.Threading.Tasks;
@@ -80,43 +153,9 @@ public class AsyncCancellationTokenAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new AsyncCancellationTokenAnalyzer(), source);
+        var analyzer = new AsyncCancellationTokenAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXTA008")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_IAsyncEnumerableMethodWithoutCancellationToken_ReportsDiagnostic()
-    {
-        const string source = """
-                              using System.Collections.Generic;
-                              namespace MyApp {
-                                  public class Foo {
-                                      public IAsyncEnumerable<int> GetItemsAsync() => throw new System.NotImplementedException();
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new AsyncCancellationTokenAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXTA008")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_IAsyncEnumerableMethodWithCancellationToken_ReportsNoDiagnostic()
-    {
-        const string source = """
-                              using System.Collections.Generic;
-                              using System.Threading;
-                              namespace MyApp {
-                                  public class Foo {
-                                      public IAsyncEnumerable<int> GetItemsAsync(CancellationToken ct) => throw new System.NotImplementedException();
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new AsyncCancellationTokenAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXTA008")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTA008")).IsTrue();
     }
 }

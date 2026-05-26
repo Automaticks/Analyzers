@@ -1,96 +1,22 @@
 using Automaticks.CSharp;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Automaticks.CSharp.Analyzers.Tests;
 
+/// <summary>
+///     Tests for SummaryXmlDocFormatAnalyzer.
+/// </summary>
 public class SummaryXmlDocFormatAnalyzerTests
 {
+
+    /// <summary>
+    ///     Tests that Analyze_ContentOnNewLineWithFourSpaceIndentation_NoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_InlineSummaryOnClass_ReportsDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  /// <summary>The Android entry point for the Inferno client.</summary>
-                                  public class Foo {}
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new SummaryXmlDocFormatAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS050")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_InlineSummaryOnMethod_ReportsDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Foo {
-                                      /// <summary>Does something.</summary>
-                                      public void Bar() {}
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new SummaryXmlDocFormatAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS050")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_ContentOnNewLineWithNoIndentation_ReportsDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  /// <summary>
-                                  /// No indentation here.
-                                  /// </summary>
-                                  public class Foo {}
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new SummaryXmlDocFormatAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS050")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_ContentOnNewLineWithTwoSpaceIndentation_ReportsDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  /// <summary>
-                                  ///   Two spaces only.
-                                  /// </summary>
-                                  public class Foo {}
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new SummaryXmlDocFormatAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS050")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_ContentOnNewLineWithThreeSpaceIndentation_ReportsDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  /// <summary>
-                                  ///    Three spaces only.
-                                  /// </summary>
-                                  public class Foo {}
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new SummaryXmlDocFormatAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS050")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_ContentOnNewLineWithFourSpaceIndentation_NoDiagnostic()
+    public async Task Analyze_ContentOnNewLineWithFourSpaceIndentation_NoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -101,13 +27,152 @@ public class SummaryXmlDocFormatAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new SummaryXmlDocFormatAnalyzer(), source);
+        var analyzer = new SummaryXmlDocFormatAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS050")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS050")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_ContentOnNewLineWithNoIndentation_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_MultiLineContentAllLinesProperlyIndented_NoDiagnostic()
+    public async Task Analyze_ContentOnNewLineWithNoIndentation_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  /// <summary>
+                                  /// No indentation here.
+                                  /// </summary>
+                                  public class Foo {}
+                              }
+                              """;
+
+        var analyzer = new SummaryXmlDocFormatAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS050")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_ContentOnNewLineWithThreeSpaceIndentation_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ContentOnNewLineWithThreeSpaceIndentation_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  /// <summary>
+                                  ///    Three spaces only.
+                                  /// </summary>
+                                  public class Foo {}
+                              }
+                              """;
+
+        var analyzer = new SummaryXmlDocFormatAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS050")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_ContentOnNewLineWithTwoSpaceIndentation_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ContentOnNewLineWithTwoSpaceIndentation_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  /// <summary>
+                                  ///   Two spaces only.
+                                  /// </summary>
+                                  public class Foo {}
+                              }
+                              """;
+
+        var analyzer = new SummaryXmlDocFormatAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS050")).IsTrue();
+    }
+    /// <summary>
+    ///     Tests that Analyze_InlineSummaryOnClass_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_InlineSummaryOnClass_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  /// <summary>The Android entry point for the Inferno client.</summary>
+                                  public class Foo {}
+                              }
+                              """;
+
+        var analyzer = new SummaryXmlDocFormatAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS050")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_InlineSummaryOnMethod_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_InlineSummaryOnMethod_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo {
+                                      /// <summary>Does something.</summary>
+                                      public void Bar() {}
+                                  }
+                              }
+                              """;
+
+        var analyzer = new SummaryXmlDocFormatAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS050")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_InlineSummaryWithSeeRef_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_InlineSummaryWithSeeRef_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  /// <summary>Works with <see cref="System.String" /> values.</summary>
+                                  public class Foo {}
+                              }
+                              """;
+
+        var analyzer = new SummaryXmlDocFormatAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS050")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_MultiLineContentAllLinesProperlyIndented_NoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_MultiLineContentAllLinesProperlyIndented_NoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -119,13 +184,19 @@ public class SummaryXmlDocFormatAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new SummaryXmlDocFormatAnalyzer(), source);
+        var analyzer = new SummaryXmlDocFormatAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS050")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS050")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_MultiLineContentOneLineMissingIndentation_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_MultiLineContentOneLineMissingIndentation_ReportsDiagnostic()
+    public async Task Analyze_MultiLineContentOneLineMissingIndentation_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -137,13 +208,19 @@ public class SummaryXmlDocFormatAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new SummaryXmlDocFormatAnalyzer(), source);
+        var analyzer = new SummaryXmlDocFormatAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS050")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS050")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_NoDocComment_NoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_NoDocComment_NoDiagnostic()
+    public async Task Analyze_NoDocComment_NoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -151,13 +228,19 @@ public class SummaryXmlDocFormatAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new SummaryXmlDocFormatAnalyzer(), source);
+        var analyzer = new SummaryXmlDocFormatAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS050")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS050")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_ProperlyFormattedSummaryOnMethod_NoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_ProperlyFormattedSummaryOnMethod_NoDiagnostic()
+    public async Task Analyze_ProperlyFormattedSummaryOnMethod_NoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -170,13 +253,19 @@ public class SummaryXmlDocFormatAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new SummaryXmlDocFormatAnalyzer(), source);
+        var analyzer = new SummaryXmlDocFormatAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS050")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS050")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_SummaryWithSeeRefProperlyFormatted_NoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_SummaryWithSeeRefProperlyFormatted_NoDiagnostic()
+    public async Task Analyze_SummaryWithSeeRefProperlyFormatted_NoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -187,23 +276,9 @@ public class SummaryXmlDocFormatAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new SummaryXmlDocFormatAnalyzer(), source);
+        var analyzer = new SummaryXmlDocFormatAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS050")).IsFalse();
-    }
-
-    [Test]
-    public async Task Analyze_InlineSummaryWithSeeRef_ReportsDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  /// <summary>Works with <see cref="System.String" /> values.</summary>
-                                  public class Foo {}
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new SummaryXmlDocFormatAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS050")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS050")).IsFalse();
     }
 }

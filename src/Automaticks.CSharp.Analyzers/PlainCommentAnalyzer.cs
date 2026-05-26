@@ -1,6 +1,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
+using System;
 using System.Collections.Immutable;
 
 namespace Automaticks.CSharp;
@@ -42,11 +43,18 @@ public sealed class PlainCommentAnalyzer : DiagnosticAnalyzer
 
         foreach (var trivia in root.DescendantTrivia())
         {
-            if (trivia.IsKind(SyntaxKind.SingleLineCommentTrivia) ||
-                trivia.IsKind(SyntaxKind.MultiLineCommentTrivia))
+            if ((trivia.IsKind(SyntaxKind.SingleLineCommentTrivia) ||
+                 trivia.IsKind(SyntaxKind.MultiLineCommentTrivia)) &&
+                !IsDocumentationComment(trivia))
             {
                 context.ReportDiagnostic(Diagnostic.Create(Rule, trivia.GetLocation()));
             }
         }
+    }
+
+    private static bool IsDocumentationComment(SyntaxTrivia trivia)
+    {
+        var text = trivia.ToString().TrimStart();
+        return text.StartsWith("///", StringComparison.Ordinal);
     }
 }

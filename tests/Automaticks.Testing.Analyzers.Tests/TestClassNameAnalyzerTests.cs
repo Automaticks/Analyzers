@@ -1,13 +1,21 @@
 using Automaticks.Testing;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Automaticks.Testing.Analyzers.Tests;
 
+/// <summary>
+///     Tests for TestClassNameAnalyzer.
+/// </summary>
 public class TestClassNameAnalyzerTests
 {
+    /// <summary>
+    ///     Tests that Analyze_ClassEndingWithTestsButNoTestMethods_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_ClassEndingWithTestsButNoTestMethods_ReportsNoDiagnostic()
+    public async Task Analyze_ClassEndingWithTestsButNoTestMethods_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp.Tests {
@@ -17,13 +25,23 @@ public class TestClassNameAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new TestClassNameAnalyzer(), source, true);
+        var analyzer = new TestClassNameAnalyzer();
+        var options = new AnalysisOptions
+{
+    IsTestProject = true
+};
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, options, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXTST002")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTST002")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_TestClassMatchingExistingType_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_TestClassMatchingExistingType_ReportsNoDiagnostic()
+    public async Task Analyze_TestClassMatchingExistingType_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace TUnit.Core { public class TestAttribute : System.Attribute {} }
@@ -36,50 +54,23 @@ public class TestClassNameAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new TestClassNameAnalyzer(), source, true);
+        var analyzer = new TestClassNameAnalyzer();
+        var options = new AnalysisOptions
+{
+    IsTestProject = true
+};
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, options, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXTST002")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTST002")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_TestClassMatchingTypeInReferencedAssembly_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_TestClassWithNoMatchingType_ReportsDiagnostic()
-    {
-        const string source = """
-                              namespace TUnit.Core { public class TestAttribute : System.Attribute {} }
-                              namespace MyApp.Tests {
-                                  public class TextureDrawOrderTests {
-                                      [TUnit.Core.Test]
-                                      public void Method_Scenario_Result() {}
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new TestClassNameAnalyzer(), source, true);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXTST002")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_TestClassWithQualifierMatchingBaseType_ReportsNoDiagnostic()
-    {
-        const string source = """
-                              namespace TUnit.Core { public class TestAttribute : System.Attribute {} }
-                              namespace MyApp { public class DrawSortKey {} }
-                              namespace MyApp.Tests {
-                                  public class DrawSortKeyLargeViewportTests {
-                                      [TUnit.Core.Test]
-                                      public void Method_Scenario_Result() {}
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new TestClassNameAnalyzer(), source, true);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXTST002")).IsFalse();
-    }
-
-    [Test]
-    public async Task Analyze_TestClassMatchingTypeInReferencedAssembly_ReportsNoDiagnostic()
+    public async Task Analyze_TestClassMatchingTypeInReferencedAssembly_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         var reference = AnalyzerTestRunner.CompileToReference(
             "namespace App.Logging { public class LogPathExpander {} }");
@@ -93,9 +84,71 @@ public class TestClassNameAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(
-            new TestClassNameAnalyzer(), source, [reference], isTestProject: true);
+        var analyzer = new TestClassNameAnalyzer();
+        var options = new AnalysisOptions
+        {
+            AdditionalReferences = [reference],
+            IsTestProject = true,
+        };
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, options, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXTST002")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTST002")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_TestClassWithNoMatchingType_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_TestClassWithNoMatchingType_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace TUnit.Core { public class TestAttribute : System.Attribute {} }
+                              namespace MyApp.Tests {
+                                  public class TextureDrawOrderTests {
+                                      [TUnit.Core.Test]
+                                      public void Method_Scenario_Result() {}
+                                  }
+                              }
+                              """;
+
+        var analyzer = new TestClassNameAnalyzer();
+        var options = new AnalysisOptions
+{
+    IsTestProject = true
+};
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, options, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTST002")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_TestClassWithQualifierMatchingBaseType_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_TestClassWithQualifierMatchingBaseType_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace TUnit.Core { public class TestAttribute : System.Attribute {} }
+                              namespace MyApp { public class DrawSortKey {} }
+                              namespace MyApp.Tests {
+                                  public class DrawSortKeyLargeViewportTests {
+                                      [TUnit.Core.Test]
+                                      public void Method_Scenario_Result() {}
+                                  }
+                              }
+                              """;
+
+        var analyzer = new TestClassNameAnalyzer();
+        var options = new AnalysisOptions
+{
+    IsTestProject = true
+};
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, options, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTST002")).IsFalse();
     }
 }

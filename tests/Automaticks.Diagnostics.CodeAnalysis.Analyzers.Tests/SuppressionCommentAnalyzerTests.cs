@@ -1,18 +1,25 @@
 using Automaticks.Diagnostics.CodeAnalysis;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Automaticks.Diagnostics.CodeAnalysis.Analyzers.Tests;
 
+/// <summary>
+///     Tests for SuppressionCommentAnalyzer.
+/// </summary>
 public class SuppressionCommentAnalyzerTests
 {
+    /// <summary>
+    ///     Tests that Analyze_CleanCode_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_CleanCode_ReportsNoDiagnostic()
+    public async Task Analyze_CleanCode_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp
                               {
-                                  // This method is intentionally empty
                                   public class Foo
                                   {
                                       public void Bar() {}
@@ -20,13 +27,19 @@ public class SuppressionCommentAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new SuppressionCommentAnalyzer(), source);
+        var analyzer = new SuppressionCommentAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id is "ATXDC018" or "ATXDC019")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasAnyId(diagnostics, ["ATXDC018", "ATXDC019"])).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_PragmaWarningDisable_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_PragmaWarningDisable_ReportsDiagnostic()
+    public async Task Analyze_PragmaWarningDisable_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp
@@ -37,13 +50,19 @@ public class SuppressionCommentAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new SuppressionCommentAnalyzer(), source);
+        var analyzer = new SuppressionCommentAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXDC018")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXDC018")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_PragmaWarningRestore_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_PragmaWarningRestore_ReportsNoDiagnostic()
+    public async Task Analyze_PragmaWarningRestore_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp
@@ -53,56 +72,74 @@ public class SuppressionCommentAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new SuppressionCommentAnalyzer(), source);
+        var analyzer = new SuppressionCommentAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXDC018")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXDC018")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_RegularComment_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_RegularComment_ReportsNoDiagnostic()
+    public async Task Analyze_RegularComment_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
-                              namespace MyApp
-                              {
-                                  // This is a regular comment about ReSharper features
-                                  public class Foo {}
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new SuppressionCommentAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id is "ATXDC018" or "ATXDC019")).IsFalse();
-    }
-
-    [Test]
-    public async Task Analyze_ReSharperDisableFile_ReportsDiagnostic()
-    {
-        const string source = """
-                              // ReSharper disable UnusedMember.Global
                               namespace MyApp
                               {
                                   public class Foo {}
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new SuppressionCommentAnalyzer(), source);
+        var analyzer = new SuppressionCommentAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXDC019")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasAnyId(diagnostics, ["ATXDC018", "ATXDC019"])).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_ReSharperDisableFile_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_ReSharperDisableOnce_ReportsDiagnostic()
+    public async Task Analyze_ReSharperDisableFile_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
+                              // ReSharper disable SomeRule
                               namespace MyApp
                               {
-                                  // ReSharper disable once UnusedType.Global
                                   public class Foo {}
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new SuppressionCommentAnalyzer(), source);
+        var analyzer = new SuppressionCommentAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXDC019")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXDC019")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_ReSharperDisableOnce_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ReSharperDisableOnce_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp
+                              {
+                                  // ReSharper disable once SomeRule
+                                  public class Foo {}
+                              }
+                              """;
+
+        var analyzer = new SuppressionCommentAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXDC019")).IsTrue();
     }
 }

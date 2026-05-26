@@ -1,126 +1,67 @@
 using Automaticks.CSharp;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Automaticks.CSharp.Analyzers.Tests;
 
+/// <summary>
+///     Tests for InterfaceDefaultImplementationAnalyzer.
+/// </summary>
 public class InterfaceDefaultImplementationAnalyzerTests
 {
+
+    /// <summary>
+    ///     Tests that Analyze_AbstractFieldLikeEvent_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_MethodWithBlockBody_ReportsDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public interface IFoo {
-                                      void Bar() { }
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new InterfaceDefaultImplementationAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS061")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_MethodWithExpressionBody_ReportsDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public interface IFoo {
-                                      int Bar() => 42;
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new InterfaceDefaultImplementationAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS061")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_StaticMethod_ReportsDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public interface IFoo {
-                                      static void Helper() { }
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new InterfaceDefaultImplementationAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS061")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_StaticField_ReportsDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public interface IFoo {
-                                      static int Count = 0;
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new InterfaceDefaultImplementationAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS061")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_PropertyWithAccessorBody_ReportsDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public interface IFoo {
-                                      int Value { get { return 1; } }
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new InterfaceDefaultImplementationAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS061")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_PropertyWithExpressionBody_ReportsDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public interface IFoo {
-                                      int Value => 42;
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new InterfaceDefaultImplementationAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS061")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_EventWithAccessorBodies_ReportsDiagnostic()
+    public async Task Analyze_AbstractFieldLikeEvent_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System;
                               namespace MyApp {
                                   public interface IFoo {
-                                      event EventArgs Changed { add { } remove { } }
+                                      event EventHandler Changed;
                                   }
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new InterfaceDefaultImplementationAnalyzer(), source);
+        var analyzer = new InterfaceDefaultImplementationAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS061")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS061")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_AbstractIndexer_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_AbstractMembersOnly_ReportsNoDiagnostic()
+    public async Task Analyze_AbstractIndexer_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public interface IFoo {
+                                      int this[int i] { get; }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new InterfaceDefaultImplementationAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS061")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_AbstractMembersOnly_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_AbstractMembersOnly_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -132,13 +73,19 @@ public class InterfaceDefaultImplementationAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new InterfaceDefaultImplementationAnalyzer(), source);
+        var analyzer = new InterfaceDefaultImplementationAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS061")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS061")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_ClassMethodWithBody_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_ClassMethodWithBody_ReportsNoDiagnostic()
+    public async Task Analyze_ClassMethodWithBody_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -148,80 +95,19 @@ public class InterfaceDefaultImplementationAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new InterfaceDefaultImplementationAnalyzer(), source);
+        var analyzer = new InterfaceDefaultImplementationAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS061")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS061")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_ConversionOperatorWithBlockBody_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_StaticMethodWithAbstractMethods_ReportsOnlyStaticMethod()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public interface IFoo {
-                                      void AbstractMethod();
-                                      static void Helper() { }
-                                      int Value { get; }
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new InterfaceDefaultImplementationAnalyzer(), source);
-
-        var matching = diagnostics.Where(d => d.Id == "ATXCS061").ToList();
-        await Assert.That(matching.Count).IsEqualTo(1);
-    }
-
-    [Test]
-    public async Task Analyze_OperatorWithBody_ReportsDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public interface IFoo {
-                                      static IFoo operator +(IFoo a, IFoo b) { return a; }
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new InterfaceDefaultImplementationAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS061")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_OperatorWithExpressionBody_ReportsDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public interface IFoo {
-                                      static IFoo operator +(IFoo a, IFoo b) => a;
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new InterfaceDefaultImplementationAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS061")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_ConversionOperatorWithExpressionBody_ReportsDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public interface IFoo {
-                                      static explicit operator int(IFoo foo) => 0;
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new InterfaceDefaultImplementationAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS061")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_ConversionOperatorWithBlockBody_ReportsDiagnostic()
+    public async Task Analyze_ConversionOperatorWithBlockBody_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -231,29 +117,64 @@ public class InterfaceDefaultImplementationAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new InterfaceDefaultImplementationAnalyzer(), source);
+        var analyzer = new InterfaceDefaultImplementationAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS061")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS061")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_ConversionOperatorWithExpressionBody_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_IndexerWithExpressionBody_ReportsDiagnostic()
+    public async Task Analyze_ConversionOperatorWithExpressionBody_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
                                   public interface IFoo {
-                                      int this[int i] => i;
+                                      static explicit operator int(IFoo foo) => 0;
                                   }
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new InterfaceDefaultImplementationAnalyzer(), source);
+        var analyzer = new InterfaceDefaultImplementationAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS061")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS061")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_EventWithAccessorBodies_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_IndexerWithAccessorBody_ReportsDiagnostic()
+    public async Task Analyze_EventWithAccessorBodies_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System;
+                              namespace MyApp {
+                                  public interface IFoo {
+                                      event EventArgs Changed { add { } remove { } }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new InterfaceDefaultImplementationAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS061")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_IndexerWithAccessorBody_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_IndexerWithAccessorBody_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -263,45 +184,84 @@ public class InterfaceDefaultImplementationAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new InterfaceDefaultImplementationAnalyzer(), source);
+        var analyzer = new InterfaceDefaultImplementationAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS061")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS061")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_IndexerWithExpressionBody_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_AbstractIndexer_ReportsNoDiagnostic()
+    public async Task Analyze_IndexerWithExpressionBody_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
                                   public interface IFoo {
-                                      int this[int i] { get; }
+                                      int this[int i] => i;
                                   }
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new InterfaceDefaultImplementationAnalyzer(), source);
+        var analyzer = new InterfaceDefaultImplementationAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS061")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS061")).IsTrue();
     }
-
+    /// <summary>
+    ///     Tests that Analyze_MethodWithBlockBody_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_StaticPropertyWithAccessorBody_ReportsDiagnostic()
+    public async Task Analyze_MethodWithBlockBody_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
                                   public interface IFoo {
-                                      static int Value { get { return 42; } }
+                                      void Bar() { }
                                   }
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new InterfaceDefaultImplementationAnalyzer(), source);
+        var analyzer = new InterfaceDefaultImplementationAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS061")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS061")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_MethodWithExpressionBody_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_MultipleMembers_ReportsOnePerOffendingMember()
+    public async Task Analyze_MethodWithExpressionBody_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public interface IFoo {
+                                      int Bar() => 42;
+                                  }
+                              }
+                              """;
+
+        var analyzer = new InterfaceDefaultImplementationAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS061")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_MultipleMembers_ReportsOnePerOffendingMember.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_MultipleMembers_ReportsOnePerOffendingMember(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -313,47 +273,107 @@ public class InterfaceDefaultImplementationAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new InterfaceDefaultImplementationAnalyzer(), source);
+        var analyzer = new InterfaceDefaultImplementationAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        var matching = diagnostics.Where(d => d.Id == "ATXCS061").ToList();
-        await Assert.That(matching.Count).IsEqualTo(2);
+        await Assert.That(DiagnosticCollectionAssertions.CountId(diagnostics, "ATXCS061")).IsEqualTo(2);
     }
 
-    // GAP 1 regression: static abstract members must NOT be flagged (they are abstract contracts, not implementations)
+    /// <summary>
+    ///     Tests that Analyze_OperatorWithBody_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_StaticAbstractMethod_ReportsNoDiagnostic()
+    public async Task Analyze_OperatorWithBody_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
-                                  public interface IFoo<T> where T : IFoo<T> {
-                                      static abstract T Create();
+                                  public interface IFoo {
+                                      static IFoo operator +(IFoo a, IFoo b) { return a; }
                                   }
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new InterfaceDefaultImplementationAnalyzer(), source);
+        var analyzer = new InterfaceDefaultImplementationAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS061")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS061")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_OperatorWithExpressionBody_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_StaticAbstractProperty_ReportsNoDiagnostic()
+    public async Task Analyze_OperatorWithExpressionBody_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
-                                  public interface IFoo<T> where T : IFoo<T> {
-                                      static abstract T Zero { get; }
+                                  public interface IFoo {
+                                      static IFoo operator +(IFoo a, IFoo b) => a;
                                   }
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new InterfaceDefaultImplementationAnalyzer(), source);
+        var analyzer = new InterfaceDefaultImplementationAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS061")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS061")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_PropertyWithAccessorBody_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_StaticAbstractAndStaticImplementation_ReportsOnlyImplementation()
+    public async Task Analyze_PropertyWithAccessorBody_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public interface IFoo {
+                                      int Value { get { return 1; } }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new InterfaceDefaultImplementationAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS061")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_PropertyWithExpressionBody_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_PropertyWithExpressionBody_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public interface IFoo {
+                                      int Value => 42;
+                                  }
+                              }
+                              """;
+
+        var analyzer = new InterfaceDefaultImplementationAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS061")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_StaticAbstractAndStaticImplementation_ReportsOnlyImplementation.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_StaticAbstractAndStaticImplementation_ReportsOnlyImplementation(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -365,15 +385,85 @@ public class InterfaceDefaultImplementationAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new InterfaceDefaultImplementationAnalyzer(), source);
+        var analyzer = new InterfaceDefaultImplementationAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        var matching = diagnostics.Where(d => d.Id == "ATXCS061").ToList();
-        await Assert.That(matching.Count).IsEqualTo(1);
+        await Assert.That(DiagnosticCollectionAssertions.CountId(diagnostics, "ATXCS061")).IsEqualTo(1);
     }
 
-    // GAP 2 regression: static field-like events must be flagged
+    /// <summary>
+    ///     Tests that Analyze_StaticAbstractMethod_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_StaticFieldLikeEvent_ReportsDiagnostic()
+    public async Task Analyze_StaticAbstractMethod_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public interface IFoo<T> where T : IFoo<T> {
+                                      static abstract T Create();
+                                  }
+                              }
+                              """;
+
+        var analyzer = new InterfaceDefaultImplementationAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS061")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_StaticAbstractProperty_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_StaticAbstractProperty_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public interface IFoo<T> where T : IFoo<T> {
+                                      static abstract T Zero { get; }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new InterfaceDefaultImplementationAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS061")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_StaticField_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_StaticField_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public interface IFoo {
+                                      static int Count = 0;
+                                  }
+                              }
+                              """;
+
+        var analyzer = new InterfaceDefaultImplementationAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS061")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_StaticFieldLikeEvent_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_StaticFieldLikeEvent_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System;
@@ -384,25 +474,77 @@ public class InterfaceDefaultImplementationAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new InterfaceDefaultImplementationAnalyzer(), source);
+        var analyzer = new InterfaceDefaultImplementationAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS061")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS061")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_StaticMethod_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_AbstractFieldLikeEvent_ReportsNoDiagnostic()
+    public async Task Analyze_StaticMethod_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
-                              using System;
                               namespace MyApp {
                                   public interface IFoo {
-                                      event EventHandler Changed;
+                                      static void Helper() { }
                                   }
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new InterfaceDefaultImplementationAnalyzer(), source);
+        var analyzer = new InterfaceDefaultImplementationAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS061")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS061")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_StaticMethodWithAbstractMethods_ReportsOnlyStaticMethod.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_StaticMethodWithAbstractMethods_ReportsOnlyStaticMethod(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public interface IFoo {
+                                      void AbstractMethod();
+                                      static void Helper() { }
+                                      int Value { get; }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new InterfaceDefaultImplementationAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.CountId(diagnostics, "ATXCS061")).IsEqualTo(1);
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_StaticPropertyWithAccessorBody_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_StaticPropertyWithAccessorBody_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public interface IFoo {
+                                      static int Value { get { return 42; } }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new InterfaceDefaultImplementationAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS061")).IsTrue();
     }
 }

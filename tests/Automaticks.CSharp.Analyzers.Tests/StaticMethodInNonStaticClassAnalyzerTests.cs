@@ -1,13 +1,21 @@
 using Automaticks.CSharp;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Automaticks.CSharp.Analyzers.Tests;
 
+/// <summary>
+///     Tests for StaticMethodInNonStaticClassAnalyzer.
+/// </summary>
 public class StaticMethodInNonStaticClassAnalyzerTests
 {
+    /// <summary>
+    ///     Tests that Analyze_ExtensionMethodInStaticClass_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_ExtensionMethodInStaticClass_ReportsNoDiagnostic()
+    public async Task Analyze_ExtensionMethodInStaticClass_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -17,13 +25,19 @@ public class StaticMethodInNonStaticClassAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new StaticMethodInNonStaticClassAnalyzer(), source);
+        var analyzer = new StaticMethodInNonStaticClassAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS011")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS011")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_InstanceMethodInNonStaticClass_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_InstanceMethodInNonStaticClass_ReportsNoDiagnostic()
+    public async Task Analyze_InstanceMethodInNonStaticClass_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -33,13 +47,19 @@ public class StaticMethodInNonStaticClassAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new StaticMethodInNonStaticClassAnalyzer(), source);
+        var analyzer = new StaticMethodInNonStaticClassAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS011")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS011")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_StaticMethodInNonStaticClass_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_StaticMethodInNonStaticClass_ReportsDiagnostic()
+    public async Task Analyze_StaticMethodInNonStaticClass_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -49,13 +69,19 @@ public class StaticMethodInNonStaticClassAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new StaticMethodInNonStaticClassAnalyzer(), source);
+        var analyzer = new StaticMethodInNonStaticClassAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS011")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS011")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_StaticMethodInStaticClass_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_StaticMethodInStaticClass_ReportsNoDiagnostic()
+    public async Task Analyze_StaticMethodInStaticClass_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -65,8 +91,9 @@ public class StaticMethodInNonStaticClassAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new StaticMethodInNonStaticClassAnalyzer(), source);
+        var analyzer = new StaticMethodInNonStaticClassAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS011")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS011")).IsFalse();
     }
 }

@@ -11,7 +11,9 @@ public static class DiagnosticIds
     /// </summary>
     public static class Options
     {
-        /// <summary>Diagnostic ID for <c>ATXEO049</c>: <c>BindConfiguration</c> is forbidden — use <c>Configure&lt;T&gt;(configuration.GetRequiredSection(...))</c>.</summary>
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXEO049</c>: <c>BindConfiguration</c> is forbidden — use <c>Configure&lt;T&gt;(configuration.GetRequiredSection(...))</c>.
+        /// </summary>
         public const string BindConfiguration = "ATXEO049";
     }
 }

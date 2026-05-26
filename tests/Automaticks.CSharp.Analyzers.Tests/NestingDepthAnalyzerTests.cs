@@ -1,15 +1,23 @@
 
 using Automaticks.CSharp;
 using System.Globalization;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Automaticks.CSharp.Analyzers.Tests;
 
-public class NestingDepthAnalyzerTests
+/// <summary>
+///     Tests for NestingDepthAnalyzer.
+/// </summary>
+public partial class NestingDepthAnalyzerTests
 {
+    /// <summary>
+    ///     Tests that Analyze_AbstractMethod_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_AbstractMethod_ReportsNoDiagnostic()
+    public async Task Analyze_AbstractMethod_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -19,15 +27,22 @@ public class NestingDepthAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new NestingDepthAnalyzer(), source);
+        var analyzer = new NestingDepthAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == DiagnosticIds.CSharp.NestingDepth)).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, DiagnosticIds.CSharp.NestingDepth)).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_AsyncMethod_CorrectlyAnalyzed.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_AsyncMethod_CorrectlyAnalyzed()
+    public async Task Analyze_AsyncMethod_CorrectlyAnalyzed(CancellationToken cancellationToken)
     {
         const string source = """
+                              using System.Threading;
                               using System.Threading.Tasks;
                               namespace MyApp {
                                   public class Foo {
@@ -39,13 +54,19 @@ public class NestingDepthAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new NestingDepthAnalyzer(), source);
+        var analyzer = new NestingDepthAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == DiagnosticIds.CSharp.NestingDepth)).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, DiagnosticIds.CSharp.NestingDepth)).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_DiagnosticMessage_ContainsMethodNameAndDepth.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_DiagnosticMessage_ContainsMethodNameAndDepth()
+    public async Task Analyze_DiagnosticMessage_ContainsMethodNameAndDepth(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -67,16 +88,22 @@ public class NestingDepthAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new NestingDepthAnalyzer(), source);
-        var message = diagnostics.Single(d => d.Id == DiagnosticIds.CSharp.NestingDepth)
+        var analyzer = new NestingDepthAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+        var message = DiagnosticCollectionAssertions.GetSingleById(diagnostics, DiagnosticIds.CSharp.NestingDepth)
                                  .GetMessage(CultureInfo.InvariantCulture);
 
         await Assert.That(message).IsEqualTo(
             "Method 'DeepMethod' has a nesting depth of 6, which exceeds the maximum of 5");
     }
 
+    /// <summary>
+    ///     Tests that Analyze_DoWhileLoop_IncrementsDepth.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_DoWhileLoop_IncrementsDepth()
+    public async Task Analyze_DoWhileLoop_IncrementsDepth(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -98,13 +125,19 @@ public class NestingDepthAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new NestingDepthAnalyzer(), source);
+        var analyzer = new NestingDepthAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == DiagnosticIds.CSharp.NestingDepth)).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, DiagnosticIds.CSharp.NestingDepth)).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_ElseBlock_IncrementsDepth.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_ElseBlock_IncrementsDepth()
+    public async Task Analyze_ElseBlock_IncrementsDepth(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -125,13 +158,19 @@ public class NestingDepthAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new NestingDepthAnalyzer(), source);
+        var analyzer = new NestingDepthAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == DiagnosticIds.CSharp.NestingDepth)).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, DiagnosticIds.CSharp.NestingDepth)).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_ElseIfChain_DoesNotIncrementDepthBeyondIf.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_ElseIfChain_DoesNotIncrementDepthBeyondIf()
+    public async Task Analyze_ElseIfChain_DoesNotIncrementDepthBeyondIf(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -151,13 +190,19 @@ public class NestingDepthAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new NestingDepthAnalyzer(), source);
+        var analyzer = new NestingDepthAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == DiagnosticIds.CSharp.NestingDepth)).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, DiagnosticIds.CSharp.NestingDepth)).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_EmptyMethod_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_EmptyMethod_ReportsNoDiagnostic()
+    public async Task Analyze_EmptyMethod_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -167,13 +212,19 @@ public class NestingDepthAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new NestingDepthAnalyzer(), source);
+        var analyzer = new NestingDepthAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == DiagnosticIds.CSharp.NestingDepth)).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, DiagnosticIds.CSharp.NestingDepth)).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_ExpressionBodiedMethod_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_ExpressionBodiedMethod_ReportsNoDiagnostic()
+    public async Task Analyze_ExpressionBodiedMethod_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -183,13 +234,19 @@ public class NestingDepthAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new NestingDepthAnalyzer(), source);
+        var analyzer = new NestingDepthAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == DiagnosticIds.CSharp.NestingDepth)).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, DiagnosticIds.CSharp.NestingDepth)).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_ExpressionBodiedMethodWithConditional_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_ExpressionBodiedMethodWithConditional_ReportsNoDiagnostic()
+    public async Task Analyze_ExpressionBodiedMethodWithConditional_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -199,13 +256,19 @@ public class NestingDepthAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new NestingDepthAnalyzer(), source);
+        var analyzer = new NestingDepthAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == DiagnosticIds.CSharp.NestingDepth)).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, DiagnosticIds.CSharp.NestingDepth)).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_FinallyBlock_IncrementsDepth.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_FinallyBlock_IncrementsDepth()
+    public async Task Analyze_FinallyBlock_IncrementsDepth(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -226,13 +289,19 @@ public class NestingDepthAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new NestingDepthAnalyzer(), source);
+        var analyzer = new NestingDepthAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == DiagnosticIds.CSharp.NestingDepth)).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, DiagnosticIds.CSharp.NestingDepth)).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_FiveDeepNesting_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_FiveDeepNesting_ReportsNoDiagnostic()
+    public async Task Analyze_FiveDeepNesting_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -252,13 +321,19 @@ public class NestingDepthAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new NestingDepthAnalyzer(), source);
+        var analyzer = new NestingDepthAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == DiagnosticIds.CSharp.NestingDepth)).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, DiagnosticIds.CSharp.NestingDepth)).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_ForEachLoop_IncrementsDepth.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_ForEachLoop_IncrementsDepth()
+    public async Task Analyze_ForEachLoop_IncrementsDepth(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -280,13 +355,19 @@ public class NestingDepthAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new NestingDepthAnalyzer(), source);
+        var analyzer = new NestingDepthAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == DiagnosticIds.CSharp.NestingDepth)).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, DiagnosticIds.CSharp.NestingDepth)).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_ForLoop_IncrementsDepth.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_ForLoop_IncrementsDepth()
+    public async Task Analyze_ForLoop_IncrementsDepth(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -308,13 +389,19 @@ public class NestingDepthAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new NestingDepthAnalyzer(), source);
+        var analyzer = new NestingDepthAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == DiagnosticIds.CSharp.NestingDepth)).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, DiagnosticIds.CSharp.NestingDepth)).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_Lambda_IncrementsDepth.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_Lambda_IncrementsDepth()
+    public async Task Analyze_Lambda_IncrementsDepth(CancellationToken cancellationToken)
     {
         const string source = """
                               using System;
@@ -337,13 +424,19 @@ public class NestingDepthAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new NestingDepthAnalyzer(), source);
+        var analyzer = new NestingDepthAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == DiagnosticIds.CSharp.NestingDepth)).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, DiagnosticIds.CSharp.NestingDepth)).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_LocalFunction_IncrementsDepth.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_LocalFunction_IncrementsDepth()
+    public async Task Analyze_LocalFunction_IncrementsDepth(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -366,222 +459,10 @@ public class NestingDepthAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new NestingDepthAnalyzer(), source);
+        var analyzer = new NestingDepthAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == DiagnosticIds.CSharp.NestingDepth)).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, DiagnosticIds.CSharp.NestingDepth)).IsTrue();
     }
 
-    [Test]
-    public async Task Analyze_LockStatement_IncrementsDepth()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Foo {
-                                      private readonly object _lock = new object();
-                                      public void Method() {
-                                          if (true) {
-                                              if (true) {
-                                                  if (true) {
-                                                      if (true) {
-                                                          if (true) {
-                                                              lock (_lock) { }
-                                                          }
-                                                      }
-                                                  }
-                                              }
-                                          }
-                                      }
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new NestingDepthAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == DiagnosticIds.CSharp.NestingDepth)).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_PatternMatchingSwitchExpression_CorrectlyAnalyzed()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Foo {
-                                      public void Method(object x) {
-                                          if (true) {
-                                              if (true) {
-                                                  if (true) {
-                                                      if (true) {
-                                                          if (true) {
-                                                              var r = x switch { _ => 0 };
-                                                          }
-                                                      }
-                                                  }
-                                              }
-                                          }
-                                      }
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new NestingDepthAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == DiagnosticIds.CSharp.NestingDepth)).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_SingleIfStatement_ReportsNoDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Foo {
-                                      public void Method() {
-                                          if (true) { }
-                                      }
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new NestingDepthAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == DiagnosticIds.CSharp.NestingDepth)).IsFalse();
-    }
-
-    [Test]
-    public async Task Analyze_SixDeepNesting_ReportsDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Foo {
-                                      public void Method() {
-                                          if (true) {
-                                              if (true) {
-                                                  if (true) {
-                                                      if (true) {
-                                                          if (true) {
-                                                              if (true) { }
-                                                          }
-                                                      }
-                                                  }
-                                              }
-                                          }
-                                      }
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new NestingDepthAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == DiagnosticIds.CSharp.NestingDepth)).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_SwitchStatement_IncrementsDepth()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Foo {
-                                      public void Method(int x) {
-                                          if (true) {
-                                              if (true) {
-                                                  if (true) {
-                                                      if (true) {
-                                                          if (true) {
-                                                              switch (x) { default: break; }
-                                                          }
-                                                      }
-                                                  }
-                                              }
-                                          }
-                                      }
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new NestingDepthAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == DiagnosticIds.CSharp.NestingDepth)).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_TryCatch_IncrementsDepth()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Foo {
-                                      public void Method() {
-                                          if (true) {
-                                              if (true) {
-                                                  if (true) {
-                                                      if (true) {
-                                                          try { if (true) { } }
-                                                          catch (System.Exception) { }
-                                                      }
-                                                  }
-                                              }
-                                          }
-                                      }
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new NestingDepthAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == DiagnosticIds.CSharp.NestingDepth)).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_UsingStatement_IncrementsDepth()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Foo {
-                                      public void Method() {
-                                          if (true) {
-                                              if (true) {
-                                                  if (true) {
-                                                      if (true) {
-                                                          if (true) {
-                                                              using (var r = new System.IO.MemoryStream()) { }
-                                                          }
-                                                      }
-                                                  }
-                                              }
-                                          }
-                                      }
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new NestingDepthAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == DiagnosticIds.CSharp.NestingDepth)).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_WhileLoop_IncrementsDepth()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Foo {
-                                      public void Method() {
-                                          if (true) {
-                                              if (true) {
-                                                  if (true) {
-                                                      if (true) {
-                                                          if (true) {
-                                                              while (false) { }
-                                                          }
-                                                      }
-                                                  }
-                                              }
-                                          }
-                                      }
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new NestingDepthAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == DiagnosticIds.CSharp.NestingDepth)).IsTrue();
-    }
 }

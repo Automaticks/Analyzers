@@ -1,101 +1,22 @@
 using Automaticks.CSharp;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Automaticks.CSharp.Analyzers.Tests;
 
+/// <summary>
+///     Tests for ExplicitConstructorAnalyzer.
+/// </summary>
 public class ExplicitConstructorAnalyzerTests
 {
 
+    /// <summary>
+    ///     Tests that Analyze_ClassWithExplicitConstructor_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_ClassWithPrimaryConstructor_ReportsDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Point(int x, int y) { }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ExplicitConstructorAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS037")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_StructWithPrimaryConstructor_ReportsDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public struct Vector(float x, float y) { }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ExplicitConstructorAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS037")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_RecordWithPrimaryConstructor_ReportsDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public record Person(string Name, int Age);
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ExplicitConstructorAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS037")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_RecordStructWithPrimaryConstructor_ReportsDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public record struct Coordinate(double Latitude, double Longitude);
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ExplicitConstructorAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS037")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_ClassWithPrimaryConstructorAndBody_ReportsDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Service(string name) {
-                                      public string Name { get; } = name;
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ExplicitConstructorAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS037")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_MultiplePrimaryConstructorTypes_ReportsOneDiagnosticEach()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Foo(int x) { }
-                                  public struct Bar(int y) { }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ExplicitConstructorAnalyzer(), source);
-
-        await Assert.That(diagnostics.Count(d => d.Id == "ATXCS037")).IsEqualTo(2);
-    }
-
-    [Test]
-    public async Task Analyze_ClassWithExplicitConstructor_ReportsNoDiagnostic()
+    public async Task Analyze_ClassWithExplicitConstructor_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -105,29 +26,19 @@ public class ExplicitConstructorAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ExplicitConstructorAnalyzer(), source);
+        var analyzer = new ExplicitConstructorAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS037")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS037")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_ClassWithNoConstructor_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_StructWithExplicitConstructor_ReportsNoDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public struct Vector {
-                                      public Vector(float x, float y) { }
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ExplicitConstructorAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS037")).IsFalse();
-    }
-
-    [Test]
-    public async Task Analyze_ClassWithNoConstructor_ReportsNoDiagnostic()
+    public async Task Analyze_ClassWithNoConstructor_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -135,13 +46,102 @@ public class ExplicitConstructorAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ExplicitConstructorAnalyzer(), source);
+        var analyzer = new ExplicitConstructorAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS037")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS037")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_ClassWithPrimaryConstructor_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_RecordWithNoParameterList_ReportsNoDiagnostic()
+    public async Task Analyze_ClassWithPrimaryConstructor_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Point(int x, int y) { }
+                              }
+                              """;
+
+        var analyzer = new ExplicitConstructorAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS037")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_ClassWithPrimaryConstructorAndBody_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ClassWithPrimaryConstructorAndBody_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Service(string name) {
+                                      public string Name { get; } = name;
+                                  }
+                              }
+                              """;
+
+        var analyzer = new ExplicitConstructorAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS037")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_MultiplePrimaryConstructorTypes_ReportsOneDiagnosticEach.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_MultiplePrimaryConstructorTypes_ReportsOneDiagnosticEach(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo(int x) { }
+                                  public struct Bar(int y) { }
+                              }
+                              """;
+
+        var analyzer = new ExplicitConstructorAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.CountId(diagnostics, "ATXCS037")).IsEqualTo(2);
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_RecordStructWithPrimaryConstructor_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_RecordStructWithPrimaryConstructor_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public record struct Coordinate(double Latitude, double Longitude);
+                              }
+                              """;
+
+        var analyzer = new ExplicitConstructorAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS037")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_RecordWithNoParameterList_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_RecordWithNoParameterList_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -151,13 +151,39 @@ public class ExplicitConstructorAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ExplicitConstructorAnalyzer(), source);
+        var analyzer = new ExplicitConstructorAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS037")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS037")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_RecordWithPrimaryConstructor_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_StaticClass_ReportsNoDiagnostic()
+    public async Task Analyze_RecordWithPrimaryConstructor_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public record Person(string Name, int Age);
+                              }
+                              """;
+
+        var analyzer = new ExplicitConstructorAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS037")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_StaticClass_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_StaticClass_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -170,8 +196,51 @@ public class ExplicitConstructorAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new ExplicitConstructorAnalyzer(), source);
+        var analyzer = new ExplicitConstructorAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS037")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS037")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_StructWithExplicitConstructor_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_StructWithExplicitConstructor_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public struct Vector {
+                                      public Vector(float x, float y) { }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new ExplicitConstructorAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS037")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_StructWithPrimaryConstructor_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_StructWithPrimaryConstructor_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public struct Vector(float x, float y) { }
+                              }
+                              """;
+
+        var analyzer = new ExplicitConstructorAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS037")).IsTrue();
     }
 }

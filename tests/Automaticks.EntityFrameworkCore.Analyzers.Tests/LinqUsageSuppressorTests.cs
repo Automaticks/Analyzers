@@ -1,10 +1,10 @@
+using Automaticks.EntityFrameworkCore;
+using Automaticks.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
-using Automaticks.Linq;
-using Automaticks.EntityFrameworkCore;
 
 namespace Automaticks.EntityFrameworkCore.Analyzers.Tests;
 
@@ -18,53 +18,14 @@ namespace Automaticks.EntityFrameworkCore.Analyzers.Tests;
 /// </summary>
 public class LinqUsageSuppressorTests
 {
+
+    /// <summary>
+    ///     Tests that Analyze_LinqInFileWithoutEFCoreImport_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Suppressor_SupportedSuppressions_DeclaresAtxEf001()
-    {
-        var suppressor = new LinqUsageSuppressor();
-
-        await Assert.That(suppressor.SupportedSuppressions.Length).IsEqualTo(1);
-        await Assert.That(suppressor.SupportedSuppressions[0].Id).IsEqualTo(SuppressionIds.EFCore.LinqUsage);
-        await Assert.That(suppressor.SupportedSuppressions[0].SuppressedDiagnosticId).IsEqualTo("ATXLQ002");
-    }
-
-    [Test]
-    public async Task Suppressor_EFCoreRootImport_IsDetectedAsEFCore()
-    {
-        const string source = """
-                              using System.Linq;
-                              using Microsoft.EntityFrameworkCore;
-                              namespace A {}
-                              """;
-
-        await Assert.That(HasEFCoreImport(source)).IsTrue();
-    }
-
-    [Test]
-    public async Task Suppressor_EFCoreSubNamespaceImport_IsDetectedAsEFCore()
-    {
-        const string source = """
-                              using System.Linq;
-                              using Microsoft.EntityFrameworkCore.Query;
-                              namespace A {}
-                              """;
-
-        await Assert.That(HasEFCoreImport(source)).IsTrue();
-    }
-
-    [Test]
-    public async Task Suppressor_NoEFCoreImport_IsNotDetectedAsEFCore()
-    {
-        const string source = """
-                              using System.Linq;
-                              namespace A {}
-                              """;
-
-        await Assert.That(HasEFCoreImport(source)).IsFalse();
-    }
-
-    [Test]
-    public async Task Analyze_LinqInFileWithoutEFCoreImport_ReportsDiagnostic()
+    public async Task Analyze_LinqInFileWithoutEFCoreImport_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System.Linq;
@@ -78,23 +39,98 @@ public class LinqUsageSuppressorTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new LinqUsageAnalyzer(), source);
+        var analyzer = new LinqUsageAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXLQ002")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXLQ002")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Suppressor_EFCoreRootImport_IsDetectedAsEFCore.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Suppressor_EFCoreRootImport_IsDetectedAsEFCore(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System.Linq;
+                              using Microsoft.EntityFrameworkCore;
+                              namespace A {}
+                              """;
+
+        await Assert.That(HasEntityFrameworkCoreImport(source)).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Suppressor_EFCoreSubNamespaceImport_IsDetectedAsEFCore.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Suppressor_EFCoreSubNamespaceImport_IsDetectedAsEFCore(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System.Linq;
+                              using Microsoft.EntityFrameworkCore.Query;
+                              namespace A {}
+                              """;
+
+        await Assert.That(HasEntityFrameworkCoreImport(source)).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Suppressor_NoEFCoreImport_IsNotDetectedAsEFCore.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Suppressor_NoEFCoreImport_IsNotDetectedAsEFCore(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System.Linq;
+                              namespace A {}
+                              """;
+
+        await Assert.That(HasEntityFrameworkCoreImport(source)).IsFalse();
+    }
+    /// <summary>
+    ///     Tests that Suppressor_SupportedSuppressions_DeclaresAtxEf001.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Suppressor_SupportedSuppressions_DeclaresAtxEf001(CancellationToken cancellationToken)
+    {
+        var suppressor = new LinqUsageSuppressor();
+
+        await Assert.That(suppressor.SupportedSuppressions.Length).IsEqualTo(1);
+        await Assert.That(suppressor.SupportedSuppressions[0].Id).IsEqualTo(SuppressionIds.EFCore.LinqUsage);
+        await Assert.That(suppressor.SupportedSuppressions[0].SuppressedDiagnosticId).IsEqualTo("ATXLQ002");
     }
 
     /// <summary>
     ///     Replicates the EF Core import detection logic from <see cref="LinqUsageSuppressor.ReportSuppressions" />
     ///     so it can be exercised directly without requiring an IDE/MSBuild suppressor host.
     /// </summary>
-    private static bool HasEFCoreImport(string source)
+    private bool HasEntityFrameworkCoreImport(string source)
     {
-        var root = (CompilationUnitSyntax)CSharpSyntaxTree.ParseText(source).GetRoot();
-        return root.Usings.Any(u =>
+        var syntaxRoot = CSharpSyntaxTree.ParseText(source).GetRoot();
+        if (syntaxRoot is not CompilationUnitSyntax compilationUnit)
         {
-            var name = u.Name?.ToString() ?? string.Empty;
-            return name.Equals("Microsoft.EntityFrameworkCore", StringComparison.Ordinal) ||
-                   name.StartsWith("Microsoft.EntityFrameworkCore.", StringComparison.Ordinal);
-        });
+            return false;
+        }
+
+        foreach (var usingDirective in compilationUnit.Usings)
+        {
+            var name = usingDirective.Name?.ToString() ?? string.Empty;
+            if (name.Equals("Microsoft.EntityFrameworkCore", StringComparison.Ordinal)
+                || name.StartsWith("Microsoft.EntityFrameworkCore.", StringComparison.Ordinal))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

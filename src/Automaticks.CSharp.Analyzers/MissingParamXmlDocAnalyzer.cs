@@ -2,7 +2,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
-using System;
 using System.Collections.Immutable;
 
 namespace Automaticks.CSharp;
@@ -64,9 +63,7 @@ public sealed class MissingParamXmlDocAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        var docComment = GetDocumentationComment(node);
-
-        if (docComment != null && HasInheritDoc(docComment))
+        if (DocumentationCommentText.HasInheritDoc(node))
         {
             return;
         }
@@ -75,7 +72,7 @@ public sealed class MissingParamXmlDocAnalyzer : DiagnosticAnalyzer
         {
             var paramName = parameter.Identifier.ValueText;
 
-            if (docComment == null || !HasParamElement(docComment, paramName))
+            if (!DocumentationCommentText.HasParamElement(node, paramName))
             {
                 var memberName = GetMemberName(node);
                 context.ReportDiagnostic(
@@ -195,75 +192,6 @@ public sealed class MissingParamXmlDocAnalyzer : DiagnosticAnalyzer
         }
 
         return SyntaxFactory.TokenList();
-    }
-
-    private static DocumentationCommentTriviaSyntax? GetDocumentationComment(SyntaxNode node)
-    {
-        foreach (var trivia in node.GetLeadingTrivia())
-        {
-            if (trivia.GetStructure() is DocumentationCommentTriviaSyntax docComment)
-            {
-                return docComment;
-            }
-        }
-
-        return null;
-    }
-
-    private static bool HasInheritDoc(DocumentationCommentTriviaSyntax docComment)
-    {
-        foreach (var node in docComment.Content)
-        {
-            if (node is XmlElementSyntax element &&
-                element.StartTag.Name.LocalName.ValueText.Equals(InheritDocTag, StringComparison.Ordinal))
-            {
-                return true;
-            }
-
-            if (node is XmlEmptyElementSyntax emptyElement &&
-                emptyElement.Name.LocalName.ValueText.Equals(InheritDocTag, StringComparison.Ordinal))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static bool HasParamElement(DocumentationCommentTriviaSyntax docComment, string paramName)
-    {
-        foreach (var xmlNode in docComment.Content)
-        {
-            if (xmlNode is XmlElementSyntax element &&
-                element.StartTag.Name.LocalName.ValueText.Equals(ParamTag, StringComparison.Ordinal) &&
-                GetNameAttributeValue(element.StartTag.Attributes).Equals(paramName, StringComparison.Ordinal))
-            {
-                return true;
-            }
-
-            if (xmlNode is XmlEmptyElementSyntax emptyElement &&
-                emptyElement.Name.LocalName.ValueText.Equals(ParamTag, StringComparison.Ordinal) &&
-                GetNameAttributeValue(emptyElement.Attributes).Equals(paramName, StringComparison.Ordinal))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static string GetNameAttributeValue(SyntaxList<XmlAttributeSyntax> attributes)
-    {
-        foreach (var attribute in attributes)
-        {
-            if (attribute is XmlNameAttributeSyntax nameAttr &&
-                nameAttr.Name.LocalName.ValueText.Equals(NameAttributeKey, StringComparison.Ordinal))
-            {
-                return nameAttr.Identifier.Identifier.ValueText;
-            }
-        }
-
-        return string.Empty;
     }
 
     private static bool IsInPubliclyAccessibleContext(SyntaxNode node)

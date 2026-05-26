@@ -1,13 +1,21 @@
 using Automaticks.CSharp;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Automaticks.CSharp.Analyzers.Tests;
 
+/// <summary>
+///     Tests for EventHandlerDeclarationAnalyzer.
+/// </summary>
 public class EventHandlerDeclarationAnalyzerTests
 {
+    /// <summary>
+    ///     Tests that Analyze_ActionEventDeclaration_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_ActionEventDeclaration_ReportsNoDiagnostic()
+    public async Task Analyze_ActionEventDeclaration_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System;
@@ -18,13 +26,19 @@ public class EventHandlerDeclarationAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new EventHandlerDeclarationAnalyzer(), source);
+        var analyzer = new EventHandlerDeclarationAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS007")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS007")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_EventHandlerFieldDeclaration_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_EventHandlerFieldDeclaration_ReportsDiagnostic()
+    public async Task Analyze_EventHandlerFieldDeclaration_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System;
@@ -35,13 +49,19 @@ public class EventHandlerDeclarationAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new EventHandlerDeclarationAnalyzer(), source);
+        var analyzer = new EventHandlerDeclarationAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS007")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS007")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_EventHandlerOfGenericTypeDeclaration_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_EventHandlerOfTDeclaration_ReportsDiagnostic()
+    public async Task Analyze_EventHandlerOfGenericTypeDeclaration_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               using System;
@@ -52,8 +72,9 @@ public class EventHandlerDeclarationAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new EventHandlerDeclarationAnalyzer(), source);
+        var analyzer = new EventHandlerDeclarationAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS007")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS007")).IsTrue();
     }
 }

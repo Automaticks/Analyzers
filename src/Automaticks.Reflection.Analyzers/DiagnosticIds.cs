@@ -11,7 +11,9 @@ public static class DiagnosticIds
     /// </summary>
     public static class Reflection
     {
-        /// <summary>Diagnostic ID for <c>ATXRF030</c>: reflection is forbidden outside DI registration code.</summary>
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXRF030</c>: reflection is forbidden outside DI registration code.
+        /// </summary>
         public const string ReflectionUsage = "ATXRF030";
     }
 }

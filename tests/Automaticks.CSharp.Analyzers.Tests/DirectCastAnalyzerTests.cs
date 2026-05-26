@@ -1,13 +1,21 @@
 using Automaticks.CSharp;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Automaticks.CSharp.Analyzers.Tests;
 
+/// <summary>
+///     Tests for DirectCastAnalyzer.
+/// </summary>
 public class DirectCastAnalyzerTests
 {
+    /// <summary>
+    ///     Tests that Analyze_DirectCastToClass_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_DirectCastToClass_ReportsDiagnostic()
+    public async Task Analyze_DirectCastToClass_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -22,13 +30,19 @@ public class DirectCastAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new DirectCastAnalyzer(), source);
+        var analyzer = new DirectCastAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS029")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS029")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_DirectCastToInterface_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_DirectCastToInterface_ReportsDiagnostic()
+    public async Task Analyze_DirectCastToInterface_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -43,13 +57,19 @@ public class DirectCastAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new DirectCastAnalyzer(), source);
+        var analyzer = new DirectCastAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS029")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS029")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_DirectCastToObjectType_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_DirectCastToObjectType_ReportsDiagnostic()
+    public async Task Analyze_DirectCastToObjectType_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -62,13 +82,19 @@ public class DirectCastAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new DirectCastAnalyzer(), source);
+        var analyzer = new DirectCastAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS029")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS029")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_EnumCast_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_EnumCast_ReportsNoDiagnostic()
+    public async Task Analyze_EnumCast_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -82,13 +108,19 @@ public class DirectCastAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new DirectCastAnalyzer(), source);
+        var analyzer = new DirectCastAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS029")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS029")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_IntCast_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_IntCast_ReportsNoDiagnostic()
+    public async Task Analyze_IntCast_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -101,13 +133,19 @@ public class DirectCastAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new DirectCastAnalyzer(), source);
+        var analyzer = new DirectCastAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS029")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS029")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_MultipleDirectCastsInSameFile_ReportsMultipleDiagnostics.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_MultipleDirectCastsInSameFile_ReportsMultipleDiagnostics()
+    public async Task Analyze_MultipleDirectCastsInSameFile_ReportsMultipleDiagnostics(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -128,13 +166,19 @@ public class DirectCastAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new DirectCastAnalyzer(), source);
+        var analyzer = new DirectCastAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Count(d => d.Id == "ATXCS029")).IsEqualTo(2);
+        await Assert.That(DiagnosticCollectionAssertions.CountId(diagnostics, "ATXCS029")).IsEqualTo(2);
     }
 
+    /// <summary>
+    ///     Tests that Analyze_PatternMatching_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_PatternMatching_ReportsNoDiagnostic()
+    public async Task Analyze_PatternMatching_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -153,13 +197,19 @@ public class DirectCastAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new DirectCastAnalyzer(), source);
+        var analyzer = new DirectCastAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS029")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS029")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_StructCast_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_StructCast_ReportsNoDiagnostic()
+    public async Task Analyze_StructCast_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -173,8 +223,9 @@ public class DirectCastAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new DirectCastAnalyzer(), source);
+        var analyzer = new DirectCastAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS029")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS029")).IsFalse();
     }
 }

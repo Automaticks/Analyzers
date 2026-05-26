@@ -15,20 +15,20 @@ namespace Automaticks.Threading.Tasks;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class UnobservedTaskAnalyzer : DiagnosticAnalyzer
 {
-    /// <summary>
-    ///     The diagnostic rule reported when a task-returning invocation result is discarded.
-    /// </summary>
-    public static readonly DiagnosticDescriptor Rule = new(
-        DiagnosticIds.ThreadingTasks.UnobservedTask,
-        "Unobserved Task invocation",
-        "The result of invocation '{0}' is discarded. Await or observe the returned Task/ValueTask to prevent unobserved failures.",
-        "Threading.Tasks",
-        DiagnosticSeverity.Error,
-        true,
-        "Await, return, assign to a variable, or pass as an argument the `Task` or `ValueTask` returned by this method. Discarding an awaitable silently swallows all exceptions and prevents the caller from knowing when the work completes. Change `DoWorkAsync();` to `await DoWorkAsync();` or `return DoWorkAsync();`.");
+    private static readonly DiagnosticDescriptor Rule;
 
-    /// <inheritdoc />
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
+    static UnobservedTaskAnalyzer()
+    {
+        var rule = new DiagnosticDescriptor(
+            DiagnosticIds.ThreadingTasks.UnobservedTask,
+            "Unobserved Task invocation",
+            "The result of invocation '{0}' is discarded. Await or observe the returned Task/ValueTask to prevent unobserved failures.",
+            "Threading.Tasks",
+            DiagnosticSeverity.Error,
+            true,
+            "Await, return, assign to a variable, or pass as an argument the `Task` or `ValueTask` returned by this method. Discarding an awaitable silently swallows all exceptions and prevents the caller from knowing when the work completes. Change `DoWorkAsync();` to `await DoWorkAsync();` or `return DoWorkAsync();`.");
+        Rule = rule;
+    }
 
     /// <inheritdoc />
     public override void Initialize(AnalysisContext context)
@@ -38,44 +38,49 @@ public sealed class UnobservedTaskAnalyzer : DiagnosticAnalyzer
         context.RegisterSyntaxNodeAction(AnalyzeInvocation, SyntaxKind.InvocationExpression);
     }
 
-    private static void AnalyzeInvocation(SyntaxNodeAnalysisContext context)
+    /// <inheritdoc />
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
+
+    private void AnalyzeInvocation(SyntaxNodeAnalysisContext context)
     {
-        var invocation = (InvocationExpressionSyntax)context.Node;
+        if (context.Node is not InvocationExpressionSyntax invocation)
+        {
+            return;
+        }
 
         if (context.SemanticModel.GetSymbolInfo(invocation).Symbol is not IMethodSymbol method)
         {
             return;
         }
 
-        if (!ReturnsTaskType(method, context.SemanticModel.Compilation))
+        if (!HasTaskReturnType(method, context.SemanticModel.Compilation))
         {
             return;
         }
 
-        if (IsResultDiscarded(invocation))
+        if (HasDiscardedResult(invocation))
         {
             context.ReportDiagnostic(Diagnostic.Create(Rule, invocation.GetLocation(), invocation.ToString()));
         }
     }
 
-    private static bool IsResultDiscarded(InvocationExpressionSyntax invocation)
+    private bool HasDiscardedResult(InvocationExpressionSyntax invocation)
     {
         var parent = invocation.Parent;
-
-        return parent is ExpressionStatementSyntax ||
-               (parent is AssignmentExpressionSyntax assignment &&
-                assignment.Right == invocation &&
-                assignment is { Left: IdentifierNameSyntax { Identifier.Text: "_" }, Parent: ExpressionStatementSyntax });
+        return parent is ExpressionStatementSyntax
+               || (parent is AssignmentExpressionSyntax assignment
+                   && assignment.Right == invocation
+                   && assignment is { Left: IdentifierNameSyntax { Identifier.Text: "_" }, Parent: ExpressionStatementSyntax });
     }
 
-    private static bool ReturnsTaskType(IMethodSymbol method, Compilation compilation)
+    private bool HasTaskReturnType(IMethodSymbol method, Compilation compilation)
     {
         var returnType = method.ReturnType;
 
         var taskType = compilation.GetTypeByMetadataName("System.Threading.Tasks.Task");
-        var taskOfTType = compilation.GetTypeByMetadataName("System.Threading.Tasks.Task`1");
+        var taskOfGenericType = compilation.GetTypeByMetadataName("System.Threading.Tasks.Task`1");
         var valueTaskType = compilation.GetTypeByMetadataName("System.Threading.Tasks.ValueTask");
-        var valueTaskOfTType = compilation.GetTypeByMetadataName("System.Threading.Tasks.ValueTask`1");
+        var valueTaskOfGenericType = compilation.GetTypeByMetadataName("System.Threading.Tasks.ValueTask`1");
 
         if (SymbolEqualityComparer.Default.Equals(returnType, taskType))
         {
@@ -87,13 +92,13 @@ public sealed class UnobservedTaskAnalyzer : DiagnosticAnalyzer
             return true;
         }
 
-        if (returnType is INamedTypeSymbol { IsGenericType: true } namedType)
+        if (returnType is not INamedTypeSymbol { IsGenericType: true } namedType)
         {
-            var unboundType = namedType.ConstructUnboundGenericType();
-            return SymbolEqualityComparer.Default.Equals(unboundType, taskOfTType?.ConstructUnboundGenericType()) ||
-                   SymbolEqualityComparer.Default.Equals(unboundType, valueTaskOfTType?.ConstructUnboundGenericType());
+            return false;
         }
 
-        return false;
+        var unboundType = namedType.ConstructUnboundGenericType();
+        return SymbolEqualityComparer.Default.Equals(unboundType, taskOfGenericType?.ConstructUnboundGenericType())
+               || SymbolEqualityComparer.Default.Equals(unboundType, valueTaskOfGenericType?.ConstructUnboundGenericType());
     }
 }

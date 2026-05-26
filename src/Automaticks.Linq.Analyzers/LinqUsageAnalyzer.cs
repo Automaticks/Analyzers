@@ -14,20 +14,20 @@ namespace Automaticks.Linq;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class LinqUsageAnalyzer : DiagnosticAnalyzer
 {
-    /// <summary>
-    ///     The diagnostic rule reported when a <c>System.Linq</c> using directive is found.
-    /// </summary>
-    public static readonly DiagnosticDescriptor Rule = new(
-        DiagnosticIds.Linq.LinqUsage,
-        "LINQ is not allowed",
-        "LINQ is not allowed in this codebase. Use explicit loops instead.",
-        "Linq",
-        DiagnosticSeverity.Error,
-        true,
-        "Replace the LINQ method chain or query expression with an explicit `foreach` loop. Remove the `using System.Linq;` directive if it becomes unused after the change. Note: LINQ inside Entity Framework Core `IQueryable` expressions is suppressed by a separate suppressor.");
+    private static readonly DiagnosticDescriptor Rule;
 
-    /// <inheritdoc />
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
+    static LinqUsageAnalyzer()
+    {
+        var rule = new DiagnosticDescriptor(
+            DiagnosticIds.Linq.LinqUsage,
+            "LINQ is not allowed",
+            "LINQ is not allowed in this codebase. Use explicit loops instead.",
+            "Linq",
+            DiagnosticSeverity.Error,
+            true,
+            "Replace the LINQ method chain or query expression with an explicit `foreach` loop. Remove the `using System.Linq;` directive if it becomes unused after the change. Note: LINQ inside Entity Framework Core `IQueryable` expressions is suppressed by a separate suppressor.");
+        Rule = rule;
+    }
 
     /// <inheritdoc />
     public override void Initialize(AnalysisContext context)
@@ -37,14 +37,20 @@ public sealed class LinqUsageAnalyzer : DiagnosticAnalyzer
         context.RegisterSyntaxNodeAction(AnalyzeUsing, SyntaxKind.UsingDirective);
     }
 
-    private static void AnalyzeUsing(SyntaxNodeAnalysisContext context)
-    {
-        var usingDirective = (UsingDirectiveSyntax)context.Node;
-        var name = usingDirective.Name?.ToString() ?? string.Empty;
+    /// <inheritdoc />
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
 
-        var isLinqUsage = name.Equals("System.Linq", StringComparison.Ordinal) ||
-                          (name.StartsWith("System.Linq.", StringComparison.Ordinal) &&
-                           !name.StartsWith("System.Linq.Expressions", StringComparison.Ordinal));
+    private void AnalyzeUsing(SyntaxNodeAnalysisContext context)
+    {
+        if (context.Node is not UsingDirectiveSyntax usingDirective)
+        {
+            return;
+        }
+
+        var name = usingDirective.Name?.ToString() ?? string.Empty;
+        var isLinqUsage = name.Equals("System.Linq", StringComparison.Ordinal)
+            || (name.StartsWith("System.Linq.", StringComparison.Ordinal)
+                && !name.StartsWith("System.Linq.Expressions", StringComparison.Ordinal));
 
         if (isLinqUsage)
         {

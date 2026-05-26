@@ -166,20 +166,26 @@ public sealed class AbbreviatedIdentifierAnalyzer : DiagnosticAnalyzer
             return null;
         }
 
-        foreach (var segment in SplitCamelCase(stripped))
+        var segments = new List<string>(SplitCamelCase(stripped));
+        for (var index = 0; index < segments.Count; index++)
         {
-            if (IsAbbreviatedSegment(segment))
+            var previousSegment = index > 0 ? segments[index - 1] : null;
+            var nextSegment = index + 1 < segments.Count ? segments[index + 1] : null;
+            if (IsAbbreviatedSegment(segments[index], previousSegment, nextSegment))
             {
-                return segment;
+                return segments[index];
             }
         }
 
         return null;
     }
 
-    private static bool IsAbbreviatedSegment(string segment)
+    private static bool IsAbbreviatedSegment(string segment, string? previousSegment, string? nextSegment)
     {
-        if (AxisSegments.Contains(segment))
+        if (AxisSegments.Contains(segment) ||
+            segment.Equals("Xml", StringComparison.OrdinalIgnoreCase) ||
+            (segment.Equals("T", StringComparison.OrdinalIgnoreCase) && string.Equals(previousSegment, "Of", StringComparison.OrdinalIgnoreCase)) ||
+            (segment.Equals("N", StringComparison.OrdinalIgnoreCase) && string.Equals(nextSegment, "Substitute", StringComparison.OrdinalIgnoreCase)))
         {
             return false;
         }

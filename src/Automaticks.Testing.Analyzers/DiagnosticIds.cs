@@ -11,10 +11,19 @@ public static class DiagnosticIds
     /// </summary>
     public static class Testing
     {
-        /// <summary>Diagnostic ID for <c>ATXTST001</c>: mocking frameworks are not allowed; use hand-written stubs.</summary>
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXTST001</c>: mocking frameworks are not allowed; use hand-written stubs.
+        /// </summary>
         public const string MockingFramework = "ATXTST001";
 
-        /// <summary>Diagnostic ID for <c>ATXTST002</c>: test class name must match the class under test.</summary>
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXTST004</c>: <c>Task.Delay</c> is forbidden in test projects.
+        /// </summary>
+        public const string TaskDelay = "ATXTST004";
+
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXTST002</c>: test class name must match the class under test.
+        /// </summary>
         public const string TestClassName = "ATXTST002";
 
         /// <summary>
@@ -22,8 +31,5 @@ public static class DiagnosticIds
         ///     <c>Method_Scenario_ExpectedResult</c> convention.
         /// </summary>
         public const string TestMethodNaming = "ATXTST003";
-
-        /// <summary>Diagnostic ID for <c>ATXTST004</c>: <c>Task.Delay</c> is forbidden in test projects.</summary>
-        public const string TaskDelay = "ATXTST004";
     }
 }

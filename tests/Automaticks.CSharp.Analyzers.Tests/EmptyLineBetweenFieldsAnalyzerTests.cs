@@ -1,50 +1,22 @@
 using Automaticks.CSharp;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Automaticks.CSharp.Analyzers.Tests;
 
+/// <summary>
+///     Tests for EmptyLineBetweenFieldsAnalyzer.
+/// </summary>
 public class EmptyLineBetweenFieldsAnalyzerTests
 {
 
+    /// <summary>
+    ///     Tests that Analyze_BlankLineBetweenFieldAndConst_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_BlankLineBetweenTwoInstanceFields_ReportsDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Counter {
-                                      private int _a;
-
-                                      private int _b;
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new EmptyLineBetweenFieldsAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS039")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_BlankLineBetweenTwoStaticFields_ReportsDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Registry {
-                                      private static int _count;
-
-                                      private static int _total;
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new EmptyLineBetweenFieldsAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS039")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_BlankLineBetweenFieldAndConst_ReportsDiagnostic()
+    public async Task Analyze_BlankLineBetweenFieldAndConst_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -56,95 +28,67 @@ public class EmptyLineBetweenFieldsAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new EmptyLineBetweenFieldsAnalyzer(), source);
+        var analyzer = new EmptyLineBetweenFieldsAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS039")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS039")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_BlankLineBetweenFieldAndMethod_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_BlankLineBetweenTwoConsts_ReportsDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Constants {
-                                      private const int Min = 0;
-
-                                      private const int Max = 100;
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new EmptyLineBetweenFieldsAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS039")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_WhitespaceOnlyLineBetweenFields_ReportsDiagnostic()
-    {
-        const string source = "namespace MyApp {\n    public class Counter {\n        private int _a;\n   \n        private int _b;\n    }\n}";
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new EmptyLineBetweenFieldsAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS039")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_MultipleBlankLinesBetweenFields_ReportsOneDiagnostic()
+    public async Task Analyze_BlankLineBetweenFieldAndMethod_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
                                   public class Counter {
                                       private int _a;
 
-                                      private int _b;
+                                      public void Increment() { }
                                   }
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new EmptyLineBetweenFieldsAnalyzer(), source);
+        var analyzer = new EmptyLineBetweenFieldsAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Count(d => d.Id == "ATXCS039")).IsEqualTo(1);
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS039")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_BlankLineBetweenFieldAndProperty_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_BlankLineBetweenFieldsInStruct_ReportsDiagnostic()
+    public async Task Analyze_BlankLineBetweenFieldAndProperty_ReportsNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
-                                  public struct Point {
-                                      public int X;
+                                  public class Config {
+                                      private int _value;
 
-                                      public int Y;
+                                      public int Value { get; set; }
                                   }
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new EmptyLineBetweenFieldsAnalyzer(), source);
+        var analyzer = new EmptyLineBetweenFieldsAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS039")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS039")).IsFalse();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_BlankLineBetweenFieldsInInterface_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_BlankLineBetweenFieldsInRecord_ReportsDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public record Config {
-                                      public int Width;
-
-                                      public int Height;
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new EmptyLineBetweenFieldsAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS039")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_BlankLineBetweenFieldsInInterface_ReportsDiagnostic()
+    public async Task Analyze_BlankLineBetweenFieldsInInterface_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -156,13 +100,392 @@ public class EmptyLineBetweenFieldsAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new EmptyLineBetweenFieldsAnalyzer(), source);
+        var analyzer = new EmptyLineBetweenFieldsAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS039")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS039")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_BlankLineBetweenFieldsInRecord_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_ThreeFieldsWithBlankLinesBetweenEach_ReportsTwoDiagnostics()
+    public async Task Analyze_BlankLineBetweenFieldsInRecord_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public record Config {
+                                      public int Width;
+
+                                      public int Height;
+                                  }
+                              }
+                              """;
+
+        var analyzer = new EmptyLineBetweenFieldsAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS039")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_BlankLineBetweenFieldsInRecordStruct_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_BlankLineBetweenFieldsInRecordStruct_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public record struct Point {
+                                      public int X;
+
+                                      public int Y;
+                                  }
+                              }
+                              """;
+
+        var analyzer = new EmptyLineBetweenFieldsAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS039")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_BlankLineBetweenFieldsInStruct_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_BlankLineBetweenFieldsInStruct_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public struct Point {
+                                      public int X;
+
+                                      public int Y;
+                                  }
+                              }
+                              """;
+
+        var analyzer = new EmptyLineBetweenFieldsAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS039")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_BlankLineBetweenMethodAndField_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_BlankLineBetweenMethodAndField_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Counter {
+                                      public void Increment() { }
+
+                                      private int _a;
+                                  }
+                              }
+                              """;
+
+        var analyzer = new EmptyLineBetweenFieldsAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS039")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_BlankLineBetweenTwoConsts_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_BlankLineBetweenTwoConsts_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Constants {
+                                      private const int Min = 0;
+
+                                      private const int Max = 100;
+                                  }
+                              }
+                              """;
+
+        var analyzer = new EmptyLineBetweenFieldsAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS039")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_BlankLineBetweenTwoInstanceFields_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_BlankLineBetweenTwoInstanceFields_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Counter {
+                                      private int _a;
+
+                                      private int _b;
+                                  }
+                              }
+                              """;
+
+        var analyzer = new EmptyLineBetweenFieldsAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS039")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_BlankLineBetweenTwoStaticFields_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_BlankLineBetweenTwoStaticFields_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Registry {
+                                      private static int _count;
+
+                                      private static int _total;
+                                  }
+                              }
+                              """;
+
+        var analyzer = new EmptyLineBetweenFieldsAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS039")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_BlankLineThenDocCommentOnSecondField_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_BlankLineThenDocCommentOnSecondField_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Counter {
+                                      private int _a;
+
+                                      /// <summary>
+                                      ///     Field b.
+                                      /// </summary>
+                                      private int _b;
+                                  }
+                              }
+                              """;
+
+        var analyzer = new EmptyLineBetweenFieldsAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS039")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_ConstFieldsWithNoBlankLine_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ConstFieldsWithNoBlankLine_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Constants {
+                                      private const int Min = 0;
+                                      private const int Max = 100;
+                                  }
+                              }
+                              """;
+
+        var analyzer = new EmptyLineBetweenFieldsAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS039")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_DocCommentOnSecondFieldNoBlankLine_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_DocCommentOnSecondFieldNoBlankLine_ReportsNoDiagnostic(CancellationToken cancellationToken)
+        => await AssertNoDiagnosticForDocCommentOnSecondFieldAsync(cancellationToken);
+
+    /// <summary>
+    ///     Tests that Analyze_EmptyClass_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_EmptyClass_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Empty { }
+                              }
+                              """;
+
+        var analyzer = new EmptyLineBetweenFieldsAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS039")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_FieldsSeparatedByCommentLine_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_FieldsSeparatedByCommentLine_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Counter {
+                                      private int _a;
+                                      private int _b;
+                                  }
+                              }
+                              """;
+
+        var analyzer = new EmptyLineBetweenFieldsAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS039")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_FieldsWithMethodBetweenThem_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_FieldsWithMethodBetweenThem_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Counter {
+                                      private int _a;
+                                      public void Reset() { }
+
+                                      private int _b;
+                                  }
+                              }
+                              """;
+
+        var analyzer = new EmptyLineBetweenFieldsAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS039")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_FieldsWithNoBlankLineBetweenThem_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_FieldsWithNoBlankLineBetweenThem_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Counter {
+                                      private int _a;
+                                      private int _b;
+                                  }
+                              }
+                              """;
+
+        var analyzer = new EmptyLineBetweenFieldsAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS039")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_MultipleBlankLinesBetweenFields_ReportsOneDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_MultipleBlankLinesBetweenFields_ReportsOneDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Counter {
+                                      private int _a;
+
+                                      private int _b;
+                                  }
+                              }
+                              """;
+
+        var analyzer = new EmptyLineBetweenFieldsAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.CountId(diagnostics, "ATXCS039")).IsEqualTo(1);
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_NoBlankLineAndSecondFieldHasExtensibleMarkupLanguageDoc_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_NoBlankLineAndSecondFieldHasExtensibleMarkupLanguageDoc_ReportsNoDiagnostic(CancellationToken cancellationToken)
+        => await AssertNoDiagnosticForDocCommentOnSecondFieldAsync(cancellationToken);
+
+    /// <summary>
+    ///     Tests that Analyze_SingleField_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_SingleField_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Counter {
+                                      private int _count;
+                                  }
+                              }
+                              """;
+
+        var analyzer = new EmptyLineBetweenFieldsAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS039")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_ThreeFieldsWithBlankLinesBetweenEach_ReportsTwoDiagnostics.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ThreeFieldsWithBlankLinesBetweenEach_ReportsTwoDiagnostics(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -176,214 +499,29 @@ public class EmptyLineBetweenFieldsAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new EmptyLineBetweenFieldsAnalyzer(), source);
+        var analyzer = new EmptyLineBetweenFieldsAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Count(d => d.Id == "ATXCS039")).IsEqualTo(2);
+        await Assert.That(DiagnosticCollectionAssertions.CountId(diagnostics, "ATXCS039")).IsEqualTo(2);
     }
 
+    /// <summary>
+    ///     Tests that Analyze_WhitespaceOnlyLineBetweenFields_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_FieldsWithNoBlankLineBetweenThem_ReportsNoDiagnostic()
+    public async Task Analyze_WhitespaceOnlyLineBetweenFields_ReportsDiagnostic(CancellationToken cancellationToken)
     {
-        const string source = """
-                              namespace MyApp {
-                                  public class Counter {
-                                      private int _a;
-                                      private int _b;
-                                  }
-                              }
-                              """;
+        const string source = "namespace MyApp {\n    public class Counter {\n        private int _a;\n   \n        private int _b;\n    }\n}";
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new EmptyLineBetweenFieldsAnalyzer(), source);
+        var analyzer = new EmptyLineBetweenFieldsAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS039")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS039")).IsTrue();
     }
 
-    [Test]
-    public async Task Analyze_FieldsSeparatedByCommentLine_ReportsNoDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Counter {
-                                      private int _a;
-                                      // this is a comment
-                                      private int _b;
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new EmptyLineBetweenFieldsAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS039")).IsFalse();
-    }
-
-    [Test]
-    public async Task Analyze_BlankLineBetweenFieldAndMethod_ReportsNoDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Counter {
-                                      private int _a;
-
-                                      public void Increment() { }
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new EmptyLineBetweenFieldsAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS039")).IsFalse();
-    }
-
-    [Test]
-    public async Task Analyze_BlankLineBetweenMethodAndField_ReportsNoDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Counter {
-                                      public void Increment() { }
-
-                                      private int _a;
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new EmptyLineBetweenFieldsAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS039")).IsFalse();
-    }
-
-    [Test]
-    public async Task Analyze_BlankLineBetweenFieldAndProperty_ReportsNoDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Config {
-                                      private int _value;
-
-                                      public int Value { get; set; }
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new EmptyLineBetweenFieldsAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS039")).IsFalse();
-    }
-
-    [Test]
-    public async Task Analyze_FieldsWithMethodBetweenThem_ReportsNoDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Counter {
-                                      private int _a;
-                                      public void Reset() { }
-
-                                      private int _b;
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new EmptyLineBetweenFieldsAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS039")).IsFalse();
-    }
-
-    [Test]
-    public async Task Analyze_SingleField_ReportsNoDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Counter {
-                                      private int _count;
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new EmptyLineBetweenFieldsAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS039")).IsFalse();
-    }
-
-    [Test]
-    public async Task Analyze_EmptyClass_ReportsNoDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Empty { }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new EmptyLineBetweenFieldsAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS039")).IsFalse();
-    }
-
-    [Test]
-    public async Task Analyze_ConstFieldsWithNoBlankLine_ReportsNoDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Constants {
-                                      private const int Min = 0;
-                                      private const int Max = 100;
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new EmptyLineBetweenFieldsAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS039")).IsFalse();
-    }
-
-    [Test]
-    public async Task Analyze_BlankLineBetweenFieldsInRecordStruct_ReportsDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public record struct Point {
-                                      public int X;
-
-                                      public int Y;
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new EmptyLineBetweenFieldsAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS039")).IsTrue();
-    }
-
-    [Test]
-    public async Task Analyze_DocCommentOnSecondFieldNoBlankLine_ReportsNoDiagnostic()
-        => await AssertNoDiagnosticForDocCommentOnSecondFieldAsync();
-
-    [Test]
-    public async Task Analyze_BlankLineThenDocCommentOnSecondField_ReportsNoDiagnostic()
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Counter {
-                                      private int _a;
-
-                                      /// <summary>
-                                      ///     Field b.
-                                      /// </summary>
-                                      private int _b;
-                                  }
-                              }
-                              """;
-
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new EmptyLineBetweenFieldsAnalyzer(), source);
-
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS039")).IsFalse();
-    }
-
-    [Test]
-    public async Task Analyze_NoBlankLineAndSecondFieldHasXmlDoc_ReportsNoDiagnostic()
-        => await AssertNoDiagnosticForDocCommentOnSecondFieldAsync();
-
-    private static async Task AssertNoDiagnosticForDocCommentOnSecondFieldAsync()
+    private async Task AssertNoDiagnosticForDocCommentOnSecondFieldAsync(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -397,8 +535,9 @@ public class EmptyLineBetweenFieldsAnalyzerTests
                               }
                               """;
 
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(new EmptyLineBetweenFieldsAnalyzer(), source);
+        var analyzer = new EmptyLineBetweenFieldsAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(diagnostics.Any(d => d.Id == "ATXCS039")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS039")).IsFalse();
     }
 }
