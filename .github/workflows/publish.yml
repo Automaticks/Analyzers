@@ -1,20 +1,65 @@
 name: Publish NuGet Packages
 
 on:
-  push:
-    branches:
-      - main
+  schedule:
+    - cron: '0 8 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: publish-nuget
+  cancel-in-progress: false
 
 jobs:
-  publish:
+  check:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
+    outputs:
+      has_changes: ${{ steps.changes.outputs.HAS_CHANGES }}
+      last_tag: ${{ steps.changes.outputs.LAST_TAG }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Detect changes since last release
+        id: changes
+        run: |
+          LAST_TAG=$(git tag --merged HEAD --sort=-v:refname \
+            | grep -E '^[0-9]{4}\.[0-9]{1,2}\.[0-9]{1,2}(\.[0-9]+)?$' \
+            | head -n1 || true)
+          if [ -z "$LAST_TAG" ]; then
+            echo "No previous release tag found; this will be the initial release."
+            echo "HAS_CHANGES=true" >> "$GITHUB_OUTPUT"
+            echo "LAST_TAG=" >> "$GITHUB_OUTPUT"
+          else
+            COUNT=$(git rev-list --count "$LAST_TAG..HEAD")
+            echo "Commits since $LAST_TAG: $COUNT"
+            if [ "$COUNT" -gt 0 ]; then
+              echo "HAS_CHANGES=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "HAS_CHANGES=false" >> "$GITHUB_OUTPUT"
+            fi
+            echo "LAST_TAG=$LAST_TAG" >> "$GITHUB_OUTPUT"
+          fi
+
+  publish:
+    needs: check
+    if: github.ref == 'refs/heads/main' && needs.check.outputs.has_changes == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -32,7 +77,20 @@ jobs:
 
       - name: Set version
         id: version
-        run: echo "VERSION=$(date +'%Y.%-m.%-d.')$(date +'%H%M')" >> $GITHUB_OUTPUT
+        run: |
+          BASE="$(date -u +'%Y.%-m.%-d')"
+          VERSION="$BASE"
+          N=1
+          while git rev-parse "refs/tags/$VERSION" >/dev/null 2>&1; do
+            VERSION="${BASE}.${N}"
+            N=$((N + 1))
+            if [ "$N" -gt 100 ]; then
+              echo "::error::Exhausted version candidates for $BASE; revisit the versioning scheme."
+              exit 1
+            fi
+          done
+          echo "Computed version: $VERSION"
+          echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Pack Automaticks.CSharp.Analyzers
         run: dotnet pack src/Automaticks.CSharp.Analyzers/Automaticks.CSharp.Analyzers.csproj --no-build -c Release -p:Version=${{ steps.version.outputs.VERSION }} -o ./nupkg
@@ -61,9 +119,27 @@ jobs:
       - name: Pack Automaticks.Testing.Analyzers
         run: dotnet pack src/Automaticks.Testing.Analyzers/Automaticks.Testing.Analyzers.csproj --no-build -c Release -p:Version=${{ steps.version.outputs.VERSION }} -o ./nupkg
 
-      - name: Push to GitHub Packages
+      - name: Push to NuGet.org
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         run: |
           dotnet nuget push ./nupkg/*.nupkg \
-            --api-key ${{ secrets.GITHUB_TOKEN }} \
-            --source "https://nuget.pkg.github.com/Automaticks/index.json" \
+            --api-key "$NUGET_API_KEY" \
+            --source "https://api.nuget.org/v3/index.json" \
             --skip-duplicate
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.VERSION }}
+          LAST_TAG: ${{ needs.check.outputs.last_tag }}
+        run: |
+          if [ -n "$LAST_TAG" ]; then
+            NOTES_ARGS=(--notes-start-tag "$LAST_TAG" --generate-notes)
+          else
+            NOTES_ARGS=(--generate-notes)
+          fi
+          gh release create "$VERSION" \
+            --target "${{ github.sha }}" \
+            --title "$VERSION" \
+            "${NOTES_ARGS[@]}"
