@@ -142,4 +142,5 @@ jobs:
           gh release create "$VERSION" \
             --target "${{ github.sha }}" \
             --title "$VERSION" \
-            "${NOTES_ARGS[@]}"
+            "${NOTES_ARGS[@]}" \
+            ./nupkg/*.nupkg
