@@ -8,10 +8,12 @@ using System.Collections.Immutable;
 namespace Automaticks.CSharp;
 
 /// <summary>
-///     Flags any <c>new</c> expression that is used inline — not directly assigned to a local variable.
+///     Flags any <c>new</c> expression that is used inline — not directly assigned to a local variable
+///     or used as the right-hand side of a top-level simple-assignment statement.
 ///     The following positions are exempt from this rule:
 ///     <list type="bullet">
 ///         <item>The direct right-hand side of a local variable declaration: <c>var x = new Foo()</c>, including <c>for</c> and <c>using</c> declarations.</item>
+///         <item>The direct right-hand side of a top-level simple-assignment statement: <c>_field = new Foo();</c>, <c>this.Prop = new Foo();</c>, <c>dict[key] = new Foo();</c>. Only the simple <c>=</c> operator is exempt; compound assignments (<c>??=</c>, <c>+=</c>, etc.) remain flagged.</item>
 ///         <item>The direct expression of a <c>return</c> or <c>yield return</c> statement.</item>
 ///         <item>The direct body of an expression-bodied member (<c>=&gt;</c>).</item>
 ///         <item>Inside an attribute argument list.</item>
@@ -19,7 +21,8 @@ namespace Automaticks.CSharp;
 ///         <item>The direct operand of a <c>throw</c> statement or <c>throw</c> expression: <c>throw new FooException()</c>.</item>
 ///     </list>
 ///     All other usages — constructor arguments, method arguments, collection initializer elements,
-///     object initializer member values, field and property initializers, and conditional expressions —
+///     object initializer member values, field and property initializers, conditional expressions,
+///     compound assignments, tuple/deconstruction assignments, and chained assignments —
 ///     must extract the instance to a named local variable first.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
@@ -35,7 +38,7 @@ public sealed class InlineNewExpressionAnalyzer : DiagnosticAnalyzer
         "CSharp",
         DiagnosticSeverity.Error,
         true,
-        "Extract the `new` expression to a named local variable before passing it. Example: change `Method(new Foo())` to `var foo = new Foo(); Method(foo);`. Allowed positions where inline `new` is not flagged: `return new Foo()`, `var x = new Foo()`, expression-bodied members (`=> new Foo()`), switch expression arms (`T t => new Foo()`), attribute arguments, `yield return new Foo()`, `for`-loop initializers, `using` declarations, and `throw new FooException()`.");
+        "Extract the `new` expression to a named local variable before passing it. Example: change `Method(new Foo())` to `var foo = new Foo(); Method(foo);`. Allowed positions where inline `new` is not flagged: `return new Foo()`, `var x = new Foo()`, top-level simple-assignment statements (`_field = new Foo();`, `Prop = new Foo();`, `dict[key] = new Foo();`), expression-bodied members (`=> new Foo()`), switch expression arms (`T t => new Foo()`), attribute arguments, `yield return new Foo()`, `for`-loop initializers, `using` declarations, and `throw new FooException()`. Compound assignments (`??=`, `+=`, etc.) and chained or deconstruction assignments are NOT exempt.");
 
     /// <inheritdoc />
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
@@ -92,8 +95,16 @@ public sealed class InlineNewExpressionAnalyzer : DiagnosticAnalyzer
                     || varDecl.Parent is UsingStatementSyntax;
 
             default:
-                return false;
+                return IsDirectRightHandSideOfTopLevelSimpleAssignment(effective);
         }
+    }
+
+    private static bool IsDirectRightHandSideOfTopLevelSimpleAssignment(ExpressionSyntax effective)
+    {
+        return effective.Parent is AssignmentExpressionSyntax assignment
+            && assignment.IsKind(SyntaxKind.SimpleAssignmentExpression)
+            && assignment.Right == effective
+            && assignment.Parent is ExpressionStatementSyntax;
     }
 
     private static bool IsInsideAttributeArgument(SyntaxNode node)
