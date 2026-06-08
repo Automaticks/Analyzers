@@ -175,5 +175,11 @@ public static class DiagnosticIds
 
         /// <summary>Diagnostic ID for <c>ATXCS064</c>: type member violates within-group ordering (public/protected/private, static/instance, then alphabetical).</summary>
         public const string TypeMemberWithinGroupOrder = "ATXCS064";
+
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXCS065</c>: a public init-only auto-property is set in the
+        ///     containing type's single instance constructor from a constructor parameter.
+        /// </summary>
+        public const string RedundantInitSetter = "ATXCS065";
     }
 }
