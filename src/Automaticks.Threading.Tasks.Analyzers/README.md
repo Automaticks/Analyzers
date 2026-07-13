@@ -10,6 +10,13 @@ Part of the [Automaticks Analyzers](https://github.com/Automaticks/Analyzers) fa
 dotnet add package Automaticks.Threading.Tasks.Analyzers
 ```
 
+## Rules
+
+| ID | Title | Category | Default Severity | Kind |
+|---|---|---|---|---|
+| `ATXTA008` | Async-returning methods must accept CancellationToken as the last parameter | Threading.Tasks | Error | Analyzer |
+| `ATXTA010` | Unobserved Task invocation | Threading.Tasks | Error | Analyzer |
+
 ## License
 
 MIT — see [LICENSE](https://github.com/Automaticks/Analyzers/blob/main/LICENSE).
