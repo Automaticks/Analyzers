@@ -1,4 +1,4 @@
-namespace Automaticks.CSharp;
+﻿namespace Automaticks.CSharp;
 
 /// <summary>
 ///     Centralised registry of all diagnostic IDs emitted by the CSharp Roslyn analyzers.
@@ -181,5 +181,11 @@ public static class DiagnosticIds
         ///     containing type's single instance constructor from a constructor parameter.
         /// </summary>
         public const string RedundantInitSetter = "ATXCS065";
+
+        /// <summary>Diagnostic ID for <c>ATXCS066</c>: a folder directly contains more than the maximum number of source files.</summary>
+        public const string FolderFileCount = "ATXCS066";
+
+        /// <summary>Diagnostic ID for <c>ATXCS067</c>: a namespace is declared by more than the maximum number of source files.</summary>
+        public const string NamespaceFileCount = "ATXCS067";
     }
 }
