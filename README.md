@@ -1,4 +1,4 @@
-# Automaticks Analyzers
+﻿# Automaticks Analyzers
 
 Roslyn analyzers for C#, Entity Framework Core, CommunityToolkit.Mvvm, and more.
 
@@ -73,6 +73,8 @@ Every diagnostic rule and suppressor across all packages, sorted by rule ID. Row
 | `ATXCS063` | Methods returning bool must use an allowed prefix | CSharp | Error | Analyzer | `Automaticks.CSharp.Analyzers` |
 | `ATXCS064` | Type member violates within-group ordering | Style | Error | Analyzer | `Automaticks.CSharp.Analyzers` |
 | `ATXCS065` | Init-only setter is redundant when the property is assigned in the constructor | CSharp | Error | Analyzer | `Automaticks.CSharp.Analyzers` |
+| `ATXCS066` | Folders must not exceed the maximum number of source files | Maintainability | Error | Analyzer | `Automaticks.CSharp.Analyzers` |
+| `ATXCS067` | Namespaces must not exceed the maximum number of source files | Maintainability | Error | Analyzer | `Automaticks.CSharp.Analyzers` |
 | `ATXDC018` | #pragma warning disable is not allowed | Diagnostics.CodeAnalysis | Error | Analyzer | `Automaticks.Diagnostics.CodeAnalysis.Analyzers` |
 | `ATXDC019` | // ReSharper disable is not allowed | Diagnostics.CodeAnalysis | Error | Analyzer | `Automaticks.Diagnostics.CodeAnalysis.Analyzers` |
 | `ATXDC056` | [SuppressMessage] is not allowed | Diagnostics.CodeAnalysis | Error | Analyzer | `Automaticks.Diagnostics.CodeAnalysis.Analyzers` |

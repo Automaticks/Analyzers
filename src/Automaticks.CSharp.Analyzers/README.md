@@ -1,4 +1,4 @@
-# Automaticks.CSharp.Analyzers
+﻿# Automaticks.CSharp.Analyzers
 
 Roslyn analyzers for C# language rules — naming, syntax, documentation, complexity, and language feature usage.
 
@@ -65,6 +65,8 @@ dotnet add package Automaticks.CSharp.Analyzers
 | `ATXCS063` | Methods returning bool must use an allowed prefix | CSharp | Error | Analyzer |
 | `ATXCS064` | Type member violates within-group ordering | Style | Error | Analyzer |
 | `ATXCS065` | Init-only setter is redundant when the property is assigned in the constructor | CSharp | Error | Analyzer |
+| `ATXCS066` | Folders must not exceed the maximum number of source files | Maintainability | Error | Analyzer |
+| `ATXCS067` | Namespaces must not exceed the maximum number of source files | Maintainability | Error | Analyzer |
 
 ## License
 
