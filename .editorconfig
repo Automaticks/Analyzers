@@ -1,0 +1,9 @@
+﻿root = true
+
+# ATXCS017 (abbreviated identifier) flags the nested `DiagnosticIds.CSharp` class because its
+# name camelCase-splits into segments "C" + "Sharp", and a single-letter segment is always
+# treated as abbreviated. "CSharp" is the repo's own established, unambiguous name for the C#
+# language (used throughout this package's namespace and NuGet package id) and is not a real
+# abbreviation - renaming it would ripple across every file in this package and its test suite.
+[src/Automaticks.CSharp.Analyzers/DiagnosticIds.cs]
+dotnet_diagnostic.ATXCS017.severity = none
