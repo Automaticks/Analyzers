@@ -63,7 +63,7 @@
             Condition="'$(IsAnalyzerProject)' == 'true'">
         <ItemGroup>
             <Analyzer Include="$(DogfoodAnalyzerCacheDirectory)Automaticks.CSharp.Analyzers.dll"
-                      Condition="'$(PackageId)' != 'Automaticks.CSharp.Analyzers' AND Exists('$(DogfoodAnalyzerCacheDirectory)Automaticks.CSharp.Analyzers.dll')" />
+                      Condition="Exists('$(DogfoodAnalyzerCacheDirectory)Automaticks.CSharp.Analyzers.dll')" />
             <Analyzer Include="$(DogfoodAnalyzerCacheDirectory)Automaticks.CommunityToolkit.Mvvm.Analyzers.dll"
                       Condition="'$(PackageId)' != 'Automaticks.CommunityToolkit.Mvvm.Analyzers' AND Exists('$(DogfoodAnalyzerCacheDirectory)Automaticks.CommunityToolkit.Mvvm.Analyzers.dll')" />
             <Analyzer Include="$(DogfoodAnalyzerCacheDirectory)Automaticks.Diagnostics.CodeAnalysis.Analyzers.dll"
