@@ -27,6 +27,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\Automaticks.Extensions.Options.Analyzers\Automaticks.Extensions.Options.Analyzers.csproj" ReferenceOutputAssembly="true" />
+        <ProjectReference Include="..\..\src\Automaticks.Extensions.Options.Analyzers.CodeFixes\Automaticks.Extensions.Options.Analyzers.CodeFixes.csproj" ReferenceOutputAssembly="true" />
     </ItemGroup>
 
 </Project>

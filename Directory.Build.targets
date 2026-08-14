@@ -23,11 +23,27 @@
     </ItemGroup>
 
     <!--
+        Ship the paired code-fix assembly inside the analyzer's own package. A ProjectReference from
+        the analyzer to its CodeFixes project would be circular (the CodeFixes project references the
+        analyzer), so the DLL is picked up by path instead. publish.yml builds the whole solution
+        before packing, so the file already exists by pack time.
+    -->
+    <PropertyGroup Condition="'$(IsAnalyzerProject)' == 'true'">
+        <PairedCodeFixAssemblyPath>$(MSBuildThisFileDirectory)src\$(MSBuildProjectName).CodeFixes\bin\$(Configuration)\$(MSBuildProjectName).CodeFixes.dll</PairedCodeFixAssemblyPath>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(IsAnalyzerProject)' == 'true' AND Exists('$(PairedCodeFixAssemblyPath)')">
+        <None Include="$(PairedCodeFixAssemblyPath)" Pack="true" PackagePath="analyzers/dotnet/cs/" Visible="false" />
+    </ItemGroup>
+
+    <!--
         Dogfooding for tests/ projects: all 9 analyzer projects are loaded as Roslyn analyzers via
         ProjectReference with OutputItemType="Analyzer". No circular build dependency because test
-        projects do not reference each other.
+        projects do not reference each other. CodeFixes projects are excluded here because they
+        already carry a plain ProjectReference to their paired analyzer, which would collide; they
+        use the cache-based AddSiblingAnalyzers path below instead.
     -->
-    <ItemGroup Condition="'$(IsAnalyzerProject)' != 'true'">
+    <ItemGroup Condition="'$(IsAnalyzerProject)' != 'true' AND '$(IsCodeFixProject)' != 'true'">
         <ProjectReference Include="$(MSBuildThisFileDirectory)src\Automaticks.CSharp.Analyzers\Automaticks.CSharp.Analyzers.csproj"
                           OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
         <ProjectReference Include="$(MSBuildThisFileDirectory)src\Automaticks.CommunityToolkit.Mvvm.Analyzers\Automaticks.CommunityToolkit.Mvvm.Analyzers.csproj"
@@ -49,18 +65,18 @@
     </ItemGroup>
 
     <!--
-        Dogfooding for src/ (analyzer) projects: each project loads all OTHER analyzer DLLs from
-        a stable cache directory. Using cached copies avoids races with CoreClean removing sibling
-        outputs during a parallel solution build, while still allowing analyzer-to-analyzer
+        Dogfooding for src/ (analyzer and code-fix) projects: each project loads all OTHER analyzer
+        DLLs from a stable cache directory. Using cached copies avoids races with CoreClean removing
+        sibling outputs during a parallel solution build, while still allowing analyzer-to-analyzer
         dogfooding after the cache has been populated once.
     -->
-    <PropertyGroup Condition="'$(IsAnalyzerProject)' == 'true'">
+    <PropertyGroup Condition="'$(IsAnalyzerProject)' == 'true' OR '$(IsCodeFixProject)' == 'true'">
         <DogfoodAnalyzerCacheDirectory>$(MSBuildThisFileDirectory).dogfood\</DogfoodAnalyzerCacheDirectory>
         <DogfoodAnalyzerCachePath>$(DogfoodAnalyzerCacheDirectory)$(MSBuildProjectName).dll</DogfoodAnalyzerCachePath>
     </PropertyGroup>
 
     <Target Name="AddSiblingAnalyzers" BeforeTargets="CoreCompile"
-            Condition="'$(IsAnalyzerProject)' == 'true'">
+            Condition="'$(IsAnalyzerProject)' == 'true' OR '$(IsCodeFixProject)' == 'true'">
         <ItemGroup>
             <Analyzer Include="$(DogfoodAnalyzerCacheDirectory)Automaticks.CSharp.Analyzers.dll"
                       Condition="Exists('$(DogfoodAnalyzerCacheDirectory)Automaticks.CSharp.Analyzers.dll')" />

@@ -27,6 +27,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\Automaticks.Diagnostics.CodeAnalysis.Analyzers\Automaticks.Diagnostics.CodeAnalysis.Analyzers.csproj" ReferenceOutputAssembly="true" />
+        <ProjectReference Include="..\..\src\Automaticks.Diagnostics.CodeAnalysis.Analyzers.CodeFixes\Automaticks.Diagnostics.CodeAnalysis.Analyzers.CodeFixes.csproj" ReferenceOutputAssembly="true" />
     </ItemGroup>
 
 </Project>

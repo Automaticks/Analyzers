@@ -1,11 +1,16 @@
 <Solution>
   <Project Path="src/Automaticks.CSharp.Analyzers/Automaticks.CSharp.Analyzers.csproj" />
+  <Project Path="src/Automaticks.CSharp.Analyzers.CodeFixes/Automaticks.CSharp.Analyzers.CodeFixes.csproj" />
   <Project Path="src/Automaticks.Threading.Tasks.Analyzers/Automaticks.Threading.Tasks.Analyzers.csproj" />
+  <Project Path="src/Automaticks.Threading.Tasks.Analyzers.CodeFixes/Automaticks.Threading.Tasks.Analyzers.CodeFixes.csproj" />
   <Project Path="src/Automaticks.Linq.Analyzers/Automaticks.Linq.Analyzers.csproj" />
   <Project Path="src/Automaticks.Reflection.Analyzers/Automaticks.Reflection.Analyzers.csproj" />
   <Project Path="src/Automaticks.Extensions.Options.Analyzers/Automaticks.Extensions.Options.Analyzers.csproj" />
+  <Project Path="src/Automaticks.Extensions.Options.Analyzers.CodeFixes/Automaticks.Extensions.Options.Analyzers.CodeFixes.csproj" />
   <Project Path="src/Automaticks.Diagnostics.CodeAnalysis.Analyzers/Automaticks.Diagnostics.CodeAnalysis.Analyzers.csproj" />
+  <Project Path="src/Automaticks.Diagnostics.CodeAnalysis.Analyzers.CodeFixes/Automaticks.Diagnostics.CodeAnalysis.Analyzers.CodeFixes.csproj" />
   <Project Path="src/Automaticks.CommunityToolkit.Mvvm.Analyzers/Automaticks.CommunityToolkit.Mvvm.Analyzers.csproj" />
+  <Project Path="src/Automaticks.CommunityToolkit.Mvvm.Analyzers.CodeFixes/Automaticks.CommunityToolkit.Mvvm.Analyzers.CodeFixes.csproj" />
   <Project Path="src/Automaticks.EntityFrameworkCore.Analyzers/Automaticks.EntityFrameworkCore.Analyzers.csproj" />
   <Project Path="src/Automaticks.Testing.Analyzers/Automaticks.Testing.Analyzers.csproj" />
   <Project Path="tests/Automaticks.CSharp.Analyzers.Tests/Automaticks.CSharp.Analyzers.Tests.csproj" />

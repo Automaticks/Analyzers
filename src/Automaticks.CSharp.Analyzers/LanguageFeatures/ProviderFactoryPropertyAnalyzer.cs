@@ -8,7 +8,8 @@ namespace Automaticks.CSharp.LanguageFeatures;
 /// <summary>
 ///     Flags public properties declared on types whose name ends with <c>Provider</c>,
 ///     <c>Factory</c>, <c>Builder</c>, or <c>Client</c>. These service types must expose
-///     their API through methods only.
+///     their API through methods only. Properties that originate outside the compilation —
+///     overrides of external base members and external interface implementations — are exempt.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class ProviderFactoryPropertyAnalyzer : DiagnosticAnalyzer
@@ -30,7 +31,7 @@ public sealed class ProviderFactoryPropertyAnalyzer : DiagnosticAnalyzer
             "CSharp",
             DiagnosticSeverity.Error,
             true,
-            "Convert the property to a method. Types whose name ends with Provider, Factory, Builder, Client, or Session are service types and must only expose methods, not properties. Example: rename `public Foo CurrentFoo { get; }` to `public Foo GetCurrentFoo()` or `public Foo CreateFoo()`.");
+            "Convert the property to a method. Types whose name ends with Provider, Factory, Builder, Client, or Session are service types and must only expose methods, not properties. Example: rename `public Foo CurrentFoo { get; }` to `public Foo GetCurrentFoo()` or `public Foo CreateFoo()`. Exempt: properties that override an external base member or implement an external interface, since their shape is fixed by an assembly outside this compilation.");
         Rule = rule;
     }
 
@@ -74,6 +75,11 @@ public sealed class ProviderFactoryPropertyAnalyzer : DiagnosticAnalyzer
                 continue;
             }
 
+            if (HasExternalOrigin(property))
+            {
+                continue;
+            }
+
             Location location;
             if (property.Locations.Length > 0)
             {
@@ -86,5 +92,78 @@ public sealed class ProviderFactoryPropertyAnalyzer : DiagnosticAnalyzer
 
             context.ReportDiagnostic(Diagnostic.Create(Rule, location, type.Name, property.Name));
         }
+    }
+
+    private bool HasExternalExplicitPropertyImplementation(IPropertySymbol property)
+    {
+        foreach (var interfaceProperty in property.ExplicitInterfaceImplementations)
+        {
+            if (interfaceProperty.DeclaringSyntaxReferences.IsEmpty)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool HasExternalImplicitPropertyImplementation(IPropertySymbol property)
+    {
+        foreach (var interfaceType in property.ContainingType.AllInterfaces)
+        {
+            foreach (var member in interfaceType.GetMembers())
+            {
+                if (member is not IPropertySymbol interfaceProperty)
+                {
+                    continue;
+                }
+
+                if (interfaceProperty.DeclaringSyntaxReferences.IsEmpty &&
+                    SymbolEqualityComparer.Default.Equals(
+                        property.ContainingType.FindImplementationForInterfaceMember(interfaceProperty),
+                        property))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private bool HasExternalOrigin(IPropertySymbol property)
+    {
+        if (HasExternalPropertyOverride(property))
+        {
+            return true;
+        }
+
+        if (HasExternalExplicitPropertyImplementation(property))
+        {
+            return true;
+        }
+
+        if (property.IsOverride)
+        {
+            return false;
+        }
+
+        return HasExternalImplicitPropertyImplementation(property);
+    }
+
+    private bool HasExternalPropertyOverride(IPropertySymbol property)
+    {
+        var overridden = property.OverriddenProperty;
+        while (overridden is not null)
+        {
+            if (overridden.DeclaringSyntaxReferences.IsEmpty)
+            {
+                return true;
+            }
+
+            overridden = overridden.OverriddenProperty;
+        }
+
+        return false;
     }
 }
