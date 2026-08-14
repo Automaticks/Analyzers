@@ -10,6 +10,137 @@ namespace Automaticks.CSharp.Analyzers.Tests.LanguageFeatures;
 public class ProviderFactoryPropertyAnalyzerTests
 {
     /// <summary>
+    ///     Tests that Analyze_ExplicitExternalInterfacePropertyImplementation_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ExplicitExternalInterfacePropertyImplementation_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string externalSource = """
+                                      namespace External {
+                                          public interface IFoo {
+                                              string Name { get; }
+                                          }
+                                      }
+                                      """;
+        const string source = """
+                              using External;
+                              namespace MyApp {
+                                  public class FooProvider : IFoo {
+                                      string IFoo.Name { get; }
+                                  }
+                              }
+                              """;
+
+        var externalRef = AnalyzerTestRunner.CompileToReference(externalSource);
+        var analyzer = new ProviderFactoryPropertyAnalyzer();
+        var options = new AnalysisOptions
+        {
+            AdditionalReferences = [externalRef]
+        };
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, options, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS004")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_ExternalOverrideProperty_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ExternalOverrideProperty_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string externalSource = """
+                                      namespace External {
+                                          public abstract class Base {
+                                              public abstract string Name { get; }
+                                          }
+                                      }
+                                      """;
+        const string source = """
+                              using External;
+                              namespace MyApp {
+                                  public class FooProvider : Base {
+                                      public override string Name { get; }
+                                  }
+                              }
+                              """;
+
+        var externalRef = AnalyzerTestRunner.CompileToReference(externalSource);
+        var analyzer = new ProviderFactoryPropertyAnalyzer();
+        var options = new AnalysisOptions
+        {
+            AdditionalReferences = [externalRef]
+        };
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, options, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS004")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_ImplicitExternalInterfacePropertyImplementation_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ImplicitExternalInterfacePropertyImplementation_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string externalSource = """
+                                      namespace External {
+                                          public interface IFoo {
+                                              string Name { get; }
+                                          }
+                                      }
+                                      """;
+        const string source = """
+                              using External;
+                              namespace MyApp {
+                                  public class FooProvider : IFoo {
+                                      public string Name { get; }
+                                  }
+                              }
+                              """;
+
+        var externalRef = AnalyzerTestRunner.CompileToReference(externalSource);
+        var analyzer = new ProviderFactoryPropertyAnalyzer();
+        var options = new AnalysisOptions
+        {
+            AdditionalReferences = [externalRef]
+        };
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, options, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS004")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_LocalInterfacePropertyImplementation_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_LocalInterfacePropertyImplementation_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public interface IFoo {
+                                      string Name { get; }
+                                  }
+
+                                  public class FooProvider : IFoo {
+                                      public string Name { get; }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new ProviderFactoryPropertyAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS004")).IsTrue();
+    }
+
+    /// <summary>
     ///     Tests that Analyze_MethodOnProvider_ReportsNoDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
