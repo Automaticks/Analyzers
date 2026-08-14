@@ -1,4 +1,4 @@
-using Microsoft.CodeAnalysis.CodeFixes;
+﻿using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Automaticks.Threading.Tasks.Analyzers.Tests;

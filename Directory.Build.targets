@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
 
     <!--
         For Roslyn analyzer NuGet packages, the DLL must be placed under analyzers/dotnet/cs/

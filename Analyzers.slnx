@@ -1,4 +1,4 @@
-<Solution>
+﻿<Solution>
   <Project Path="src/Automaticks.CSharp.Analyzers/Automaticks.CSharp.Analyzers.csproj" />
   <Project Path="src/Automaticks.CSharp.Analyzers.CodeFixes/Automaticks.CSharp.Analyzers.CodeFixes.csproj" />
   <Project Path="src/Automaticks.Threading.Tasks.Analyzers/Automaticks.Threading.Tasks.Analyzers.csproj" />

@@ -1,4 +1,4 @@
-using Automaticks.CSharp.CodeFixes.Documentation;
+﻿using Automaticks.CSharp.CodeFixes.Documentation;
 using System.Threading;
 using System.Threading.Tasks;
 

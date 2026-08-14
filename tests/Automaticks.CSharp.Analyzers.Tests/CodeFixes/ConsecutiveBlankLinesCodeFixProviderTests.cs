@@ -1,4 +1,4 @@
-using Automaticks.CSharp.CodeFixes.Formatting;
+﻿using Automaticks.CSharp.CodeFixes.Formatting;
 using System.Threading;
 using System.Threading.Tasks;
 

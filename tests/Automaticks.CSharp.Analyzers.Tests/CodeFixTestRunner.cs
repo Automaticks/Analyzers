@@ -1,4 +1,4 @@
-using Automaticks.CSharp.Analyzers.Tests.Stubs;
+﻿using Automaticks.CSharp.Analyzers.Tests.Stubs;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;

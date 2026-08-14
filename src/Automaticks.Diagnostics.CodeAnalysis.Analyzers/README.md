@@ -1,4 +1,4 @@
-# Automaticks.Diagnostics.CodeAnalysis.Analyzers
+﻿# Automaticks.Diagnostics.CodeAnalysis.Analyzers
 
 Roslyn analyzers for `System.Diagnostics.CodeAnalysis` — diagnostic suppression rules.
 

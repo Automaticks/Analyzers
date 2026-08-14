@@ -1,4 +1,4 @@
-using Automaticks.Threading.Tasks.CodeFixes;
+﻿using Automaticks.Threading.Tasks.CodeFixes;
 using System.Threading;
 using System.Threading.Tasks;
 

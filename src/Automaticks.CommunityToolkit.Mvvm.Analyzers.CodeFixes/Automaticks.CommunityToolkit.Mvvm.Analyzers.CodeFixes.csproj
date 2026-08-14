@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <!--
         Code fixes live in a separate assembly from the analyzers because RS1038 forbids a

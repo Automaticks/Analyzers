@@ -20,7 +20,7 @@ dotnet add package Automaticks.CSharp.Analyzers
 | `ATXCS009` | Methods with the 'Async' suffix must return Task, ValueTask, or `IAsyncEnumerable<T>` | CSharp | Error | Analyzer |
 | `ATXCS011` | Static methods must only exist in static classes | CSharp | Error | Analyzer |
 | `ATXCS012` | Anonymous tuple types are forbidden | CSharp | Error | Analyzer |
-| `ATXCS013` | The 'internal' access modifier is forbidden | CSharp | Error | Analyzer |
+| `ATXCS013` | The 'internal' access modifier is forbidden | CSharp | Error | Analyzer, CodeFix |
 | `ATXCS014` | Redundant null check on non-nullable parameter | CSharp | Error | Analyzer |
 | `ATXCS017` | Identifier contains an abbreviated segment | CSharp | Error | Analyzer |
 | `ATXCS020` | Generic built-in delegate types are forbidden | CSharp | Error | Analyzer |
@@ -39,22 +39,22 @@ dotnet add package Automaticks.CSharp.Analyzers
 | `ATXCS034` | Classes must not exceed the maximum lines-of-code limit | Maintainability | Error | Analyzer |
 | `ATXCS036` | Inline field or property initialization is forbidden | CSharp | Error | Analyzer |
 | `ATXCS037` | Explicit constructors are required | CSharp | Error | Analyzer |
-| `ATXCS038` | `<remarks>` is not allowed in XML documentation | CSharp | Error | Analyzer |
-| `ATXCS039` | Empty lines between adjacent field or constant declarations are forbidden | Style | Error | Analyzer |
+| `ATXCS038` | `<remarks>` is not allowed in XML documentation | CSharp | Error | Analyzer, CodeFix |
+| `ATXCS039` | Empty lines between adjacent field or constant declarations are forbidden | Style | Error | Analyzer, CodeFix |
 | `ATXCS040` | Missing blank line adjacent to a property or indexer declaration | Style | Error | Analyzer |
-| `ATXCS041` | Plain comment is not allowed | CSharp | Warning | Analyzer |
+| `ATXCS041` | Plain comment is not allowed | CSharp | Warning | Analyzer, CodeFix |
 | `ATXCS042` | Type member is declared in the wrong section | Style | Error | Analyzer |
-| `ATXCS043` | Missing blank line between using directives and namespace declaration | Style | Error | Analyzer |
-| `ATXCS044` | Consecutive blank lines are forbidden | Style | Error | Analyzer |
+| `ATXCS043` | Missing blank line between using directives and namespace declaration | Style | Error | Analyzer, CodeFix |
+| `ATXCS044` | Consecutive blank lines are forbidden | Style | Error | Analyzer, CodeFix |
 | `ATXCS045` | Auto-implemented property must be declared on a single line | Style | Error | Analyzer |
-| `ATXCS046` | Duplicate using directive | Style | Error | Analyzer |
-| `ATXCS047` | Using directives must be sorted alphabetically | Style | Error | Analyzer |
-| `ATXCS048` | Unused using directive | Style | Error | Analyzer |
+| `ATXCS046` | Duplicate using directive | Style | Error | Analyzer, CodeFix |
+| `ATXCS047` | Using directives must be sorted alphabetically | Style | Error | Analyzer, CodeFix |
+| `ATXCS048` | Unused using directive | Style | Error | Analyzer, CodeFix |
 | `ATXCS050` | `<summary>` content must start on a new line and be indented with 4 spaces | CSharp | Warning | Analyzer |
 | `ATXCS051` | Public member is missing a `<summary>` XML documentation comment | CSharp | Warning | Analyzer |
 | `ATXCS052` | Public member parameter is missing a `<param>` XML documentation element | CSharp | Warning | Analyzer |
 | `ATXCS053` | Public non-void method is missing a `<returns>` XML documentation element | CSharp | Warning | Analyzer |
-| `ATXCS054` | Missing blank line before XML doc comment | Style | Error | Analyzer |
+| `ATXCS054` | Missing blank line before XML doc comment | Style | Error | Analyzer, CodeFix |
 | `ATXCS055` | The params keyword is forbidden | CSharp | Error | Analyzer |
 | `ATXCS057` | Parameter must not have a default value | CSharp | Error | Analyzer |
 | `ATXCS058` | Inline 'new' expression is forbidden | CSharp | Error | Analyzer |
@@ -67,6 +67,35 @@ dotnet add package Automaticks.CSharp.Analyzers
 | `ATXCS065` | Init-only setter is redundant when the property is assigned in the constructor | CSharp | Error | Analyzer |
 | `ATXCS066` | Folders must not exceed the maximum number of source files | Maintainability | Error | Analyzer |
 | `ATXCS067` | Namespaces must not exceed the maximum number of source files | Maintainability | Error | Analyzer |
+
+## Code fixes
+
+Rules marked `CodeFix` above ship an automated fix. Fixes appear on the IDE light bulb and
+support the document, project, and solution Fix All scopes. To apply them in bulk:
+
+```shell
+dotnet format analyzers --diagnostics ATXCS048 --severity error
+```
+
+| ID | Fix |
+|---|---|
+| `ATXCS013` | Make the declaration public |
+| `ATXCS038` | Remove the `<remarks>` element |
+| `ATXCS039` | Remove the blank line between the fields |
+| `ATXCS041` | Remove the comment |
+| `ATXCS043` | Add a blank line before the namespace declaration |
+| `ATXCS044` | Remove the extra blank line |
+| `ATXCS046` | Remove the duplicate using directive |
+| `ATXCS047` | Sort the using directives alphabetically |
+| `ATXCS048` | Remove the unused using directive |
+| `ATXCS054` | Add a blank line before the XML doc comment |
+
+Two fixes delete content rather than rewrite it, so review them before committing:
+`ATXCS038` drops the `<remarks>` element without merging its prose into `<summary>`, and
+`ATXCS041` deletes the comment rather than converting it to XML documentation.
+
+Rules not listed here have no fix because resolving them needs a judgement call — choosing a
+descriptive name, splitting an oversized type, or designing a replacement type.
 
 ## License
 

@@ -1,4 +1,4 @@
-using Automaticks.CSharp.CodeFixes.Documentation;
+﻿using Automaticks.CSharp.CodeFixes.Documentation;
 using Automaticks.CSharp.CodeFixes.Formatting;
 using Automaticks.CSharp.CodeFixes.Naming;
 using Microsoft.CodeAnalysis.CodeFixes;

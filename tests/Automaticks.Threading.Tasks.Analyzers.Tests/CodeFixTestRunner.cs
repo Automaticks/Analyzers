@@ -1,4 +1,4 @@
-using Automaticks.Threading.Tasks.Analyzers.Tests.Stubs;
+﻿using Automaticks.Threading.Tasks.Analyzers.Tests.Stubs;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;

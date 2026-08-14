@@ -1,4 +1,4 @@
-using Microsoft.CodeAnalysis.CodeFixes;
+﻿using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Automaticks.CSharp.Analyzers.Tests;
