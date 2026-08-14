@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Automaticks.CSharp.Analyzers.Tests.CodeFixes;
+namespace Automaticks.CSharp.Analyzers.Tests.CodeFixes.Naming;
 
 /// <summary>
 ///     Tests for InternalModifierCodeFixProvider.

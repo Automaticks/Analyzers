@@ -1,112 +1,42 @@
-using Automaticks.CSharp.CodeFixes.Formatting;
+﻿using Automaticks.CSharp.CodeFixes.Formatting;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Automaticks.CSharp.Analyzers.Tests.CodeFixes;
+namespace Automaticks.CSharp.Analyzers.Tests.CodeFixes.Formatting;
 
 /// <summary>
-///     Tests for ObjectInitializerEmptyBracesCodeFixProvider.
+///     Tests for ObjectInitializerFormatCodeFixProvider.
 /// </summary>
-public class ObjectInitializerEmptyBracesCodeFixProviderTests
+public class ObjectInitializerFormatCodeFixProviderTests
 {
     /// <summary>
-    ///     Tests that an existing argument list is preserved.
+    ///     Tests that a collection initializer is spread across lines.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task ApplyFix_CreationWithArguments_KeepsArguments(CancellationToken cancellationToken)
+    public async Task ApplyFix_CollectionInitializer_LeavesNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
+                              using System.Collections.Generic;
                               namespace MyApp {
-                                  public class Widget {
-                                      public Widget(int size) { }
-                                  }
-
                                   public class Foo {
                                       public void Bar() {
-                                          var widget = new Widget(3) { };
+                                          var values = new List<int> { 1, 2 };
                                       }
                                   }
                               }
                               """;
 
         var analyzer = new ObjectInitializerCodeStyleAnalyzer();
-        var provider = new ObjectInitializerEmptyBracesCodeFixProvider();
+        var provider = new ObjectInitializerFormatCodeFixProvider();
         var request = new CodeFixRequest
         {
             Analyzer = analyzer,
             Provider = provider,
             Source = source
         };
-        var fixedSource = await CodeFixTestRunner.ApplyFixAsync(request, cancellationToken);
-
-        await Assert.That(fixedSource).Contains("new Widget(3)");
-        await Assert.That(fixedSource).DoesNotContain("new Widget(3) { }");
-    }
-
-    /// <summary>
-    ///     Tests that a creation without arguments gains an empty argument list.
-    /// </summary>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task representing the asynchronous test operation.</returns>
-    [Test]
-    public async Task ApplyFix_CreationWithoutArguments_AddsEmptyArgumentList(CancellationToken cancellationToken)
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Widget { }
-
-                                  public class Foo {
-                                      public void Bar() {
-                                          var widget = new Widget { };
-                                      }
-                                  }
-                              }
-                              """;
-
-        var analyzer = new ObjectInitializerCodeStyleAnalyzer();
-        var provider = new ObjectInitializerEmptyBracesCodeFixProvider();
-        var request = new CodeFixRequest
-        {
-            Analyzer = analyzer,
-            Provider = provider,
-            Source = source
-        };
-        var fixedSource = await CodeFixTestRunner.ApplyFixAsync(request, cancellationToken);
-
-        await Assert.That(fixedSource).Contains("new Widget()");
-    }
-
-    /// <summary>
-    ///     Tests that the fixed source no longer reports the rule.
-    /// </summary>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task representing the asynchronous test operation.</returns>
-    [Test]
-    public async Task ApplyFix_EmptyInitializer_LeavesNoDiagnostic(CancellationToken cancellationToken)
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Widget { }
-
-                                  public class Foo {
-                                      public void Bar() {
-                                          var widget = new Widget { };
-                                      }
-                                  }
-                              }
-                              """;
-
-        var analyzer = new ObjectInitializerCodeStyleAnalyzer();
-        var provider = new ObjectInitializerEmptyBracesCodeFixProvider();
-        var request = new CodeFixRequest
-        {
-            Analyzer = analyzer,
-            Provider = provider,
-            Source = source
-        };
-        var fixedSource = await CodeFixTestRunner.ApplyFixAsync(request, cancellationToken);
+        var fixedSource = await CodeFixTestRunner.ApplyAllFixesAsync(request, cancellationToken);
         var verifyRequest = new CodeFixRequest
         {
             Analyzer = analyzer,
@@ -119,12 +49,96 @@ public class ObjectInitializerEmptyBracesCodeFixProviderTests
     }
 
     /// <summary>
-    ///     Tests that a populated initializer is never offered this fix.
+    ///     Tests that the reformatted initializer no longer reports.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task CountFixable_PopulatedInitializer_ReportsZero(CancellationToken cancellationToken)
+    public async Task ApplyFix_SingleLineInitializer_LeavesNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Widget {
+                                      public int Size { get; set; }
+                                      public int Weight { get; set; }
+                                  }
+
+                                  public class Foo {
+                                      public void Bar() {
+                                          var widget = new Widget { Size = 1, Weight = 2 };
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new ObjectInitializerCodeStyleAnalyzer();
+        var provider = new ObjectInitializerFormatCodeFixProvider();
+        var request = new CodeFixRequest
+        {
+            Analyzer = analyzer,
+            Provider = provider,
+            Source = source
+        };
+        var fixedSource = await CodeFixTestRunner.ApplyAllFixesAsync(request, cancellationToken);
+        var verifyRequest = new CodeFixRequest
+        {
+            Analyzer = analyzer,
+            Provider = provider,
+            Source = fixedSource
+        };
+        var remaining = await CodeFixTestRunner.CountFixableAsync(verifyRequest, cancellationToken);
+
+        await Assert.That(remaining).IsEqualTo(0);
+    }
+
+    /// <summary>
+    ///     Tests that every member ends up on its own line with the braces separated.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task ApplyFix_SingleLineInitializer_SplitsMembersOntoOwnLines(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Widget {
+                                      public int Size { get; set; }
+                                      public int Weight { get; set; }
+                                  }
+
+                                  public class Foo {
+                                      public void Bar() {
+                                          var widget = new Widget { Size = 1, Weight = 2 };
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new ObjectInitializerCodeStyleAnalyzer();
+        var provider = new ObjectInitializerFormatCodeFixProvider();
+        var request = new CodeFixRequest
+        {
+            Analyzer = analyzer,
+            Provider = provider,
+            Source = source
+        };
+        var fixedSource = await CodeFixTestRunner.ApplyAllFixesAsync(request, cancellationToken);
+
+        await Assert.That(fixedSource).DoesNotContain("new Widget { Size = 1, Weight = 2 }");
+        await Assert.That(fixedSource).Contains("var widget = new Widget");
+        await Assert.That(fixedSource).Contains("            {");
+        await Assert.That(fixedSource).Contains("                Size = 1,");
+        await Assert.That(fixedSource).Contains("                Weight = 2");
+        await Assert.That(fixedSource).Contains("            };");
+    }
+
+    /// <summary>
+    ///     Tests that a correctly formatted initializer is never offered a fix.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task CountFixable_WellFormattedInitializer_ReportsZero(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -136,7 +150,7 @@ public class ObjectInitializerEmptyBracesCodeFixProviderTests
                                       public void Bar() {
                                           var widget = new Widget
                                           {
-                                              Size = 3
+                                              Size = 1
                                           };
                                       }
                                   }
@@ -144,7 +158,7 @@ public class ObjectInitializerEmptyBracesCodeFixProviderTests
                               """;
 
         var analyzer = new ObjectInitializerCodeStyleAnalyzer();
-        var provider = new ObjectInitializerEmptyBracesCodeFixProvider();
+        var provider = new ObjectInitializerFormatCodeFixProvider();
         var request = new CodeFixRequest
         {
             Analyzer = analyzer,
@@ -154,36 +168,5 @@ public class ObjectInitializerEmptyBracesCodeFixProviderTests
         var count = await CodeFixTestRunner.CountFixableAsync(request, cancellationToken);
 
         await Assert.That(count).IsEqualTo(0);
-    }
-
-    /// <summary>
-    ///     Tests that an array creation is deliberately left alone.
-    /// </summary>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task representing the asynchronous test operation.</returns>
-    [Test]
-    public async Task CountOfferedActions_EmptyArrayInitializer_OffersNoFix(CancellationToken cancellationToken)
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Foo {
-                                      public void Bar() {
-                                          var values = new int[] { };
-                                      }
-                                  }
-                              }
-                              """;
-
-        var analyzer = new ObjectInitializerCodeStyleAnalyzer();
-        var provider = new ObjectInitializerEmptyBracesCodeFixProvider();
-        var request = new CodeFixRequest
-        {
-            Analyzer = analyzer,
-            Provider = provider,
-            Source = source
-        };
-        var offered = await CodeFixTestRunner.CountOfferedActionsAsync(request, cancellationToken);
-
-        await Assert.That(offered).IsEqualTo(0);
     }
 }

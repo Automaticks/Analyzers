@@ -1,21 +1,21 @@
-using Automaticks.CSharp.CodeFixes.Documentation;
+﻿using Automaticks.CSharp.CodeFixes.Documentation;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Automaticks.CSharp.Analyzers.Tests.CodeFixes;
+namespace Automaticks.CSharp.Analyzers.Tests.CodeFixes.Documentation;
 
 /// <summary>
-///     Tests for MissingParamXmlDocCodeFixProvider.
+///     Tests for MissingReturnsXmlDocCodeFixProvider.
 /// </summary>
-public class MissingParamXmlDocCodeFixProviderTests
+public class MissingReturnsXmlDocCodeFixProviderTests
 {
     /// <summary>
-    ///     Tests that repeated application documents every parameter.
+    ///     Tests that repeated application documents every method.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task ApplyAllFixes_SeveralParameters_DocumentsEveryOne(CancellationToken cancellationToken)
+    public async Task ApplyAllFixes_SeveralMethods_DocumentsEveryOne(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -23,13 +23,18 @@ public class MissingParamXmlDocCodeFixProviderTests
                                       /// <summary>
                                       ///     Does a thing.
                                       /// </summary>
-                                      public void Bar(int size, string name) { }
+                                      public int Bar() { return 0; }
+
+                                      /// <summary>
+                                      ///     Does another thing.
+                                      /// </summary>
+                                      public string Baz() { return string.Empty; }
                                   }
                               }
                               """;
 
-        var analyzer = new MissingParamXmlDocAnalyzer();
-        var provider = new MissingParamXmlDocCodeFixProvider();
+        var analyzer = new MissingReturnsXmlDocAnalyzer();
+        var provider = new MissingReturnsXmlDocCodeFixProvider();
         var request = new CodeFixRequest
         {
             Analyzer = analyzer,
@@ -37,39 +42,15 @@ public class MissingParamXmlDocCodeFixProviderTests
             Source = source
         };
         var fixedSource = await CodeFixTestRunner.ApplyAllFixesAsync(request, cancellationToken);
-
-        await Assert.That(fixedSource).Contains("<param name=\"size\"></param>");
-        await Assert.That(fixedSource).Contains("<param name=\"name\"></param>");
-    }
-
-    /// <summary>
-    ///     Tests that a member with no documentation still gains the element.
-    /// </summary>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task representing the asynchronous test operation.</returns>
-    [Test]
-    public async Task ApplyFix_MemberWithoutDocumentation_AddsElement(CancellationToken cancellationToken)
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Foo {
-                                      public void Bar(int size) { }
-                                  }
-                              }
-                              """;
-
-        var analyzer = new MissingParamXmlDocAnalyzer();
-        var provider = new MissingParamXmlDocCodeFixProvider();
-        var request = new CodeFixRequest
+        var verifyRequest = new CodeFixRequest
         {
             Analyzer = analyzer,
             Provider = provider,
-            Source = source
+            Source = fixedSource
         };
-        var fixedSource = await CodeFixTestRunner.ApplyFixAsync(request, cancellationToken);
+        var remaining = await CodeFixTestRunner.CountFixableAsync(verifyRequest, cancellationToken);
 
-        await Assert.That(fixedSource).Contains("/// <param name=\"size\"></param>");
-        await Assert.That(fixedSource).Contains("public void Bar(int size) { }");
+        await Assert.That(remaining).IsEqualTo(0);
     }
 
     /// <summary>
@@ -78,7 +59,7 @@ public class MissingParamXmlDocCodeFixProviderTests
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task ApplyFix_MemberWithSummary_AppendsAfterSummary(CancellationToken cancellationToken)
+    public async Task ApplyFix_MethodWithSummary_AppendsAfterSummary(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -86,13 +67,13 @@ public class MissingParamXmlDocCodeFixProviderTests
                                       /// <summary>
                                       ///     Does a thing.
                                       /// </summary>
-                                      public void Bar(int size) { }
+                                      public int Bar() { return 0; }
                                   }
                               }
                               """;
 
-        var analyzer = new MissingParamXmlDocAnalyzer();
-        var provider = new MissingParamXmlDocCodeFixProvider();
+        var analyzer = new MissingReturnsXmlDocAnalyzer();
+        var provider = new MissingReturnsXmlDocCodeFixProvider();
         var request = new CodeFixRequest
         {
             Analyzer = analyzer,
@@ -101,11 +82,11 @@ public class MissingParamXmlDocCodeFixProviderTests
         };
         var fixedSource = await CodeFixTestRunner.ApplyFixAsync(request, cancellationToken);
         var summaryEnd = fixedSource.IndexOf("</summary>", System.StringComparison.Ordinal);
-        var paramIndex = fixedSource.IndexOf("<param", System.StringComparison.Ordinal);
-        var memberIndex = fixedSource.IndexOf("public void Bar", System.StringComparison.Ordinal);
+        var returnsIndex = fixedSource.IndexOf("<returns>", System.StringComparison.Ordinal);
+        var memberIndex = fixedSource.IndexOf("public int Bar", System.StringComparison.Ordinal);
 
-        await Assert.That(summaryEnd).IsLessThan(paramIndex);
-        await Assert.That(paramIndex).IsLessThan(memberIndex);
+        await Assert.That(summaryEnd).IsLessThan(returnsIndex);
+        await Assert.That(returnsIndex).IsLessThan(memberIndex);
     }
 
     /// <summary>
@@ -114,7 +95,7 @@ public class MissingParamXmlDocCodeFixProviderTests
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task ApplyFix_MemberWithSummary_LeavesNoDiagnostic(CancellationToken cancellationToken)
+    public async Task ApplyFix_MethodWithSummary_LeavesNoDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -122,13 +103,13 @@ public class MissingParamXmlDocCodeFixProviderTests
                                       /// <summary>
                                       ///     Does a thing.
                                       /// </summary>
-                                      public void Bar(int size) { }
+                                      public int Bar() { return 0; }
                                   }
                               }
                               """;
 
-        var analyzer = new MissingParamXmlDocAnalyzer();
-        var provider = new MissingParamXmlDocCodeFixProvider();
+        var analyzer = new MissingReturnsXmlDocAnalyzer();
+        var provider = new MissingReturnsXmlDocCodeFixProvider();
         var request = new CodeFixRequest
         {
             Analyzer = analyzer,
@@ -148,12 +129,12 @@ public class MissingParamXmlDocCodeFixProviderTests
     }
 
     /// <summary>
-    ///     Tests that a fully documented member is never offered a fix.
+    ///     Tests that a void method is never offered a fix.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task CountFixable_DocumentedParameter_ReportsZero(CancellationToken cancellationToken)
+    public async Task CountFixable_VoidMethod_ReportsZero(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -161,14 +142,13 @@ public class MissingParamXmlDocCodeFixProviderTests
                                       /// <summary>
                                       ///     Does a thing.
                                       /// </summary>
-                                      /// <param name="size">The size.</param>
-                                      public void Bar(int size) { }
+                                      public void Bar() { }
                                   }
                               }
                               """;
 
-        var analyzer = new MissingParamXmlDocAnalyzer();
-        var provider = new MissingParamXmlDocCodeFixProvider();
+        var analyzer = new MissingReturnsXmlDocAnalyzer();
+        var provider = new MissingReturnsXmlDocCodeFixProvider();
         var request = new CodeFixRequest
         {
             Analyzer = analyzer,

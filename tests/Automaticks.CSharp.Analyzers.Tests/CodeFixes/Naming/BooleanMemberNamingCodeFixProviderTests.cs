@@ -1,67 +1,32 @@
-﻿using Automaticks.CSharp.CodeFixes.Documentation;
+﻿using Automaticks.CSharp.CodeFixes.Naming;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Automaticks.CSharp.Analyzers.Tests.CodeFixes;
+namespace Automaticks.CSharp.Analyzers.Tests.CodeFixes.Naming;
 
 /// <summary>
-///     Tests for PlainCommentCodeFixProvider.
+///     Tests for BooleanMemberNamingCodeFixProvider.
 /// </summary>
-public class PlainCommentCodeFixProviderTests
+public class BooleanMemberNamingCodeFixProviderTests
 {
     /// <summary>
-    ///     Tests that repeated application clears every plain comment.
+    ///     Tests that a camel case field keeps its casing convention.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task ApplyAllFixes_SeveralComments_RemovesEveryOne(CancellationToken cancellationToken)
+    public async Task ApplyFix_CamelCaseField_KeepsCamelCasing(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
                                   public class Foo {
-                                      // first note
-                                      public void Bar() { }
-
-                                      /* second note */
-                                      public void Baz() { }
+                                      private bool enabled;
                                   }
                               }
                               """;
 
-        var analyzer = new PlainCommentAnalyzer();
-        var provider = new PlainCommentCodeFixProvider();
-        var request = new CodeFixRequest
-        {
-            Analyzer = analyzer,
-            Provider = provider,
-            Source = source
-        };
-        var fixedSource = await CodeFixTestRunner.ApplyAllFixesAsync(request, cancellationToken);
-
-        await Assert.That(fixedSource).DoesNotContain("first note");
-        await Assert.That(fixedSource).DoesNotContain("second note");
-    }
-
-    /// <summary>
-    ///     Tests that a block comment is removed.
-    /// </summary>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task representing the asynchronous test operation.</returns>
-    [Test]
-    public async Task ApplyFix_BlockComment_RemovesComment(CancellationToken cancellationToken)
-    {
-        const string source = """
-                              namespace MyApp {
-                                  public class Foo {
-                                      /* a note */
-                                      public void Bar() { }
-                                  }
-                              }
-                              """;
-
-        var analyzer = new PlainCommentAnalyzer();
-        var provider = new PlainCommentCodeFixProvider();
+        var analyzer = new BooleanMemberNamingAnalyzer();
+        var provider = new BooleanMemberNamingCodeFixProvider();
         var request = new CodeFixRequest
         {
             Analyzer = analyzer,
@@ -70,28 +35,29 @@ public class PlainCommentCodeFixProviderTests
         };
         var fixedSource = await CodeFixTestRunner.ApplyFixAsync(request, cancellationToken);
 
-        await Assert.That(fixedSource).DoesNotContain("a note");
-        await Assert.That(fixedSource).Contains("public void Bar() { }");
+        await Assert.That(fixedSource).Contains("isEnabled");
     }
 
     /// <summary>
-    ///     Tests that a trailing comment on a code line is removed.
+    ///     Tests that a property is renamed and references follow.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task ApplyFix_TrailingComment_RemovesComment(CancellationToken cancellationToken)
+    public async Task ApplyFix_PascalCaseProperty_RenamesReferences(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
                                   public class Foo {
-                                      public void Bar() { } // a note
+                                      public bool Enabled { get; set; }
+
+                                      public bool Read() { return Enabled; }
                                   }
                               }
                               """;
 
-        var analyzer = new PlainCommentAnalyzer();
-        var provider = new PlainCommentCodeFixProvider();
+        var analyzer = new BooleanMemberNamingAnalyzer();
+        var provider = new BooleanMemberNamingCodeFixProvider();
         var request = new CodeFixRequest
         {
             Analyzer = analyzer,
@@ -100,29 +66,57 @@ public class PlainCommentCodeFixProviderTests
         };
         var fixedSource = await CodeFixTestRunner.ApplyFixAsync(request, cancellationToken);
 
-        await Assert.That(fixedSource).DoesNotContain("a note");
-        await Assert.That(fixedSource).Contains("public void Bar() { }");
+        await Assert.That(fixedSource).Contains("public bool IsEnabled { get; set; }");
+        await Assert.That(fixedSource).Contains("return IsEnabled;");
     }
 
     /// <summary>
-    ///     Tests that an XML documentation comment is never offered a fix.
+    ///     Tests that an underscore prefixed field keeps the underscore.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task CountFixable_DocumentationComment_ReportsZero(CancellationToken cancellationToken)
+    public async Task ApplyFix_UnderscoreField_KeepsUnderscore(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
-                                  /// <summary>
-                                  ///     Does a thing.
-                                  /// </summary>
-                                  public class Foo { }
+                                  public class Foo {
+                                      private bool _enabled;
+                                  }
                               }
                               """;
 
-        var analyzer = new PlainCommentAnalyzer();
-        var provider = new PlainCommentCodeFixProvider();
+        var analyzer = new BooleanMemberNamingAnalyzer();
+        var provider = new BooleanMemberNamingCodeFixProvider();
+        var request = new CodeFixRequest
+        {
+            Analyzer = analyzer,
+            Provider = provider,
+            Source = source
+        };
+        var fixedSource = await CodeFixTestRunner.ApplyFixAsync(request, cancellationToken);
+
+        await Assert.That(fixedSource).Contains("_isEnabled");
+    }
+
+    /// <summary>
+    ///     Tests that an allowed prefix is never offered a fix.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task CountFixable_AllowedPrefix_ReportsZero(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo {
+                                      public bool IsEnabled { get; set; }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new BooleanMemberNamingAnalyzer();
+        var provider = new BooleanMemberNamingCodeFixProvider();
         var request = new CodeFixRequest
         {
             Analyzer = analyzer,

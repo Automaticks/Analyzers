@@ -1,35 +1,34 @@
-﻿using Automaticks.CSharp.CodeFixes.Formatting;
+﻿using Automaticks.CSharp.CodeFixes.Documentation;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Automaticks.CSharp.Analyzers.Tests.CodeFixes;
+namespace Automaticks.CSharp.Analyzers.Tests.CodeFixes.Documentation;
 
 /// <summary>
-///     Tests for ConsecutiveBlankLinesCodeFixProvider.
-///     Fixtures use escaped newlines because ATXCS044 counts raw file lines, so literal blank
-///     lines inside a fixture would be reported against this test file itself.
+///     Tests for MissingBlankLineBeforeXmlDocCodeFixProvider.
+///     Fixtures use escaped newlines so the layout under test is not reported against this file.
 /// </summary>
-public class ConsecutiveBlankLinesCodeFixProviderTests
+public class MissingBlankLineBeforeXmlDocCodeFixProviderTests
 {
-    private const string FourBlankLinesSource = "namespace MyApp {\n    public class Foo {\n        public void Bar() { }\n\n\n\n\n        public void Baz() { }\n    }\n}\n";
-    private const string OneBlankLineSource = "namespace MyApp {\n    public class Foo {\n        public void Bar() { }\n\n        public void Baz() { }\n    }\n}\n";
-    private const string TwoBlankLinesSource = "namespace MyApp {\n    public class Foo {\n        public void Bar() { }\n\n\n        public void Baz() { }\n    }\n}\n";
+    private const string CrampedSource = "namespace MyApp {\n    public class Foo {\n        public void Bar() { }\n        /// <summary>\n        ///     Does a thing.\n        /// </summary>\n        public void Baz() { }\n    }\n}\n";
+    private const string SpacedSource = "namespace MyApp {\n    public class Foo {\n        public void Bar() { }\n\n        /// <summary>\n        ///     Does a thing.\n        /// </summary>\n        public void Baz() { }\n    }\n}\n";
+    private const string TwoCrampedSource = "namespace MyApp {\n    public class Foo {\n        public void Bar() { }\n        /// <summary>\n        ///     First.\n        /// </summary>\n        public void Baz() { }\n        /// <summary>\n        ///     Second.\n        /// </summary>\n        public void Qux() { }\n    }\n}\n";
 
     /// <summary>
-    ///     Tests that a long run of blank lines collapses until the rule is satisfied.
+    ///     Tests that repeated application spaces every cramped doc comment.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task ApplyAllFixes_LongBlankRun_CollapsesToSingleBlankLine(CancellationToken cancellationToken)
+    public async Task ApplyAllFixes_SeveralCrampedDocComments_SpacesEveryOne(CancellationToken cancellationToken)
     {
-        var analyzer = new ConsecutiveBlankLinesAnalyzer();
-        var provider = new ConsecutiveBlankLinesCodeFixProvider();
+        var analyzer = new MissingBlankLineBeforeXmlDocAnalyzer();
+        var provider = new MissingBlankLineBeforeXmlDocCodeFixProvider();
         var request = new CodeFixRequest
         {
             Analyzer = analyzer,
             Provider = provider,
-            Source = FourBlankLinesSource
+            Source = TwoCrampedSource
         };
         var fixedSource = await CodeFixTestRunner.ApplyAllFixesAsync(request, cancellationToken);
         var verifyRequest = new CodeFixRequest
@@ -41,48 +40,46 @@ public class ConsecutiveBlankLinesCodeFixProviderTests
         var remaining = await CodeFixTestRunner.CountFixableAsync(verifyRequest, cancellationToken);
 
         await Assert.That(remaining).IsEqualTo(0);
-        await Assert.That(fixedSource).Contains("public void Bar() { }");
-        await Assert.That(fixedSource).Contains("public void Baz() { }");
     }
 
     /// <summary>
-    ///     Tests that surrounding code survives the blank line removal.
+    ///     Tests that the documentation and members survive the insertion.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task ApplyFix_TwoBlankLines_KeepsSurroundingCode(CancellationToken cancellationToken)
+    public async Task ApplyFix_CrampedDocComment_KeepsSurroundingCode(CancellationToken cancellationToken)
     {
-        var analyzer = new ConsecutiveBlankLinesAnalyzer();
-        var provider = new ConsecutiveBlankLinesCodeFixProvider();
+        var analyzer = new MissingBlankLineBeforeXmlDocAnalyzer();
+        var provider = new MissingBlankLineBeforeXmlDocCodeFixProvider();
         var request = new CodeFixRequest
         {
             Analyzer = analyzer,
             Provider = provider,
-            Source = TwoBlankLinesSource
+            Source = CrampedSource
         };
         var fixedSource = await CodeFixTestRunner.ApplyFixAsync(request, cancellationToken);
 
-        await Assert.That(fixedSource).Contains("namespace MyApp");
         await Assert.That(fixedSource).Contains("public void Bar() { }");
+        await Assert.That(fixedSource).Contains("Does a thing.");
         await Assert.That(fixedSource).Contains("public void Baz() { }");
     }
 
     /// <summary>
-    ///     Tests that two blank lines collapse to one.
+    ///     Tests that a blank line is inserted before the doc comment.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task ApplyFix_TwoBlankLines_LeavesNoDiagnostic(CancellationToken cancellationToken)
+    public async Task ApplyFix_CrampedDocComment_LeavesNoDiagnostic(CancellationToken cancellationToken)
     {
-        var analyzer = new ConsecutiveBlankLinesAnalyzer();
-        var provider = new ConsecutiveBlankLinesCodeFixProvider();
+        var analyzer = new MissingBlankLineBeforeXmlDocAnalyzer();
+        var provider = new MissingBlankLineBeforeXmlDocCodeFixProvider();
         var request = new CodeFixRequest
         {
             Analyzer = analyzer,
             Provider = provider,
-            Source = TwoBlankLinesSource
+            Source = CrampedSource
         };
         var fixedSource = await CodeFixTestRunner.ApplyFixAsync(request, cancellationToken);
         var verifyRequest = new CodeFixRequest
@@ -97,20 +94,20 @@ public class ConsecutiveBlankLinesCodeFixProviderTests
     }
 
     /// <summary>
-    ///     Tests that a single blank line is never offered a fix.
+    ///     Tests that a correctly spaced doc comment is never offered a fix.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task CountFixable_SingleBlankLine_ReportsZero(CancellationToken cancellationToken)
+    public async Task CountFixable_SpacedDocComment_ReportsZero(CancellationToken cancellationToken)
     {
-        var analyzer = new ConsecutiveBlankLinesAnalyzer();
-        var provider = new ConsecutiveBlankLinesCodeFixProvider();
+        var analyzer = new MissingBlankLineBeforeXmlDocAnalyzer();
+        var provider = new MissingBlankLineBeforeXmlDocCodeFixProvider();
         var request = new CodeFixRequest
         {
             Analyzer = analyzer,
             Provider = provider,
-            Source = OneBlankLineSource
+            Source = SpacedSource
         };
         var count = await CodeFixTestRunner.CountFixableAsync(request, cancellationToken);
 
