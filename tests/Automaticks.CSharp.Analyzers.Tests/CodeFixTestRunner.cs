@@ -43,6 +43,58 @@ public static class CodeFixTestRunner
         throw new InvalidOperationException("The code fix did not converge within the iteration limit.");
     }
 
+    /// <summary>Runs the provider's FixAllProvider over the requested scope.</summary>
+    /// <param name="request">The analyzer, provider, and source to fix.</param>
+    /// <param name="scope">The Fix All scope to execute.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task that resolves to the fixed source text.</returns>
+    public static async Task<string> ApplyFixAllAsync(
+        CodeFixRequest request,
+        FixAllScope scope,
+        CancellationToken cancellationToken)
+    {
+        var document = CreateDocument(request.Source);
+        var diagnostics = await GetFixableDiagnosticsAsync(request, document, cancellationToken);
+        if (diagnostics.Count == 0)
+        {
+            throw new InvalidOperationException("The analyzer reported no fixable diagnostic for this source.");
+        }
+
+        var fixAllProvider = request.Provider.GetFixAllProvider()
+            ?? throw new InvalidOperationException("The provider exposes no FixAllProvider.");
+        var seedActions = await GetActionsAsync(request, document, diagnostics[0], cancellationToken);
+        if (seedActions.Count == 0)
+        {
+            throw new InvalidOperationException($"The provider offered no fix for '{diagnostics[0].Id}'.");
+        }
+
+        var equivalenceKey = SelectAction(seedActions, request.EquivalenceKey).EquivalenceKey;
+        var diagnosticProvider = new TestFixAllDiagnosticProvider(diagnostics);
+        var fixAllContext = new FixAllContext(
+            document,
+            request.Provider,
+            scope,
+            equivalenceKey,
+            request.Provider.FixableDiagnosticIds,
+            diagnosticProvider,
+            cancellationToken);
+        var action = await fixAllProvider.GetFixAsync(fixAllContext)
+            ?? throw new InvalidOperationException($"Fix All produced no action for scope '{scope}'.");
+        var operations = await action.GetOperationsAsync(cancellationToken);
+        foreach (var operation in operations)
+        {
+            if (operation is ApplyChangesOperation applyChanges)
+            {
+                var changed = applyChanges.ChangedSolution.GetDocument(document.Id)
+                    ?? throw new InvalidOperationException("Fix All removed the document under test.");
+                var fixedText = await changed.GetTextAsync(cancellationToken);
+                return fixedText.ToString();
+            }
+        }
+
+        throw new InvalidOperationException("Fix All produced no ApplyChangesOperation.");
+    }
+
     /// <summary>Applies the fix to the first reported diagnostic only.</summary>
     /// <param name="request">The analyzer, provider, and source to fix.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -87,6 +139,22 @@ public static class CodeFixTestRunner
 
         var actions = await GetActionsAsync(request, document, diagnostics[0], cancellationToken);
         return actions.Count;
+    }
+
+    /// <summary>Lists the Fix All scopes the provider's FixAllProvider advertises.</summary>
+    /// <param name="request">The provider to inspect.</param>
+    /// <returns>The supported Fix All scopes.</returns>
+    public static List<FixAllScope> GetSupportedFixAllScopes(CodeFixRequest request)
+    {
+        var fixAllProvider = request.Provider.GetFixAllProvider()
+            ?? throw new InvalidOperationException("The provider exposes no FixAllProvider.");
+        var scopes = new List<FixAllScope>();
+        foreach (var scope in fixAllProvider.GetSupportedFixAllScopes())
+        {
+            scopes.Add(scope);
+        }
+
+        return scopes;
     }
 
     private static async Task<Document> ApplyOneAsync(
