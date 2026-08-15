@@ -25,4 +25,12 @@ jobs:
         run: dotnet build --no-restore
 
       - name: Test
-        run: dotnet test --no-build
+        run: dotnet test --no-build --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
+
+      # Coverage rules (ATXTST012, ATXTST013) read the report produced by the run above, so they
+      # can only contribute on a second build. This step is advisory: the repository currently has
+      # files below the 80% threshold, and TreatWarningsAsErrors turns each finding into an error.
+      # Drop continue-on-error once coverage is at the target to make the gate binding.
+      - name: Re-analyze with coverage
+        continue-on-error: true
+        run: dotnet build --no-restore -p:AutomaticksCoverageReport=coverage.cobertura.xml

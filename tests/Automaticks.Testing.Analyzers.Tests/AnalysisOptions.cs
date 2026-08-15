@@ -6,6 +6,9 @@ namespace Automaticks.Testing.Analyzers.Tests;
 /// <summary>Configuration options for an analysis run.</summary>
 public readonly struct AnalysisOptions
 {
+    /// <summary>Gets the additional files to expose to the analyzer.</summary>
+    public IReadOnlyList<AdditionalText>? AdditionalFiles { get; init; }
+
     /// <summary>Gets the additional metadata references to include in compilation.</summary>
     public IReadOnlyList<MetadataReference>? AdditionalReferences { get; init; }
 

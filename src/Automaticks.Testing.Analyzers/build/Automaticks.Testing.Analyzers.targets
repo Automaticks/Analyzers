@@ -1,0 +1,26 @@
+﻿<Project>
+
+    <!--
+        Wires a coverage report produced by a previous test run into the compilation so the
+        coverage rules (ATXTST012 and friends) can read it.
+
+        Produce a report with "dotnet test" using its coverage options, then pass the path:
+            dotnet build -p:AutomaticksCoverageReport=artifacts/coverage.cobertura.xml
+
+        The Exists() guard is deliberate: on a clean clone no report exists yet, so the item is
+        never added, the analyzer finds no report, and it stays silent instead of failing a build
+        that has not had a chance to run tests.
+    -->
+    <ItemGroup Condition="'$(AutomaticksCoverageReport)' != '' AND Exists('$(AutomaticksCoverageReport)')">
+        <AdditionalFiles Include="$(AutomaticksCoverageReport)" IsCoverageReport="true" />
+    </ItemGroup>
+
+    <!--
+        Without this the analyzer cannot see the IsCoverageReport metadata; it is what makes
+        build_metadata.AdditionalFiles.IsCoverageReport readable from AnalyzerConfigOptions.
+    -->
+    <ItemGroup>
+        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="IsCoverageReport" />
+    </ItemGroup>
+
+</Project>

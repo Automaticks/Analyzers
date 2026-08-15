@@ -22,39 +22,14 @@ public static class DiagnosticIds
         public const string AssertSideEffect = "ATXTST009";
 
         /// <summary>
-        ///     Diagnostic ID for <c>ATXTST005</c>: boolean decision needs too many test cases to cover.
-        /// </summary>
-        public const string BooleanDecisionCost = "ATXTST005";
-
-        /// <summary>
         ///     Diagnostic ID for <c>ATXTST006</c>: bitmask test against a multi-bit mask hides individual bits.
         /// </summary>
         public const string CompositeBitmaskTest = "ATXTST006";
 
         /// <summary>
-        ///     Diagnostic ID for <c>ATXTST015</c>: the supplied coverage report could not be used.
-        /// </summary>
-        public const string CoverageReportUnusable = "ATXTST015";
-
-        /// <summary>
-        ///     Diagnostic ID for <c>ATXTST008</c>: debug-only construct changes behaviour instead of only observing it.
-        /// </summary>
-        public const string DebugOnlyBehavior = "ATXTST008";
-
-        /// <summary>
         ///     Diagnostic ID for <c>ATXTST013</c>: file line coverage is below the configured minimum.
         /// </summary>
         public const string FileLineCoverage = "ATXTST013";
-
-        /// <summary>
-        ///     Diagnostic ID for <c>ATXTST014</c>: method branch coverage is below the configured minimum.
-        /// </summary>
-        public const string MethodBranchCoverage = "ATXTST014";
-
-        /// <summary>
-        ///     Diagnostic ID for <c>ATXTST011</c>: test method contains no assertion.
-        /// </summary>
-        public const string MissingAssertion = "ATXTST011";
 
         /// <summary>
         ///     Diagnostic ID for <c>ATXTST001</c>: mocking frameworks are not allowed; use hand-written stubs.
@@ -76,11 +51,6 @@ public static class DiagnosticIds
         ///     <c>Method_Scenario_ExpectedResult</c> convention.
         /// </summary>
         public const string TestMethodNaming = "ATXTST003";
-
-        /// <summary>
-        ///     Diagnostic ID for <c>ATXTST007</c>: branch can never be executed, so it can never be covered.
-        /// </summary>
-        public const string UncoverableBranch = "ATXTST007";
 
         /// <summary>
         ///     Diagnostic ID for <c>ATXTST012</c>: public member has no coverage in the supplied report.
