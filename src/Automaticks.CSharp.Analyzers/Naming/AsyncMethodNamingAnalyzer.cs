@@ -24,7 +24,7 @@ public sealed class AsyncMethodNamingAnalyzer : DiagnosticAnalyzer
         var rule = new DiagnosticDescriptor(
             DiagnosticIds.CSharp.AsyncMethodNaming,
             "Async-returning methods must use the Async suffix",
-            "Method '{0}' returns an async type but does not end with 'Async'. Rename it to '{0}Async'.",
+            "Method '{0}' returns an async type but does not end with 'Async'. Rename it to '{0}Async'. A code fix is available (dotnet format analyzers --diagnostics ATXCS003).",
             "CSharp",
             DiagnosticSeverity.Error,
             true,

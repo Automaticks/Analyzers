@@ -24,7 +24,7 @@ public sealed class RemarksXmlDocAnalyzer : DiagnosticAnalyzer
         var rule = new DiagnosticDescriptor(
             DiagnosticIds.CSharp.RemarksXmlDoc,
             "<remarks> is not allowed in XML documentation",
-            "<remarks> is not allowed. Fold the content into the <summary> element instead.",
+            "<remarks> is not allowed. Fold the content into the <summary> element instead. A code fix is available (dotnet format analyzers --diagnostics ATXCS038).",
             "CSharp",
             DiagnosticSeverity.Error,
             true,

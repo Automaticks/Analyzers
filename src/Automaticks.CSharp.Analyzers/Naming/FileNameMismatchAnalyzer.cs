@@ -27,7 +27,7 @@ public sealed class FileNameMismatchAnalyzer : DiagnosticAnalyzer
         var rule = new DiagnosticDescriptor(
             DiagnosticIds.CSharp.FileNameMismatch,
             "Type name does not match file name",
-            "Type name '{0}' does not match file name '{1}'",
+            "Type name '{0}' does not match file name '{1}'. A code fix is available (dotnet format analyzers --diagnostics ATXCS031).",
             "Naming",
             DiagnosticSeverity.Error,
             true,

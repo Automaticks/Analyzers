@@ -1,4 +1,4 @@
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -24,7 +24,7 @@ public sealed class SuppressMessageAnalyzer : DiagnosticAnalyzer
         var rule = new DiagnosticDescriptor(
             DiagnosticIds.DiagnosticsCodeAnalysis.SuppressMessage,
             "[SuppressMessage] is not allowed",
-            "[SuppressMessage] suppresses a diagnostic instead of fixing it. Address the underlying issue or update the analyzer to handle this pattern as a legitimate exemption.",
+            "[SuppressMessage] suppresses a diagnostic instead of fixing it. Address the underlying issue or update the analyzer to handle this pattern as a legitimate exemption. A code fix is available (dotnet format analyzers --diagnostics ATXDC056).",
             "Diagnostics.CodeAnalysis",
             DiagnosticSeverity.Error,
             true,

@@ -1,4 +1,4 @@
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -23,7 +23,7 @@ public sealed class BindConfigurationAnalyzer : DiagnosticAnalyzer
         var rule = new DiagnosticDescriptor(
             DiagnosticIds.Options.BindConfiguration,
             "BindConfiguration is forbidden",
-            "Use 'Configure<T>(configuration.GetRequiredSection(...))' instead of 'AddOptions<T>().BindConfiguration(...)'. GetRequiredSection fails fast when the section is missing.",
+            "Use 'Configure<T>(configuration.GetRequiredSection(...))' instead of 'AddOptions<T>().BindConfiguration(...)'. GetRequiredSection fails fast when the section is missing. A code fix is available (dotnet format analyzers --diagnostics ATXEO049).",
             "Extensions.Options",
             DiagnosticSeverity.Error,
             true,

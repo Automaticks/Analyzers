@@ -1,4 +1,4 @@
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -22,7 +22,7 @@ public sealed class UnobservedTaskAnalyzer : DiagnosticAnalyzer
         var rule = new DiagnosticDescriptor(
             DiagnosticIds.ThreadingTasks.UnobservedTask,
             "Unobserved Task invocation",
-            "The result of invocation '{0}' is discarded. Await or observe the returned Task/ValueTask to prevent unobserved failures.",
+            "The result of invocation '{0}' is discarded. Await or observe the returned Task/ValueTask to prevent unobserved failures. A code fix is available (dotnet format analyzers --diagnostics ATXTA010).",
             "Threading.Tasks",
             DiagnosticSeverity.Error,
             true,

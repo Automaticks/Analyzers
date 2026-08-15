@@ -26,7 +26,7 @@ public sealed class SingleBlankLineBetweenPropertiesAnalyzer : DiagnosticAnalyze
         TooFewBlankLinesRule = new(
             DiagnosticIds.CSharp.SingleBlankLineBetweenProperties,
             "Missing blank line adjacent to a property or indexer declaration",
-            "Add a blank line between this property or indexer and the adjacent member declaration",
+            "Add a blank line between this property or indexer and the adjacent member declaration. A code fix is available (dotnet format analyzers --diagnostics ATXCS040).",
             "Style",
             DiagnosticSeverity.Error,
             true,

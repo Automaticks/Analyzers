@@ -43,11 +43,13 @@ public static class CodeFixTestRunner
     public static async Task<string> ApplyAllFixesAsync(CodeFixRequest request, CancellationToken cancellationToken)
     {
         var document = CreateDocument(request);
+        var original = document;
         for (var iteration = 0; iteration < MaxFixIterations; iteration++)
         {
             var diagnostics = await GetFixableDiagnosticsAsync(request, document, cancellationToken);
             if (diagnostics.Count == 0)
             {
+                await AssertNoNewCompilerErrorsAsync(original, document, cancellationToken);
                 var settled = await document.GetTextAsync(cancellationToken);
                 return settled.ToString();
             }
@@ -124,6 +126,7 @@ public static class CodeFixTestRunner
         }
 
         var fixedDocument = await ApplyOneAsync(request, document, diagnostics[0], cancellationToken);
+        await AssertNoNewCompilerErrorsAsync(document, fixedDocument, cancellationToken);
         var text = await fixedDocument.GetTextAsync(cancellationToken);
         return text.ToString();
     }
@@ -215,6 +218,39 @@ public static class CodeFixTestRunner
         }
 
         throw new InvalidOperationException("The code action produced no ApplyChangesOperation.");
+    }
+
+    private static async Task AssertNoNewCompilerErrorsAsync(
+        Document original,
+        Document fixedDocument,
+        CancellationToken cancellationToken)
+    {
+        var before = await CountCompilerErrorsAsync(original, cancellationToken);
+        var after = await CountCompilerErrorsAsync(fixedDocument, cancellationToken);
+        if (after <= before)
+        {
+            return;
+        }
+
+        var text = await fixedDocument.GetTextAsync(cancellationToken);
+        throw new InvalidOperationException(
+            $"The fix introduced {after - before} compiler error(s). Fixed source:{Environment.NewLine}{text}");
+    }
+
+    private static async Task<int> CountCompilerErrorsAsync(Document document, CancellationToken cancellationToken)
+    {
+        var compilation = await document.Project.GetCompilationAsync(cancellationToken)
+            ?? throw new InvalidOperationException("The test project produced no compilation.");
+        var count = 0;
+        foreach (var diagnostic in compilation.GetDiagnostics(cancellationToken))
+        {
+            if (diagnostic.Severity == DiagnosticSeverity.Error)
+            {
+                count++;
+            }
+        }
+
+        return count;
     }
 
     private static Document CreateDocument(CodeFixRequest request)

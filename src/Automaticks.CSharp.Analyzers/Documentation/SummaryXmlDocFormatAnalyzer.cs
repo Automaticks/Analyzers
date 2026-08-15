@@ -28,7 +28,7 @@ public sealed class SummaryXmlDocFormatAnalyzer : DiagnosticAnalyzer
         var rule = new DiagnosticDescriptor(
             DiagnosticIds.CSharp.SummaryXmlDocFormat,
             "<summary> content must start on a new line and be indented with 4 spaces",
-            "<summary> content must begin on a new line and each content line must be indented with exactly 4 spaces after '/// '",
+            "<summary> content must begin on a new line and each content line must be indented with exactly 4 spaces after '/// '. A code fix is available (dotnet format analyzers --diagnostics ATXCS050).",
             "CSharp",
             DiagnosticSeverity.Warning,
             true,

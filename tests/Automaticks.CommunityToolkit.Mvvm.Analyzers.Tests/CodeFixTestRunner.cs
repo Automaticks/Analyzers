@@ -61,6 +61,7 @@ public static class CodeFixTestRunner
             {
                 var changed = applyChanges.ChangedSolution.GetDocument(document.Id)
                     ?? throw new InvalidOperationException("The fix removed the document under test.");
+                await AssertNoNewCompilerErrorsAsync(document, changed, cancellationToken);
                 var text = await changed.GetTextAsync(cancellationToken);
                 return text.ToString();
             }
@@ -97,6 +98,38 @@ public static class CodeFixTestRunner
         return actions.Count;
     }
 
+    private static async Task AssertNoNewCompilerErrorsAsync(
+        Document original,
+        Document fixedDocument,
+        CancellationToken cancellationToken)
+    {
+        var before = await CountCompilerErrorsAsync(original, cancellationToken);
+        var after = await CountCompilerErrorsAsync(fixedDocument, cancellationToken);
+        if (after <= before)
+        {
+            return;
+        }
+
+        var text = await fixedDocument.GetTextAsync(cancellationToken);
+        throw new InvalidOperationException(
+            $"The fix introduced {after - before} compiler error(s). Fixed source:{Environment.NewLine}{text}");
+    }
+
+    private static async Task<int> CountCompilerErrorsAsync(Document document, CancellationToken cancellationToken)
+    {
+        var compilation = await document.Project.GetCompilationAsync(cancellationToken)
+            ?? throw new InvalidOperationException("The test project produced no compilation.");
+        var count = 0;
+        foreach (var diagnostic in compilation.GetDiagnostics(cancellationToken))
+        {
+            if (diagnostic.Severity == DiagnosticSeverity.Error)
+            {
+                count++;
+            }
+        }
+
+        return count;
+    }
     private static Document CreateDocument(string source)
     {
         var workspace = new AdhocWorkspace();

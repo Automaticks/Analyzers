@@ -27,7 +27,7 @@ public sealed class TypeMemberOrderAnalyzer : DiagnosticAnalyzer
         var rule = new DiagnosticDescriptor(
             DiagnosticIds.CSharp.TypeMemberOrder,
             "Type member is declared in the wrong section",
-            "'{0}' ({1}) is in the wrong section — {1} members must appear before {2} members. Canonical order: abstract members → events → constants → fields → properties → indexers → constructors → implementations → methods → nested types.",
+            "'{0}' ({1}) is in the wrong section — {1} members must appear before {2} members. Canonical order: abstract members → events → constants → fields → properties → indexers → constructors → implementations → methods → nested types. A code fix is available (dotnet format analyzers --diagnostics ATXCS042).",
             "Style",
             DiagnosticSeverity.Error,
             isEnabledByDefault: true,
@@ -37,7 +37,7 @@ public sealed class TypeMemberOrderAnalyzer : DiagnosticAnalyzer
         var withinGroupOrderRule = new DiagnosticDescriptor(
             DiagnosticIds.CSharp.TypeMemberWithinGroupOrder,
             "Type member violates within-group ordering",
-            "'{0}' ({1}) is out of order within the {1} group — within the same group the required order is: public before protected before private, static before instance, then alphabetically by name",
+            "'{0}' ({1}) is out of order within the {1} group — within the same group the required order is: public before protected before private, static before instance, then alphabetically by name. A code fix is available (dotnet format analyzers --diagnostics ATXCS064).",
             "Style",
             DiagnosticSeverity.Error,
             isEnabledByDefault: true,

@@ -29,7 +29,7 @@ public sealed class AsyncSuffixReturnTypeAnalyzer : DiagnosticAnalyzer
         Rule = new(
             DiagnosticIds.CSharp.AsyncSuffixReturnType,
             "Methods with the 'Async' suffix must return Task, ValueTask, or IAsyncEnumerable<T>",
-            "Method '{0}' has the 'Async' suffix but returns '{1}'. Rename the method or change the return type to Task, Task<T>, ValueTask, ValueTask<T>, or IAsyncEnumerable<T>.",
+            "Method '{0}' has the 'Async' suffix but returns '{1}'. Rename the method or change the return type to Task, Task<T>, ValueTask, ValueTask<T>, or IAsyncEnumerable<T>. A code fix is available (dotnet format analyzers --diagnostics ATXCS009).",
             "CSharp",
             DiagnosticSeverity.Error,
             true,

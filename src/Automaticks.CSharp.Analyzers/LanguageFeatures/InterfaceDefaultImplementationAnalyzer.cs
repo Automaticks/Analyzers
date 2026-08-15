@@ -19,7 +19,7 @@ public sealed class InterfaceDefaultImplementationAnalyzer : DiagnosticAnalyzer
         var rule = new DiagnosticDescriptor(
             DiagnosticIds.CSharp.InterfaceDefaultImplementation,
             "Interface default implementations are forbidden",
-            "Member '{0}' in interface '{1}' must not have an implementation body. Remove the body and define it in implementing types.",
+            "Member '{0}' in interface '{1}' must not have an implementation body. Remove the body and define it in implementing types. A code fix is available (dotnet format analyzers --diagnostics ATXCS061).",
             "CSharp",
             DiagnosticSeverity.Error,
             true,
