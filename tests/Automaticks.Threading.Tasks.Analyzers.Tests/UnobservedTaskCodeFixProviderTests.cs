@@ -74,6 +74,40 @@ public class UnobservedTaskCodeFixProviderTests
         await Assert.That(fixedSource).DoesNotContain("_ = WorkAsync();");
     }
 
+    /// <summary>Verifies a discarded call inside an async local function is awaited.</summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task ApplyFix_DiscardedCallInsideAsyncLocalFunction_InsertsAwait(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System.Threading.Tasks;
+                              namespace MyApp {
+                                  public class Foo {
+                                      public void Run() {
+                                          async Task LocalAsync() {
+                                              WorkAsync();
+                                          }
+                                      }
+
+                                      public Task WorkAsync() { return Task.CompletedTask; }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new UnobservedTaskAnalyzer();
+        var provider = new UnobservedTaskCodeFixProvider();
+        var request = new CodeFixRequest
+        {
+            Analyzer = analyzer,
+            Provider = provider,
+            Source = source
+        };
+        var fixedSource = await CodeFixTestRunner.ApplyFixAsync(request, cancellationToken);
+
+        await Assert.That(fixedSource).Contains("await WorkAsync();");
+    }
+
     /// <summary>Verifies a discarded call inside an async lambda is awaited.</summary>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task representing the asynchronous test operation.</returns>
@@ -141,6 +175,38 @@ public class UnobservedTaskCodeFixProviderTests
         await Assert.That(fixedSource).Contains("await WorkAsync();");
     }
 
+    /// <summary>Verifies no fix is offered when the discarded call is inside a constructor.</summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task CountOfferedActions_DiscardedCallInsideConstructor_OffersNoFix(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System.Threading.Tasks;
+                              namespace MyApp {
+                                  public class Foo {
+                                      public Foo() {
+                                          WorkAsync();
+                                      }
+
+                                      public Task WorkAsync() { return Task.CompletedTask; }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new UnobservedTaskAnalyzer();
+        var provider = new UnobservedTaskCodeFixProvider();
+        var request = new CodeFixRequest
+        {
+            Analyzer = analyzer,
+            Provider = provider,
+            Source = source
+        };
+        var offered = await CodeFixTestRunner.CountOfferedActionsAsync(request, cancellationToken);
+
+        await Assert.That(offered).IsEqualTo(0);
+    }
+
     /// <summary>Verifies no fix is offered when the enclosing method is not async.</summary>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task representing the asynchronous test operation.</returns>
@@ -171,5 +237,17 @@ public class UnobservedTaskCodeFixProviderTests
         var offered = await CodeFixTestRunner.CountOfferedActionsAsync(request, cancellationToken);
 
         await Assert.That(offered).IsEqualTo(0);
+    }
+
+    /// <summary>Verifies GetFixAllProvider returns the batch fixer.</summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task GetFixAllProvider_Called_ReturnsBatchFixer(CancellationToken cancellationToken)
+    {
+        var provider = new UnobservedTaskCodeFixProvider();
+        var fixAllProvider = provider.GetFixAllProvider();
+
+        await Assert.That(fixAllProvider).IsNotNull();
     }
 }

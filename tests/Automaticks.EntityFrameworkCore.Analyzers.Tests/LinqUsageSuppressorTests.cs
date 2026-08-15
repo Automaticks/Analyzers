@@ -1,8 +1,11 @@
-using Automaticks.EntityFrameworkCore;
+﻿using Automaticks.EntityFrameworkCore;
+using Automaticks.EntityFrameworkCore.Analyzers.Tests.Stubs;
 using Automaticks.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Diagnostics;
 using System;
+using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -10,11 +13,6 @@ namespace Automaticks.EntityFrameworkCore.Analyzers.Tests;
 
 /// <summary>
 ///     Tests for <see cref="LinqUsageSuppressor" />.
-///     Note: <see cref="Microsoft.CodeAnalysis.DiagnosticSuppressor" /> is only invoked by the
-///     IDE/MSBuild host — not by <c>CompilationWithAnalyzers.GetAnalyzerDiagnosticsAsync()</c>.
-///     Tests here therefore verify (a) the suppressor's declared metadata, (b) the EF Core
-///     detection syntax logic, and (c) that <see cref="LinqUsageAnalyzer" /> continues to
-///     report <c>ATXLQ002</c> in files without an EF Core import (proving no false suppression).
 /// </summary>
 public class LinqUsageSuppressorTests
 {
@@ -77,6 +75,53 @@ public class LinqUsageSuppressorTests
                               """;
 
         await Assert.That(HasEntityFrameworkCoreImport(source)).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that ReportSuppressions actually suppresses ATXLQ002 when both a diagnostic
+    ///     source and the suppressor run together over a file with an EF Core import.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Suppressor_LinqWithEFCoreImport_SuppressesDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System.Linq;
+                              using Microsoft.EntityFrameworkCore;
+                              namespace MyApp {}
+                              """;
+
+        var suppressibleAnalyzer = new SuppressibleLinqUsageAnalyzer();
+        var linqUsageSuppressor = new LinqUsageSuppressor();
+        var analyzers = ImmutableArray.Create<DiagnosticAnalyzer>(suppressibleAnalyzer, linqUsageSuppressor);
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzers, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXLQ002")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasSuppressedId(diagnostics, "ATXLQ002")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that ReportSuppressions leaves ATXLQ002 unsuppressed when both a diagnostic
+    ///     source and the suppressor run together over a file without an EF Core import.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Suppressor_LinqWithoutEFCoreImport_DoesNotSuppressDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System.Linq;
+                              namespace MyApp {}
+                              """;
+
+        var suppressibleAnalyzer = new SuppressibleLinqUsageAnalyzer();
+        var linqUsageSuppressor = new LinqUsageSuppressor();
+        var analyzers = ImmutableArray.Create<DiagnosticAnalyzer>(suppressibleAnalyzer, linqUsageSuppressor);
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzers, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXLQ002")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasSuppressedId(diagnostics, "ATXLQ002")).IsFalse();
     }
 
     /// <summary>

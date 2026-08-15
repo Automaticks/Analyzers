@@ -1,4 +1,4 @@
-using Automaticks.Extensions.Options.CodeFixes;
+﻿using Automaticks.Extensions.Options.CodeFixes;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -71,6 +71,41 @@ public sealed class BindConfigurationCodeFixProviderTests
     }
 
     /// <summary>
+    ///     Tests that no fix is offered when the call is inside a constructor rather than a method.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task CountOfferedActions_InvocationInsideConstructor_OffersNoFix(CancellationToken cancellationToken)
+    {
+        var source = FrameworkStubs + """
+
+                                      namespace MyApp {
+                                          using Microsoft.Extensions.Configuration;
+                                          using Microsoft.Extensions.DependencyInjection;
+                                          public class MyOptions {}
+                                          public class Startup {
+                                              public Startup(IServiceCollection services, IConfiguration configuration) {
+                                                  services.AddOptions<MyOptions>().BindConfiguration("MyOptions");
+                                              }
+                                          }
+                                      }
+                                      """;
+
+        var analyzer = new BindConfigurationAnalyzer();
+        var provider = new BindConfigurationCodeFixProvider();
+        var request = new CodeFixRequest
+        {
+            Analyzer = analyzer,
+            Provider = provider,
+            Source = source
+        };
+        var offered = await CodeFixTestRunner.CountOfferedActionsAsync(request, cancellationToken);
+
+        await Assert.That(offered).IsEqualTo(0);
+    }
+
+    /// <summary>
     ///     Tests that no fix is offered when no configuration is in scope.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -137,5 +172,54 @@ public sealed class BindConfigurationCodeFixProviderTests
         var offered = await CodeFixTestRunner.CountOfferedActionsAsync(request, cancellationToken);
 
         await Assert.That(offered).IsEqualTo(0);
+    }
+
+    /// <summary>
+    ///     Tests that no fix is offered when BindConfiguration is called with the wrong argument count.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task CountOfferedActions_ZeroArgumentCall_OffersNoFix(CancellationToken cancellationToken)
+    {
+        var source = FrameworkStubs + """
+
+                                      namespace MyApp {
+                                          using Microsoft.Extensions.Configuration;
+                                          using Microsoft.Extensions.DependencyInjection;
+                                          public class MyOptions {}
+                                          public class Startup {
+                                              public void Register(IServiceCollection services, IConfiguration configuration) {
+                                                  services.AddOptions<MyOptions>().BindConfiguration();
+                                              }
+                                          }
+                                      }
+                                      """;
+
+        var analyzer = new BindConfigurationAnalyzer();
+        var provider = new BindConfigurationCodeFixProvider();
+        var request = new CodeFixRequest
+        {
+            Analyzer = analyzer,
+            Provider = provider,
+            Source = source
+        };
+        var offered = await CodeFixTestRunner.CountOfferedActionsAsync(request, cancellationToken);
+
+        await Assert.That(offered).IsEqualTo(0);
+    }
+
+    /// <summary>
+    ///     Tests that GetFixAllProvider returns a non-null batch fixer.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task GetFixAllProvider_Called_ReturnsBatchFixer(CancellationToken cancellationToken)
+    {
+        var provider = new BindConfigurationCodeFixProvider();
+        var fixAllProvider = provider.GetFixAllProvider();
+
+        await Assert.That(fixAllProvider).IsNotNull();
     }
 }

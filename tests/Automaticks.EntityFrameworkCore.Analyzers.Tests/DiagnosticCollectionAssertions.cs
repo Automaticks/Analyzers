@@ -1,4 +1,4 @@
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -85,6 +85,25 @@ public static class DiagnosticCollectionAssertions
         {
             if (diagnostic.Id == diagnosticId
                 && diagnostic.GetMessage(CultureInfo.InvariantCulture).Contains(messageSubstring, StringComparison.Ordinal))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    ///     Determines whether a diagnostic with the specified identifier was suppressed by a <see cref="Microsoft.CodeAnalysis.DiagnosticSuppressor" />.
+    /// </summary>
+    /// <param name="diagnostics">The diagnostics to inspect.</param>
+    /// <param name="diagnosticId">The diagnostic identifier to locate.</param>
+    /// <returns><see langword="true" /> when a matching, suppressed diagnostic exists; otherwise, <see langword="false" />.</returns>
+    public static bool HasSuppressedId(ImmutableArray<Diagnostic> diagnostics, string diagnosticId)
+    {
+        foreach (var diagnostic in diagnostics)
+        {
+            if (diagnostic.Id == diagnosticId && diagnostic.IsSuppressed)
             {
                 return true;
             }

@@ -87,6 +87,25 @@ public static class CodeFixTestRunner
         return diagnostics.Count;
     }
 
+    /// <summary>Counts the code actions the provider registers for the first fixable diagnostic, without throwing when none are offered.</summary>
+    /// <param name="request">The analyzer, provider, and source to inspect.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task that resolves to the number of registered code actions.</returns>
+    public static async Task<int> CountRegisteredActionsAsync(CodeFixRequest request, CancellationToken cancellationToken)
+    {
+        var document = CreateDocument(request.Source);
+        var diagnostics = await GetFixableDiagnosticsAsync(request, document, cancellationToken);
+        if (diagnostics.Count == 0)
+        {
+            return 0;
+        }
+
+        var actions = new List<CodeAction>();
+        var context = new CodeFixContext(document, diagnostics[0], (action, _) => actions.Add(action), cancellationToken);
+        await request.Provider.RegisterCodeFixesAsync(context);
+        return actions.Count;
+    }
+
     private static async Task<Document> ApplyOneAsync(
         CodeFixRequest request,
         Document document,

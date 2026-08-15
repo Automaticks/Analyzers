@@ -7,3 +7,20 @@
 # abbreviation - renaming it would ripple across every file in this package and its test suite.
 [src/Automaticks.CSharp.Analyzers/DiagnosticIds.cs]
 dotnet_diagnostic.ATXCS017.severity = none
+
+# RS1001 (missing DiagnosticAnalyzer attribute) flags SuppressibleLinqUsageAnalyzer, a test-only
+# analyzer that intentionally omits the discovery attribute because it is never assembly-scanned:
+# it is constructed directly by LinqUsageSuppressorTests and supplied to WithAnalyzers to give the
+# real LinqUsageSuppressor a Warning-severity ATXLQ002 diagnostic to inspect (the production
+# LinqUsageAnalyzer reports ATXLQ002 as Error, and Roslyn's DiagnosticSuppressor API can never
+# suppress an Error-severity diagnostic, so it cannot exercise ReportSuppressions on its own).
+[tests/Automaticks.EntityFrameworkCore.Analyzers.Tests/Stubs/SuppressibleLinqUsageAnalyzer.cs]
+dotnet_diagnostic.RS1001.severity = none
+
+# RS1001 (missing DiagnosticAnalyzer attribute) flags SuppressMessageAtMethodAnalyzer, a test-only
+# analyzer that intentionally omits the discovery attribute because it is never assembly-scanned:
+# it is constructed directly by SuppressMessageCodeFixProviderTests and supplied to
+# WithAnalyzers to give SuppressMessageCodeFixProvider a diagnostic with no enclosing attribute,
+# exercising the "no attribute found" early-return branch in RegisterCodeFixesAsync.
+[tests/Automaticks.Diagnostics.CodeAnalysis.Analyzers.Tests/Stubs/SuppressMessageAtMethodAnalyzer.cs]
+dotnet_diagnostic.RS1001.severity = none

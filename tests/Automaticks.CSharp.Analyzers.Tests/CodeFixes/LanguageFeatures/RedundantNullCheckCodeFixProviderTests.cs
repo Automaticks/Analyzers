@@ -1,4 +1,5 @@
-using Automaticks.CSharp.CodeFixes.LanguageFeatures;
+﻿using Automaticks.CSharp.CodeFixes.LanguageFeatures;
+using Microsoft.CodeAnalysis.CodeFixes;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -43,6 +44,37 @@ public class RedundantNullCheckCodeFixProviderTests
 
         await Assert.That(fixedSource).Contains("name = value;");
         await Assert.That(fixedSource).DoesNotContain("ArgumentNullException");
+    }
+
+    /// <summary>
+    ///     Tests that a ThrowIfNull call inside an expression bodied member is left untouched.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task ApplyFix_ExpressionBodiedThrowIfNull_KeepsSourceUnchanged(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              #nullable enable
+                              using System;
+                              namespace MyApp {
+                                  public class Foo {
+                                      public void Bar(string value) => ArgumentNullException.ThrowIfNull(value);
+                                  }
+                              }
+                              """;
+
+        var analyzer = new RedundantNullCheckAnalyzer();
+        var provider = new RedundantNullCheckCodeFixProvider();
+        var request = new CodeFixRequest
+        {
+            Analyzer = analyzer,
+            Provider = provider,
+            Source = source
+        };
+        var fixedSource = await CodeFixTestRunner.ApplyFixAsync(request, cancellationToken);
+
+        await Assert.That(fixedSource).Contains("ArgumentNullException.ThrowIfNull(value);");
     }
 
     /// <summary>
@@ -118,5 +150,19 @@ public class RedundantNullCheckCodeFixProviderTests
         var count = await CodeFixTestRunner.CountFixableAsync(request, cancellationToken);
 
         await Assert.That(count).IsEqualTo(0);
+    }
+
+    /// <summary>
+    ///     Tests that the provider always exposes the batch Fix All provider.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task GetFixAllProvider_Always_ReturnsBatchFixer(CancellationToken cancellationToken)
+    {
+        var provider = new RedundantNullCheckCodeFixProvider();
+        var fixAllProvider = provider.GetFixAllProvider();
+
+        await Assert.That(fixAllProvider).IsEqualTo(WellKnownFixAllProviders.BatchFixer);
     }
 }

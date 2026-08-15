@@ -1,4 +1,6 @@
 ﻿using Automaticks.CSharp.CodeFixes.Formatting;
+using Microsoft.CodeAnalysis.CodeFixes;
+using Microsoft.CodeAnalysis.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -87,6 +89,41 @@ public class DuplicateUsingDirectiveCodeFixProviderTests
     }
 
     /// <summary>
+    ///     Tests that a span outside any using directive offers no action.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task CountActionsForSpan_SpanOutsideUsingDirective_ReportsZero(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System;
+
+                              namespace MyApp {
+                                  public class Foo { }
+                              }
+                              """;
+
+        var analyzer = new DuplicateUsingDirectiveAnalyzer();
+        var provider = new DuplicateUsingDirectiveCodeFixProvider();
+        var request = new CodeFixRequest
+        {
+            Analyzer = analyzer,
+            Provider = provider,
+            Source = source
+        };
+        var start = source.IndexOf("Foo", System.StringComparison.Ordinal);
+        var span = new TextSpan(start, "Foo".Length);
+        var count = await CodeFixTestRunner.CountActionsForSpanAsync(
+            request,
+            DuplicateUsingDirectiveAnalyzer.Rule,
+            span,
+            cancellationToken);
+
+        await Assert.That(count).IsEqualTo(0);
+    }
+
+    /// <summary>
     ///     Tests that source without duplicates offers no fix.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -114,5 +151,19 @@ public class DuplicateUsingDirectiveCodeFixProviderTests
         var count = await CodeFixTestRunner.CountFixableAsync(request, cancellationToken);
 
         await Assert.That(count).IsEqualTo(0);
+    }
+
+    /// <summary>
+    ///     Tests that the provider always exposes the batch Fix All provider.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task GetFixAllProvider_Always_ReturnsBatchFixer(CancellationToken cancellationToken)
+    {
+        var provider = new DuplicateUsingDirectiveCodeFixProvider();
+        var fixAllProvider = provider.GetFixAllProvider();
+
+        await Assert.That(fixAllProvider).IsEqualTo(WellKnownFixAllProviders.BatchFixer);
     }
 }
