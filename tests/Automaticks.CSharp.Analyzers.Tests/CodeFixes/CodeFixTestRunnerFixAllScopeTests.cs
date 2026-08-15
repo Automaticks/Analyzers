@@ -11,7 +11,7 @@ namespace Automaticks.CSharp.Analyzers.Tests.CodeFixes;
 ///     Verifies every shipped code fix supports the document, project, and solution Fix All
 ///     scopes, and that a document-scoped Fix All clears all occurrences in one pass.
 /// </summary>
-public class FixAllScopeCodeFixProviderTests
+public class CodeFixTestRunnerFixAllScopeTests
 {
     private const string ManyInternalTypesSource = "namespace MyApp {\n    internal class First { }\n    internal class Second { }\n    internal class Third { }\n}\n";
     private const string ManyUnusedUsingsSource = "using System.Text;\nusing System.IO;\nusing System.Net;\n\nnamespace MyApp {\n    public class Foo { }\n}\n";
