@@ -1,4 +1,4 @@
-using Automaticks.CSharp.Analyzers.Tests.Stubs;
+﻿using Automaticks.CSharp.Analyzers.Tests.Stubs;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -113,7 +113,10 @@ public static class AnalyzerTestRunner
             syntaxTrees,
             references,
             compilationOptions);
-        var configOptionsHolder = new TestAnalyzerConfigOptionsHolder(options.IsTestProject, options.IsAnalyzerProject);
+        var configOptionsHolder = new TestAnalyzerConfigOptionsHolder(
+            options.IsTestProject,
+            options.IsAnalyzerProject,
+            options.ConfigOptions);
         var analyzerOptions = new AnalyzerOptions(ImmutableArray<AdditionalText>.Empty, configOptionsHolder);
         var compilationWithAnalyzers = compilation.WithAnalyzers(
             ImmutableArray.Create(analyzer),

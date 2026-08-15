@@ -19,6 +19,7 @@ namespace Automaticks.CSharp.Complexity;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class CognitiveComplexityAnalyzer : DiagnosticAnalyzer
 {
+    private const string LimitKey = "automaticks.cognitive_complexity";
     private const int MaxComplexity = 15;
 
     /// <summary>
@@ -75,10 +76,11 @@ public sealed class CognitiveComplexityAnalyzer : DiagnosticAnalyzer
         var walker = new CognitiveComplexityWalker();
         walker.Visit(bodyNode);
 
-        if (walker.Score > MaxComplexity)
+        var maxComplexity = ConfigurableLimit.Read(context, LimitKey, MaxComplexity);
+        if (walker.Score > maxComplexity)
         {
             context.ReportDiagnostic(
-                Diagnostic.Create(Rule, method.Identifier.GetLocation(), method.Identifier.Text, walker.Score, MaxComplexity));
+                Diagnostic.Create(Rule, method.Identifier.GetLocation(), method.Identifier.Text, walker.Score, maxComplexity));
         }
     }
 

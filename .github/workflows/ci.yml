@@ -27,10 +27,10 @@ jobs:
       - name: Test
         run: dotnet test --no-build --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
 
-      # Coverage rules (ATXTST012, ATXTST013) read the report produced by the run above, so they
-      # can only contribute on a second build. This step is advisory: the repository currently has
-      # files below the 80% threshold, and TreatWarningsAsErrors turns each finding into an error.
-      # Drop continue-on-error once coverage is at the target to make the gate binding.
+      # Coverage rules (ATXTST012, ATXTST013) read the reports produced by the run above, so they
+      # can only contribute on a second build. Each test project emits its own report and the
+      # analyzers merge them. The path must be absolute: MSBuild resolves a wildcard relative to
+      # each project directory, so a repo-relative glob silently matches nothing. This gate is
+      # binding — TreatWarningsAsErrors turns any finding into a build error.
       - name: Re-analyze with coverage
-        continue-on-error: true
-        run: dotnet build --no-restore -p:AutomaticksCoverageReport=coverage.cobertura.xml
+        run: dotnet build --no-restore "-p:AutomaticksCoverageReport=${{ github.workspace }}/tests/**/TestResults/coverage.cobertura.xml"

@@ -62,6 +62,16 @@ public sealed class CoverageReport
         return null;
     }
 
+    /// <summary>
+    ///     Merges a further Cobertura report into this one. A solution-wide test run emits one
+    ///     report per test project, and each covers a different slice of the source.
+    /// </summary>
+    /// <param name="reportXml">The Cobertura report contents to merge.</param>
+    public void Include(string reportXml)
+    {
+        Parse(reportXml);
+    }
+
     private string GetFileName(string normalizedPath)
     {
         var separatorIndex = normalizedPath.LastIndexOf('/');

@@ -133,6 +133,30 @@ public class SingleBlankLineBetweenUsingsAndNamespaceAnalyzerTests
     }
 
     /// <summary>
+    ///     Tests that Analyze_NonNamespaceMemberBeforeNamespace_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_NonNamespaceMemberBeforeNamespace_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System;
+
+                              public class Bar { }
+
+                              namespace MyApp {
+                                  public class Foo { }
+                              }
+                              """;
+
+        var analyzer = new SingleBlankLineBetweenUsingsAndNamespaceAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS043")).IsFalse();
+    }
+
+    /// <summary>
     ///     Tests that Analyze_NoUsingDirectives_ReportsNoDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -193,5 +217,27 @@ public class SingleBlankLineBetweenUsingsAndNamespaceAnalyzerTests
         var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
         await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS043")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_PreprocessorDirectiveWithoutBlankLine_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_PreprocessorDirectiveWithoutBlankLine_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System;
+                              #undef SOMETHING
+                              namespace MyApp {
+                                  public class Foo { }
+                              }
+                              """;
+
+        var analyzer = new SingleBlankLineBetweenUsingsAndNamespaceAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS043")).IsTrue();
     }
 }

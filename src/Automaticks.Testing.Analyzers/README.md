@@ -32,12 +32,15 @@ report must be handed to the compiler as an `AdditionalFiles` item.
 
 ```shell
 dotnet test --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
-dotnet build -p:AutomaticksCoverageReport=coverage.cobertura.xml
+dotnet build -p:AutomaticksCoverageReport=/abs/path/to/coverage.cobertura.xml
 ```
 
 The package ships MSBuild targets that turn `AutomaticksCoverageReport` into the required item.
-Both rules stay silent when no report is supplied, so a clean clone still builds before any test
-run has happened.
+`AutomaticksCoverageReport` accepts a single path or a wildcard; a solution-wide test run emits one
+report per test project and the analyzers merge them. Use an **absolute** path for a wildcard —
+MSBuild resolves a glob relative to each project directory, so a repo-relative glob silently matches
+nothing and the rules would appear to pass. Both rules stay silent when no report is supplied, so a
+clean clone still builds before any test run has happened.
 
 Set the `ATXTST013` threshold in `.editorconfig`:
 

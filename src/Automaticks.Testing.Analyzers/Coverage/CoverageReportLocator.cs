@@ -15,13 +15,14 @@ public static class CoverageReportLocator
     private const string ReportSuffix = ".cobertura.xml";
 
     /// <summary>
-    ///     Finds the first usable coverage report among the additional files.
+    ///     Finds and merges every usable coverage report among the additional files.
     /// </summary>
     /// <param name="options">The analyzer options carrying the additional files.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>The parsed report, or <see langword="null" /> when none was supplied.</returns>
+    /// <returns>The merged report, or <see langword="null" /> when none was supplied.</returns>
     public static CoverageReport? Find(AnalyzerOptions options, CancellationToken cancellationToken)
     {
+        CoverageReport? merged = null;
         foreach (var additionalFile in options.AdditionalFiles)
         {
             if (!HasCoverageReportMarker(options, additionalFile))
@@ -35,14 +36,17 @@ public static class CoverageReportLocator
                 continue;
             }
 
-            var report = new CoverageReport(text.ToString());
-            if (report.IsPopulated)
+            if (merged is null)
             {
-                return report;
+                merged = new CoverageReport(text.ToString());
+            }
+            else
+            {
+                merged.Include(text.ToString());
             }
         }
 
-        return null;
+        return merged is not null && merged.IsPopulated ? merged : null;
     }
 
     private static bool HasCoverageReportMarker(AnalyzerOptions options, AdditionalText additionalFile)

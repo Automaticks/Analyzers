@@ -1,17 +1,26 @@
 ﻿<Project>
 
     <!--
-        Wires a coverage report produced by a previous test run into the compilation so the
-        coverage rules (ATXTST012 and friends) can read it.
+        Wires coverage reports produced by a previous test run into the compilation so the
+        coverage rules (ATXTST012 and friends) can read them.
 
-        Produce a report with "dotnet test" using its coverage options, then pass the path:
-            dotnet build -p:AutomaticksCoverageReport=artifacts/coverage.cobertura.xml
+        AutomaticksCoverageReport accepts a single path or an MSBuild wildcard. A solution-wide
+        test run emits one report per test project, so a wildcard is the normal case:
+            dotnet build -p:AutomaticksCoverageReport=tests/**/TestResults/*.cobertura.xml
 
-        The Exists() guard is deliberate: on a clean clone no report exists yet, so the item is
-        never added, the analyzer finds no report, and it stays silent instead of failing a build
-        that has not had a chance to run tests.
+        A wildcard that matches nothing expands to no items, and a literal path is guarded by
+        Exists(). Either way, on a clean clone no report is added, the analyzers find none, and
+        they stay silent instead of failing a build that has not had a chance to run tests.
     -->
-    <ItemGroup Condition="'$(AutomaticksCoverageReport)' != '' AND Exists('$(AutomaticksCoverageReport)')">
+    <PropertyGroup Condition="'$(AutomaticksCoverageReport)' != ''">
+        <_AutomaticksCoverageReportIsGlob Condition="$(AutomaticksCoverageReport.Contains('*'))">true</_AutomaticksCoverageReportIsGlob>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(_AutomaticksCoverageReportIsGlob)' == 'true'">
+        <AdditionalFiles Include="$(AutomaticksCoverageReport)" IsCoverageReport="true" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(AutomaticksCoverageReport)' != '' AND '$(_AutomaticksCoverageReportIsGlob)' != 'true' AND Exists('$(AutomaticksCoverageReport)')">
         <AdditionalFiles Include="$(AutomaticksCoverageReport)" IsCoverageReport="true" />
     </ItemGroup>
 
