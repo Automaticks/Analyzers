@@ -1,5 +1,4 @@
 ﻿using Automaticks.EntityFrameworkCore;
-using Automaticks.EntityFrameworkCore.Analyzers.Tests.Stubs;
 using Automaticks.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -92,9 +91,9 @@ public class LinqUsageSuppressorTests
                               namespace MyApp {}
                               """;
 
-        var suppressibleAnalyzer = new SuppressibleLinqUsageAnalyzer();
+        var linqUsageAnalyzer = new LinqUsageAnalyzer();
         var linqUsageSuppressor = new LinqUsageSuppressor();
-        var analyzers = ImmutableArray.Create<DiagnosticAnalyzer>(suppressibleAnalyzer, linqUsageSuppressor);
+        var analyzers = ImmutableArray.Create<DiagnosticAnalyzer>(linqUsageAnalyzer, linqUsageSuppressor);
         var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzers, source, cancellationToken);
 
         await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXLQ002")).IsTrue();
@@ -115,9 +114,9 @@ public class LinqUsageSuppressorTests
                               namespace MyApp {}
                               """;
 
-        var suppressibleAnalyzer = new SuppressibleLinqUsageAnalyzer();
+        var linqUsageAnalyzer = new LinqUsageAnalyzer();
         var linqUsageSuppressor = new LinqUsageSuppressor();
-        var analyzers = ImmutableArray.Create<DiagnosticAnalyzer>(suppressibleAnalyzer, linqUsageSuppressor);
+        var analyzers = ImmutableArray.Create<DiagnosticAnalyzer>(linqUsageAnalyzer, linqUsageSuppressor);
         var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzers, source, cancellationToken);
 
         await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXLQ002")).IsTrue();

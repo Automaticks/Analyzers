@@ -68,8 +68,8 @@ package under specific conditions. Rows marked `CodeFix` ship an automated fix; 
 | `ATXDC019` | // ReSharper disable is not allowed | Diagnostics.CodeAnalysis | Error | Analyzer, CodeFix | `Automaticks.Diagnostics.CodeAnalysis.Analyzers` |
 | `ATXDC056` | [SuppressMessage] is not allowed | Diagnostics.CodeAnalysis | Error | Analyzer, CodeFix | `Automaticks.Diagnostics.CodeAnalysis.Analyzers` |
 | `ATXEO049` | BindConfiguration is forbidden | Extensions.Options | Error | Analyzer, CodeFix | `Automaticks.Extensions.Options.Analyzers` |
-| `ATXLQ002` | Suppresses `ATXLQ002` (LINQ is not allowed) for files that import `Microsoft.EntityFrameworkCore` | Linq | Error | Suppressor | `Automaticks.EntityFrameworkCore.Analyzers` |
-| `ATXLQ002` | LINQ is not allowed | Linq | Error | Analyzer | `Automaticks.Linq.Analyzers` |
+| `ATXLQ002` | Suppresses `ATXLQ002` (LINQ is not allowed) for files that import `Microsoft.EntityFrameworkCore` | Linq | Warning | Suppressor | `Automaticks.EntityFrameworkCore.Analyzers` |
+| `ATXLQ002` | LINQ is not allowed | Linq | Warning | Analyzer | `Automaticks.Linq.Analyzers` |
 | `ATXMV001` | Command constructors must use method groups, not lambdas | CommunityToolkit.Mvvm | Error | Analyzer, CodeFix | `Automaticks.CommunityToolkit.Mvvm.Analyzers` |
 | `ATXRF030` | Reflection is forbidden | Reflection | Error | Analyzer | `Automaticks.Reflection.Analyzers` |
 | `ATXTA008` | Async-returning methods must accept CancellationToken as the last parameter | Threading.Tasks | Error | Analyzer | `Automaticks.Threading.Tasks.Analyzers` |
