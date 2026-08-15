@@ -27,7 +27,7 @@ public sealed class AutoPropertySingleLineAnalyzer : DiagnosticAnalyzer
         var rule = new DiagnosticDescriptor(
             DiagnosticIds.CSharp.AutoPropertySingleLine,
             "Auto-implemented property must be declared on a single line",
-            "Property '{0}' has only auto-implemented accessors and must be declared on a single line",
+            "Property '{0}' has only auto-implemented accessors and must be declared on a single line. A code fix is available (dotnet format analyzers --diagnostics ATXCS045).",
             "Style",
             DiagnosticSeverity.Error,
             true,

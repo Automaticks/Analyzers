@@ -28,7 +28,7 @@ public sealed class MissingSummaryXmlDocAnalyzer : DiagnosticAnalyzer
         Rule = new(
             DiagnosticIds.CSharp.MissingSummaryXmlDoc,
             "Public member is missing a <summary> XML documentation comment",
-            "'{0}' is missing a <summary> XML documentation comment",
+            "'{0}' is missing a <summary> XML documentation comment. A code fix is available (dotnet format analyzers --diagnostics ATXCS051).",
             "CSharp",
             DiagnosticSeverity.Warning,
             true,

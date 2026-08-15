@@ -25,7 +25,7 @@ public sealed class BooleanMethodNamingAnalyzer : DiagnosticAnalyzer
         var rule = new DiagnosticDescriptor(
             DiagnosticIds.CSharp.BooleanMethodNaming,
             "Methods returning bool must use an allowed prefix",
-            "'{0}' returns bool or bool? but its name does not start with an allowed prefix ('can' or 'has', case-insensitive). Rename it to start with one of those prefixes (e.g. '{0}' \u2192 'Can{0}' or 'Has{0}'). This convention signals intent at every call site and is required for codebase consistency.",
+            "'{0}' returns bool or bool? but its name does not start with an allowed prefix ('can' or 'has', case-insensitive). Rename it to start with one of those prefixes (e.g. '{0}' \u2192 'Can{0}' or 'Has{0}'). This convention signals intent at every call site and is required for codebase consistency. A code fix is available (dotnet format analyzers --diagnostics ATXCS063).",
             "CSharp",
             DiagnosticSeverity.Error,
             true,

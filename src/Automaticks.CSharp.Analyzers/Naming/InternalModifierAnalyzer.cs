@@ -20,7 +20,7 @@ public sealed class InternalModifierAnalyzer : DiagnosticAnalyzer
         var rule = new DiagnosticDescriptor(
             DiagnosticIds.CSharp.InternalModifier,
             "The 'internal' access modifier is forbidden",
-            "'{0}' uses the 'internal' access modifier, which is forbidden. Use 'public' instead.",
+            "'{0}' uses the 'internal' access modifier, which is forbidden. Use 'public' instead. A code fix is available (dotnet format analyzers --diagnostics ATXCS013).",
             "CSharp",
             DiagnosticSeverity.Error,
             true,

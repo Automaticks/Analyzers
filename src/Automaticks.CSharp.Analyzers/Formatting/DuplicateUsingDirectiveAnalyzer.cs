@@ -24,7 +24,7 @@ public sealed class DuplicateUsingDirectiveAnalyzer : DiagnosticAnalyzer
         var rule = new DiagnosticDescriptor(
             DiagnosticIds.CSharp.DuplicateUsingDirective,
             "Duplicate using directive",
-            "Remove the duplicate using directive '{0}'",
+            "Remove the duplicate using directive '{0}'. A code fix is available (dotnet format analyzers --diagnostics ATXCS046).",
             "Style",
             DiagnosticSeverity.Error,
             true,

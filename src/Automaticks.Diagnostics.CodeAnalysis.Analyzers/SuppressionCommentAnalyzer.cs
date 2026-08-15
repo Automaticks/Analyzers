@@ -1,4 +1,4 @@
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -32,7 +32,7 @@ public sealed class SuppressionCommentAnalyzer : DiagnosticAnalyzer
         var pragmaRule = new DiagnosticDescriptor(
             DiagnosticIds.DiagnosticsCodeAnalysis.SuppressionPragma,
             "#pragma warning disable is not allowed",
-            "#pragma warning disable suppresses a diagnostic instead of fixing it. Fix the root cause, or extend the .editorconfig allow-list if the rule is a genuine false positive.",
+            "#pragma warning disable suppresses a diagnostic instead of fixing it. Fix the root cause, or extend the .editorconfig allow-list if the rule is a genuine false positive. A code fix is available (dotnet format analyzers --diagnostics ATXDC018).",
             "Diagnostics.CodeAnalysis",
             DiagnosticSeverity.Error,
             true,
@@ -40,7 +40,7 @@ public sealed class SuppressionCommentAnalyzer : DiagnosticAnalyzer
         var reSharperRule = new DiagnosticDescriptor(
             DiagnosticIds.DiagnosticsCodeAnalysis.SuppressionReSharper,
             "// ReSharper disable is not allowed",
-            "// ReSharper disable suppresses a diagnostic instead of fixing it. Fix the root cause, or add a severity override to .editorconfig if the rule is a genuine false positive.",
+            "// ReSharper disable suppresses a diagnostic instead of fixing it. Fix the root cause, or add a severity override to .editorconfig if the rule is a genuine false positive. A code fix is available (dotnet format analyzers --diagnostics ATXDC019).",
             "Diagnostics.CodeAnalysis",
             DiagnosticSeverity.Error,
             true,

@@ -22,7 +22,7 @@ public sealed class RedundantNullCheckAnalyzer : DiagnosticAnalyzer
         var rule = new DiagnosticDescriptor(
             DiagnosticIds.CSharp.RedundantNullCheck,
             "Redundant null check on non-nullable parameter",
-            "Parameter '{0}' is declared as a non-nullable reference type but is guarded with a null check that throws ArgumentNullException. Remove the null check, or change the parameter type to '{0}?' if null is a valid input.",
+            "Parameter '{0}' is declared as a non-nullable reference type but is guarded with a null check that throws ArgumentNullException. Remove the null check, or change the parameter type to '{0}?' if null is a valid input. A code fix is available (dotnet format analyzers --diagnostics ATXCS014).",
             "CSharp",
             DiagnosticSeverity.Error,
             true,

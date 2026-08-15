@@ -23,7 +23,7 @@ public sealed class MissingBlankLineBeforeXmlDocAnalyzer : DiagnosticAnalyzer
         var rule = new DiagnosticDescriptor(
             DiagnosticIds.CSharp.MissingBlankLineBeforeXmlDoc,
             "Missing blank line before XML doc comment",
-            "Add a blank line before the XML doc comment",
+            "Add a blank line before the XML doc comment. A code fix is available (dotnet format analyzers --diagnostics ATXCS054).",
             "Style",
             DiagnosticSeverity.Error,
             true,

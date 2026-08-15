@@ -23,7 +23,7 @@ public sealed class ConsecutiveBlankLinesAnalyzer : DiagnosticAnalyzer
         var rule = new DiagnosticDescriptor(
             DiagnosticIds.CSharp.ConsecutiveBlankLines,
             "Consecutive blank lines are forbidden",
-            "Remove the extra blank line — at most one blank line is allowed between any two constructs",
+            "Remove the extra blank line — at most one blank line is allowed between any two constructs. A code fix is available (dotnet format analyzers --diagnostics ATXCS044).",
             "Style",
             DiagnosticSeverity.Error,
             true,

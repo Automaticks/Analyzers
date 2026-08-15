@@ -48,7 +48,7 @@ public sealed class ObjectInitializerCodeStyleAnalyzer : DiagnosticAnalyzer
         EmptyBracesRule = new(
             DiagnosticIds.CSharp.ObjectInitializerEmptyBraces,
             "Empty initializer braces are forbidden",
-            "Empty initializer braces are forbidden; remove the initializer block",
+            "Empty initializer braces are forbidden; remove the initializer block. A code fix is available (dotnet format analyzers --diagnostics ATXCS060).",
             "Style",
             DiagnosticSeverity.Error,
             true,
@@ -56,7 +56,7 @@ public sealed class ObjectInitializerCodeStyleAnalyzer : DiagnosticAnalyzer
         FormatRule = new(
             DiagnosticIds.CSharp.ObjectInitializerFormat,
             "Initializer must use one member per line",
-            "Each initializer member and the surrounding braces must be on their own line",
+            "Each initializer member and the surrounding braces must be on their own line. A code fix is available (dotnet format analyzers --diagnostics ATXCS059).",
             "Style",
             DiagnosticSeverity.Error,
             true,

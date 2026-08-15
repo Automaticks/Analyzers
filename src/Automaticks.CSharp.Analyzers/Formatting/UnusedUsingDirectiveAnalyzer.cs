@@ -25,7 +25,7 @@ public sealed class UnusedUsingDirectiveAnalyzer : DiagnosticAnalyzer
         Rule = new(
             DiagnosticIds.CSharp.UnusedUsingDirective,
             "Unused using directive",
-            "Remove unused using directive '{0}'",
+            "Remove unused using directive '{0}'. A code fix is available (dotnet format analyzers --diagnostics ATXCS048).",
             "Style",
             DiagnosticSeverity.Error,
             true,

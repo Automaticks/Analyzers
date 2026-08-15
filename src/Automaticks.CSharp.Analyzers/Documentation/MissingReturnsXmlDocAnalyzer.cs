@@ -28,7 +28,7 @@ public sealed class MissingReturnsXmlDocAnalyzer : DiagnosticAnalyzer
         var rule = new DiagnosticDescriptor(
             DiagnosticIds.CSharp.MissingReturnsXmlDoc,
             "Public non-void method is missing a <returns> XML documentation element",
-            "'{0}' has a non-void return type but is missing a <returns> XML documentation element",
+            "'{0}' has a non-void return type but is missing a <returns> XML documentation element. A code fix is available (dotnet format analyzers --diagnostics ATXCS053).",
             "CSharp",
             DiagnosticSeverity.Warning,
             true,

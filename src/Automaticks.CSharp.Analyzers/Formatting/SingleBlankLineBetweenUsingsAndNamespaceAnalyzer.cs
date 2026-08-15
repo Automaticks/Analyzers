@@ -22,7 +22,7 @@ public sealed class SingleBlankLineBetweenUsingsAndNamespaceAnalyzer : Diagnosti
         var tooFewBlankLinesRule = new DiagnosticDescriptor(
             DiagnosticIds.CSharp.SingleBlankLineBetweenUsingsAndNamespace,
             "Missing blank line between using directives and namespace declaration",
-            "Add a blank line between the last using directive and the namespace declaration",
+            "Add a blank line between the last using directive and the namespace declaration. A code fix is available (dotnet format analyzers --diagnostics ATXCS043).",
             "Style",
             DiagnosticSeverity.Error,
             true,

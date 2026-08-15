@@ -1,0 +1,23 @@
+﻿using Microsoft.CodeAnalysis.CodeFixes;
+using Microsoft.CodeAnalysis.Diagnostics;
+
+namespace Automaticks.CSharp.Analyzers.Tests;
+
+/// <summary>Describes a single code fix invocation for <see cref="CodeFixTestRunner" />.</summary>
+public readonly struct CodeFixRequest
+{
+    /// <summary>Gets the analyzer that produces the diagnostic being fixed.</summary>
+    public DiagnosticAnalyzer Analyzer { get; init; }
+
+    /// <summary>Gets the equivalence key selecting one of several offered fixes.</summary>
+    public string? EquivalenceKey { get; init; }
+
+    /// <summary>Gets the file path assigned to the document under test.</summary>
+    public string? FilePath { get; init; }
+
+    /// <summary>Gets the provider that supplies the fix.</summary>
+    public CodeFixProvider Provider { get; init; }
+
+    /// <summary>Gets the C# source code to fix.</summary>
+    public string Source { get; init; }
+}

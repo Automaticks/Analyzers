@@ -1,4 +1,4 @@
-using Automaticks.Threading.Tasks.Analyzers.Tests.Stubs;
+﻿using Automaticks.Threading.Tasks.Analyzers.Tests.Stubs;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -14,6 +14,21 @@ namespace Automaticks.Threading.Tasks.Analyzers.Tests;
 /// <summary>Test helper for running Roslyn analyzers on in-memory source code.</summary>
 public static class AnalyzerTestRunner
 {
+    private static readonly ImmutableArray<MetadataReference> PlatformReferences;
+
+    static AnalyzerTestRunner()
+    {
+        var trustedAssemblies = AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES") as string
+            ?? throw new InvalidOperationException("TRUSTED_PLATFORM_ASSEMBLIES not available");
+        var paths = trustedAssemblies.Split(Path.PathSeparator);
+        var builder = ImmutableArray.CreateBuilder<MetadataReference>(paths.Length);
+        foreach (var path in paths)
+        {
+            builder.Add(MetadataReference.CreateFromFile(path));
+        }
+
+        PlatformReferences = builder.ToImmutable();
+    }
     /// <summary>Analyzes a single source string with default options.</summary>
     /// <param name="analyzer">The diagnostic analyzer to run.</param>
     /// <param name="source">The C# source code to analyze.</param>
@@ -107,14 +122,6 @@ public static class AnalyzerTestRunner
 
     private static ImmutableArray<MetadataReference> GetPlatformReferences()
     {
-        var trustedAssemblies = AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES") as string
-            ?? throw new InvalidOperationException("TRUSTED_PLATFORM_ASSEMBLIES not available");
-        var paths = trustedAssemblies.Split(Path.PathSeparator);
-        var builder = ImmutableArray.CreateBuilder<MetadataReference>(paths.Length);
-        foreach (var path in paths)
-        {
-            builder.Add(MetadataReference.CreateFromFile(path));
-        }
-        return builder.ToImmutable();
+        return PlatformReferences;
     }
 }

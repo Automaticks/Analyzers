@@ -24,7 +24,7 @@ public sealed class UnsortedUsingDirectivesAnalyzer : DiagnosticAnalyzer
         var rule = new DiagnosticDescriptor(
             DiagnosticIds.CSharp.UnsortedUsingDirectives,
             "Using directives must be sorted alphabetically",
-            "'{0}' is out of alphabetical order — it must appear before '{1}'. Sort all using directives case-insensitively A→Z.",
+            "'{0}' is out of alphabetical order — it must appear before '{1}'. Sort all using directives case-insensitively A→Z. A code fix is available (dotnet format analyzers --diagnostics ATXCS047).",
             "Style",
             DiagnosticSeverity.Error,
             true,

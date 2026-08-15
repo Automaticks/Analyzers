@@ -24,7 +24,7 @@ public sealed class BooleanMemberNamingAnalyzer : DiagnosticAnalyzer
         var rule = new DiagnosticDescriptor(
             DiagnosticIds.CSharp.BooleanMemberNaming,
             "Boolean fields and properties must use an allowed prefix",
-            "'{0}' is a boolean {1} but its name does not start with an allowed prefix ('is' or 'allow', case-insensitive). Rename it to start with one of those prefixes (e.g. '{0}' \u2192 'is{0}' or 'allow{0}'). This convention makes boolean intent immediately clear at every call site and is required for codebase consistency.",
+            "'{0}' is a boolean {1} but its name does not start with an allowed prefix ('is' or 'allow', case-insensitive). Rename it to start with one of those prefixes (e.g. '{0}' \u2192 'is{0}' or 'allow{0}'). This convention makes boolean intent immediately clear at every call site and is required for codebase consistency. A code fix is available (dotnet format analyzers --diagnostics ATXCS062).",
             "CSharp",
             DiagnosticSeverity.Error,
             true,

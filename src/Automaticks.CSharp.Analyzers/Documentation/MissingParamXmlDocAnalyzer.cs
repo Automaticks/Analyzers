@@ -26,7 +26,7 @@ public sealed class MissingParamXmlDocAnalyzer : DiagnosticAnalyzer
         var rule = new DiagnosticDescriptor(
             DiagnosticIds.CSharp.MissingParamXmlDoc,
             "Public member parameter is missing a <param> XML documentation element",
-            "'{0}' is missing a <param name=\"{1}\"> XML documentation element",
+            "'{0}' is missing a <param name=\"{1}\"> XML documentation element. A code fix is available (dotnet format analyzers --diagnostics ATXCS052).",
             "CSharp",
             DiagnosticSeverity.Warning,
             true,

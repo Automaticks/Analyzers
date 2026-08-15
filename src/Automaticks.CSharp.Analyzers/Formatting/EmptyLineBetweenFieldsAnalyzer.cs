@@ -22,7 +22,7 @@ public sealed class EmptyLineBetweenFieldsAnalyzer : DiagnosticAnalyzer
         var rule = new DiagnosticDescriptor(
             DiagnosticIds.CSharp.EmptyLineBetweenFields,
             "Empty lines between adjacent field or constant declarations are forbidden",
-            "Remove the blank line between adjacent field or constant declarations",
+            "Remove the blank line between adjacent field or constant declarations. A code fix is available (dotnet format analyzers --diagnostics ATXCS039).",
             "Style",
             DiagnosticSeverity.Error,
             true,

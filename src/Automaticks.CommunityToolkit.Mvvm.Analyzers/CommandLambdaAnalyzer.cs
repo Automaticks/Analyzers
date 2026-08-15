@@ -1,4 +1,4 @@
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -30,7 +30,7 @@ public sealed class CommandLambdaAnalyzer : DiagnosticAnalyzer
         var rule = new DiagnosticDescriptor(
             DiagnosticIds.ModelViewViewModel.CommandLambda,
             "Command constructors must use method groups, not lambdas",
-            "Argument to '{0}' constructor is a lambda expression. Use a named method group instead.",
+            "Argument to '{0}' constructor is a lambda expression. Use a named method group instead. A code fix is available (dotnet format analyzers --diagnostics ATXMV001).",
             "CommunityToolkit.Mvvm",
             DiagnosticSeverity.Error,
             true,

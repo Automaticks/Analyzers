@@ -24,7 +24,7 @@ public sealed class PlainCommentAnalyzer : DiagnosticAnalyzer
         var rule = new DiagnosticDescriptor(
             DiagnosticIds.CSharp.PlainComment,
             "Plain comment is not allowed",
-            "Plain comments (//) and block comments (/* */) are forbidden. Remove the comment or, if context is needed, use an XML documentation comment (///).",
+            "Plain comments (//) and block comments (/* */) are forbidden. Remove the comment or, if context is needed, use an XML documentation comment (///). A code fix is available (dotnet format analyzers --diagnostics ATXCS041).",
             "CSharp",
             DiagnosticSeverity.Warning,
             true,
