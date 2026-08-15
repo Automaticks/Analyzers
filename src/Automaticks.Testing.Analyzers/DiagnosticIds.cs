@@ -1,4 +1,4 @@
-namespace Automaticks.Testing;
+﻿namespace Automaticks.Testing;
 
 /// <summary>
 ///     Centralised registry of all diagnostic IDs emitted by the Testing Roslyn analyzers.
@@ -11,6 +11,26 @@ public static class DiagnosticIds
     /// </summary>
     public static class Testing
     {
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXTST010</c>: ambient dependency used where no injectable seam exists.
+        /// </summary>
+        public const string AmbientDependency = "ATXTST010";
+
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXTST009</c>: <c>Debug.Assert</c> condition performs side effects.
+        /// </summary>
+        public const string AssertSideEffect = "ATXTST009";
+
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXTST006</c>: bitmask test against a multi-bit mask hides individual bits.
+        /// </summary>
+        public const string CompositeBitmaskTest = "ATXTST006";
+
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXTST013</c>: file line coverage is below the configured minimum.
+        /// </summary>
+        public const string FileLineCoverage = "ATXTST013";
+
         /// <summary>
         ///     Diagnostic ID for <c>ATXTST001</c>: mocking frameworks are not allowed; use hand-written stubs.
         /// </summary>
@@ -31,5 +51,10 @@ public static class DiagnosticIds
         ///     <c>Method_Scenario_ExpectedResult</c> convention.
         /// </summary>
         public const string TestMethodNaming = "ATXTST003";
+
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXTST012</c>: public member has no coverage in the supplied report.
+        /// </summary>
+        public const string UncoveredPublicMember = "ATXTST012";
     }
 }

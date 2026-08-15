@@ -68,8 +68,8 @@ package under specific conditions. Rows marked `CodeFix` ship an automated fix; 
 | `ATXDC019` | // ReSharper disable is not allowed | Diagnostics.CodeAnalysis | Error | Analyzer, CodeFix | `Automaticks.Diagnostics.CodeAnalysis.Analyzers` |
 | `ATXDC056` | [SuppressMessage] is not allowed | Diagnostics.CodeAnalysis | Error | Analyzer, CodeFix | `Automaticks.Diagnostics.CodeAnalysis.Analyzers` |
 | `ATXEO049` | BindConfiguration is forbidden | Extensions.Options | Error | Analyzer, CodeFix | `Automaticks.Extensions.Options.Analyzers` |
-| `ATXLQ002` | Suppresses `ATXLQ002` (LINQ is not allowed) for files that import `Microsoft.EntityFrameworkCore` | Linq | Error | Suppressor | `Automaticks.EntityFrameworkCore.Analyzers` |
-| `ATXLQ002` | LINQ is not allowed | Linq | Error | Analyzer | `Automaticks.Linq.Analyzers` |
+| `ATXLQ002` | Suppresses `ATXLQ002` (LINQ is not allowed) for files that import `Microsoft.EntityFrameworkCore` | Linq | Warning | Suppressor | `Automaticks.EntityFrameworkCore.Analyzers` |
+| `ATXLQ002` | LINQ is not allowed | Linq | Warning | Analyzer | `Automaticks.Linq.Analyzers` |
 | `ATXMV001` | Command constructors must use method groups, not lambdas | CommunityToolkit.Mvvm | Error | Analyzer, CodeFix | `Automaticks.CommunityToolkit.Mvvm.Analyzers` |
 | `ATXRF030` | Reflection is forbidden | Reflection | Error | Analyzer | `Automaticks.Reflection.Analyzers` |
 | `ATXTA008` | Async-returning methods must accept CancellationToken as the last parameter | Threading.Tasks | Error | Analyzer | `Automaticks.Threading.Tasks.Analyzers` |
@@ -78,3 +78,8 @@ package under specific conditions. Rows marked `CodeFix` ship an automated fix; 
 | `ATXTST002` | Test class name must match the class under test | Testing | Warning | Analyzer | `Automaticks.Testing.Analyzers` |
 | `ATXTST003` | Test method name must follow the three-part convention | Testing | Warning | Analyzer | `Automaticks.Testing.Analyzers` |
 | `ATXTST004` | Task.Delay without TimeProvider is not allowed | Testing | Error | Analyzer | `Automaticks.Testing.Analyzers` |
+| `ATXTST006` | Bitmask test must use a single-bit mask | Testing | Warning | Analyzer | `Automaticks.Testing.Analyzers` |
+| `ATXTST009` | Debug.Assert condition must not perform side effects | Testing | Error | Analyzer | `Automaticks.Testing.Analyzers` |
+| `ATXTST010` | Ambient dependency must be reached through an injectable seam | Testing | Warning | Analyzer | `Automaticks.Testing.Analyzers` |
+| `ATXTST012` | Public member must be covered by a test | Testing | Warning | Analyzer | `Automaticks.Testing.Analyzers` |
+| `ATXTST013` | File line coverage must meet the configured minimum | Testing | Warning | Analyzer | `Automaticks.Testing.Analyzers` |

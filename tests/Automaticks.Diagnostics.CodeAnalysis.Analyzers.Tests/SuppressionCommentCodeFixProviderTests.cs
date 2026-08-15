@@ -123,6 +123,33 @@ public class SuppressionCommentCodeFixProviderTests
         await Assert.That(fixedSource).Contains("private static void Helper() { }");
     }
 
+    /// <summary>Verifies a ReSharper disable comment attached as trailing trivia is still removed.</summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task ApplyFix_ReSharperDisableTrailingComment_RemovesComment(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo {
+                                      private static void Helper() { } // ReSharper disable once UnusedMember.Local
+                                  }
+                              }
+                              """;
+
+        var analyzer = new SuppressionCommentAnalyzer();
+        var provider = new SuppressionCommentCodeFixProvider();
+        var request = new CodeFixRequest
+        {
+            Analyzer = analyzer,
+            Provider = provider,
+            Source = source
+        };
+        var fixedSource = await CodeFixTestRunner.ApplyFixAsync(request, cancellationToken);
+
+        await Assert.That(fixedSource).DoesNotContain("ReSharper disable");
+    }
+
     /// <summary>Verifies a pragma restore directive is never offered a fix.</summary>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task representing the asynchronous test operation.</returns>
@@ -149,5 +176,17 @@ public class SuppressionCommentCodeFixProviderTests
         var count = await CodeFixTestRunner.CountFixableAsync(request, cancellationToken);
 
         await Assert.That(count).IsEqualTo(0);
+    }
+
+    /// <summary>Verifies GetFixAllProvider returns a non-null batch fixer.</summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task GetFixAllProvider_Called_ReturnsBatchFixer(CancellationToken cancellationToken)
+    {
+        var provider = new SuppressionCommentCodeFixProvider();
+        var fixAllProvider = provider.GetFixAllProvider();
+
+        await Assert.That(fixAllProvider).IsNotNull();
     }
 }

@@ -23,7 +23,7 @@ public sealed class LinqUsageAnalyzer : DiagnosticAnalyzer
             "LINQ is not allowed",
             "LINQ is not allowed in this codebase. Use explicit loops instead.",
             "Linq",
-            DiagnosticSeverity.Error,
+            DiagnosticSeverity.Warning,
             true,
             "Replace the LINQ method chain or query expression with an explicit `foreach` loop. Remove the `using System.Linq;` directive if it becomes unused after the change. Note: LINQ inside Entity Framework Core `IQueryable` expressions is suppressed by a separate suppressor.");
         Rule = rule;

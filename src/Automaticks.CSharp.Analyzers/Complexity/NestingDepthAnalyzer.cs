@@ -12,6 +12,7 @@ namespace Automaticks.CSharp.Complexity;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class NestingDepthAnalyzer : DiagnosticAnalyzer
 {
+    private const string LimitKey = "automaticks.nesting_depth";
     private const int MaxDepth = 5;
 
     /// <summary>
@@ -61,10 +62,11 @@ public sealed class NestingDepthAnalyzer : DiagnosticAnalyzer
         var walker = new NestingDepthWalker();
         walker.Visit(memberInfo.Value.BodyNode);
 
-        if (walker.DepthReached > MaxDepth)
+        var maxDepth = ConfigurableLimit.Read(context, LimitKey, MaxDepth);
+        if (walker.DepthReached > maxDepth)
         {
             context.ReportDiagnostic(
-                Diagnostic.Create(Rule, memberInfo.Value.Location, memberInfo.Value.Name, walker.DepthReached, MaxDepth));
+                Diagnostic.Create(Rule, memberInfo.Value.Location, memberInfo.Value.Name, walker.DepthReached, maxDepth));
         }
     }
 

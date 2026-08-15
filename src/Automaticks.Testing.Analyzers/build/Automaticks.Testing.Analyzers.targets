@@ -1,0 +1,35 @@
+﻿<Project>
+
+    <!--
+        Wires coverage reports produced by a previous test run into the compilation so the
+        coverage rules (ATXTST012 and friends) can read them.
+
+        AutomaticksCoverageReport accepts a single path or an MSBuild wildcard. A solution-wide
+        test run emits one report per test project, so a wildcard is the normal case:
+            dotnet build -p:AutomaticksCoverageReport=tests/**/TestResults/*.cobertura.xml
+
+        A wildcard that matches nothing expands to no items, and a literal path is guarded by
+        Exists(). Either way, on a clean clone no report is added, the analyzers find none, and
+        they stay silent instead of failing a build that has not had a chance to run tests.
+    -->
+    <PropertyGroup Condition="'$(AutomaticksCoverageReport)' != ''">
+        <_AutomaticksCoverageReportIsGlob Condition="$(AutomaticksCoverageReport.Contains('*'))">true</_AutomaticksCoverageReportIsGlob>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(_AutomaticksCoverageReportIsGlob)' == 'true'">
+        <AdditionalFiles Include="$(AutomaticksCoverageReport)" IsCoverageReport="true" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(AutomaticksCoverageReport)' != '' AND '$(_AutomaticksCoverageReportIsGlob)' != 'true' AND Exists('$(AutomaticksCoverageReport)')">
+        <AdditionalFiles Include="$(AutomaticksCoverageReport)" IsCoverageReport="true" />
+    </ItemGroup>
+
+    <!--
+        Without this the analyzer cannot see the IsCoverageReport metadata; it is what makes
+        build_metadata.AdditionalFiles.IsCoverageReport readable from AnalyzerConfigOptions.
+    -->
+    <ItemGroup>
+        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="IsCoverageReport" />
+    </ItemGroup>
+
+</Project>

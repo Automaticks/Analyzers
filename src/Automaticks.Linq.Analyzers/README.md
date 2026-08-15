@@ -1,4 +1,4 @@
-# Automaticks.Linq.Analyzers
+﻿# Automaticks.Linq.Analyzers
 
 Roslyn analyzers for `System.Linq` usage.
 
@@ -14,7 +14,7 @@ dotnet add package Automaticks.Linq.Analyzers
 
 | ID | Title | Category | Default Severity | Kind |
 |---|---|---|---|---|
-| `ATXLQ002` | LINQ is not allowed | Linq | Error | Analyzer |
+| `ATXLQ002` | LINQ is not allowed | Linq | Warning | Analyzer |
 
 ## License
 

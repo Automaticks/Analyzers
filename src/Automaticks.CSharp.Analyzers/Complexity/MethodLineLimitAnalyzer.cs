@@ -17,6 +17,7 @@ namespace Automaticks.CSharp.Complexity;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class MethodLineLimitAnalyzer : DiagnosticAnalyzer
 {
+    private const string LimitKey = "automaticks.method_line_limit";
     private const int MaxLines = 50;
 
     /// <summary>
@@ -29,7 +30,7 @@ public sealed class MethodLineLimitAnalyzer : DiagnosticAnalyzer
         var rule = new DiagnosticDescriptor(
             DiagnosticIds.CSharp.MethodLineLimit,
             "Methods must not exceed the maximum line limit",
-            $"Method '{{0}}' is {{1}} lines long, which exceeds the maximum of {MaxLines}. Split it into smaller, focused methods.",
+            "Method '{0}' is {1} lines long, which exceeds the maximum of {2}. Split it into smaller, focused methods.",
             "CSharp",
             DiagnosticSeverity.Error,
             true,
@@ -81,9 +82,10 @@ public sealed class MethodLineLimitAnalyzer : DiagnosticAnalyzer
         var sourceText = context.Node.SyntaxTree.GetText();
         var lineCount = CountNonBlankLines(sourceText, lineSpan.StartLinePosition.Line, lineSpan.EndLinePosition.Line);
 
-        if (lineCount > MaxLines)
+        var maxLines = ConfigurableLimit.Read(context, LimitKey, MaxLines);
+        if (lineCount > maxLines)
         {
-            context.ReportDiagnostic(Diagnostic.Create(Rule, memberInfo.Location, memberInfo.Name, lineCount));
+            context.ReportDiagnostic(Diagnostic.Create(Rule, memberInfo.Location, memberInfo.Name, lineCount, maxLines));
         }
     }
 

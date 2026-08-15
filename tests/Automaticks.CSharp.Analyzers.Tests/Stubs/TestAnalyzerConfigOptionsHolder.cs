@@ -1,5 +1,6 @@
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
+using System.Collections.Generic;
 
 namespace Automaticks.CSharp.Analyzers.Tests.Stubs;
 
@@ -18,9 +19,21 @@ public sealed class TestAnalyzerConfigOptionsHolder : AnalyzerConfigOptionsProvi
     /// <param name="isTestProject">Whether the project under test is a test project.</param>
     /// <param name="isAnalyzerProject">Whether the project under test is an analyzer project.</param>
     public TestAnalyzerConfigOptionsHolder(bool isTestProject, bool isAnalyzerProject)
+        : this(isTestProject, isAnalyzerProject, null)
     {
-        var configOptions = new TestAnalyzerConfigOptions(isTestProject, isAnalyzerProject);
-        _globalOptions = configOptions;
+    }
+
+    /// <summary>Initializes a new instance with project type flags and custom config options.</summary>
+    /// <param name="isTestProject">Whether the project under test is a test project.</param>
+    /// <param name="isAnalyzerProject">Whether the project under test is an analyzer project.</param>
+    /// <param name="configOptions">Additional .editorconfig-style key/value pairs.</param>
+    public TestAnalyzerConfigOptionsHolder(
+        bool isTestProject,
+        bool isAnalyzerProject,
+        IReadOnlyDictionary<string, string>? configOptions)
+    {
+        var configOptionsInstance = new TestAnalyzerConfigOptions(isTestProject, isAnalyzerProject, configOptions);
+        _globalOptions = configOptionsInstance;
     }
 
     /// <inheritdoc />

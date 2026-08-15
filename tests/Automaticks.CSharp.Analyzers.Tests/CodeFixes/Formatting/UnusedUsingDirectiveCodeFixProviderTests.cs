@@ -1,4 +1,5 @@
 ﻿using Automaticks.CSharp.CodeFixes.Formatting;
+using Microsoft.CodeAnalysis.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -68,6 +69,41 @@ public class UnusedUsingDirectiveCodeFixProviderTests
 
         await Assert.That(fixedSource).DoesNotContain("using System.Text;");
         await Assert.That(fixedSource).Contains("public class Foo");
+    }
+
+    /// <summary>
+    ///     Tests that a span outside any using directive offers no action.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task CountActionsForSpan_SpanOutsideUsingDirective_ReportsZero(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System;
+
+                              namespace MyApp {
+                                  public class Foo { }
+                              }
+                              """;
+
+        var analyzer = new UnusedUsingDirectiveAnalyzer();
+        var provider = new UnusedUsingDirectiveCodeFixProvider();
+        var request = new CodeFixRequest
+        {
+            Analyzer = analyzer,
+            Provider = provider,
+            Source = source
+        };
+        var start = source.IndexOf("Foo", System.StringComparison.Ordinal);
+        var span = new TextSpan(start, "Foo".Length);
+        var count = await CodeFixTestRunner.CountActionsForSpanAsync(
+            request,
+            UnusedUsingDirectiveAnalyzer.Rule,
+            span,
+            cancellationToken);
+
+        await Assert.That(count).IsEqualTo(0);
     }
 
     /// <summary>

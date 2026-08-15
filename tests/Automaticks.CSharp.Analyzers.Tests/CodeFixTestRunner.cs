@@ -131,6 +131,43 @@ public static class CodeFixTestRunner
         return text.ToString();
     }
 
+    /// <summary>Applies the fix for a synthetic diagnostic anchored at an arbitrary span.</summary>
+    /// <param name="request">The analyzer, provider, and source to fix.</param>
+    /// <param name="descriptor">The descriptor stamped on the synthetic diagnostic.</param>
+    /// <param name="span">The span the synthetic diagnostic points at.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task that resolves to the fixed source text.</returns>
+    public static async Task<string> ApplyFixForSpanAsync(
+        CodeFixRequest request,
+        DiagnosticDescriptor descriptor,
+        TextSpan span,
+        CancellationToken cancellationToken)
+    {
+        var document = CreateDocument(request);
+        var diagnostic = await CreateSpanDiagnosticAsync(document, descriptor, span, cancellationToken);
+        var fixedDocument = await ApplyOneAsync(request, document, diagnostic, cancellationToken);
+        var text = await fixedDocument.GetTextAsync(cancellationToken);
+        return text.ToString();
+    }
+
+    /// <summary>Counts the code actions offered for a synthetic diagnostic anchored at an arbitrary span.</summary>
+    /// <param name="request">The analyzer, provider, and source to inspect.</param>
+    /// <param name="descriptor">The descriptor stamped on the synthetic diagnostic.</param>
+    /// <param name="span">The span the synthetic diagnostic points at.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task that resolves to the number of offered code actions.</returns>
+    public static async Task<int> CountActionsForSpanAsync(
+        CodeFixRequest request,
+        DiagnosticDescriptor descriptor,
+        TextSpan span,
+        CancellationToken cancellationToken)
+    {
+        var document = CreateDocument(request);
+        var diagnostic = await CreateSpanDiagnosticAsync(document, descriptor, span, cancellationToken);
+        var actions = await GetActionsAsync(request, document, diagnostic, cancellationToken);
+        return actions.Count;
+    }
+
     /// <summary>Counts the diagnostics the supplied provider declares itself able to fix.</summary>
     /// <param name="request">The analyzer, provider, and source to inspect.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -273,6 +310,18 @@ public static class CodeFixTestRunner
 
         var documentName = Path.GetFileName(filePath);
         return project.AddDocument(documentName, sourceText, null, filePath);
+    }
+
+    private static async Task<Diagnostic> CreateSpanDiagnosticAsync(
+        Document document,
+        DiagnosticDescriptor descriptor,
+        TextSpan span,
+        CancellationToken cancellationToken)
+    {
+        var tree = await document.GetSyntaxTreeAsync(cancellationToken)
+            ?? throw new InvalidOperationException("The test document produced no syntax tree.");
+        var location = Location.Create(tree, span);
+        return Diagnostic.Create(descriptor, location, "x", "x", "x");
     }
 
     private static async Task<List<CodeAction>> GetActionsAsync(

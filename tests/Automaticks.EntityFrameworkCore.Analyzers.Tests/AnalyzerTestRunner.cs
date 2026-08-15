@@ -40,7 +40,21 @@ public static class AnalyzerTestRunner
         CancellationToken cancellationToken)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(source);
-        return await AnalyzeTreesAsync(analyzer, [syntaxTree], default, cancellationToken);
+        return await AnalyzeTreesAsync([analyzer], [syntaxTree], default, cancellationToken);
+    }
+
+    /// <summary>Analyzes a single source string against multiple analyzers with default options.</summary>
+    /// <param name="analyzers">The diagnostic analyzers to run together.</param>
+    /// <param name="source">The C# source code to analyze.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task that resolves to the collection of reported diagnostics.</returns>
+    public static async Task<ImmutableArray<Diagnostic>> AnalyzeAsync(
+        ImmutableArray<DiagnosticAnalyzer> analyzers,
+        string source,
+        CancellationToken cancellationToken)
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText(source);
+        return await AnalyzeTreesAsync(analyzers, [syntaxTree], default, cancellationToken);
     }
 
     /// <summary>Analyzes a single source string with the specified options.</summary>
@@ -58,7 +72,7 @@ public static class AnalyzerTestRunner
         var syntaxTree = string.IsNullOrEmpty(options.FilePath)
             ? CSharpSyntaxTree.ParseText(source)
             : CSharpSyntaxTree.ParseText(source, path: options.FilePath);
-        return await AnalyzeTreesAsync(analyzer, [syntaxTree], options, cancellationToken);
+        return await AnalyzeTreesAsync([analyzer], [syntaxTree], options, cancellationToken);
     }
 
     /// <summary>Analyzes multiple source files with default options.</summary>
@@ -77,7 +91,7 @@ public static class AnalyzerTestRunner
             syntaxTreesBuilder.Add(CSharpSyntaxTree.ParseText(sourceFile.Source, path: sourceFile.FilePath));
         }
 
-        return await AnalyzeTreesAsync(analyzer, syntaxTreesBuilder.ToImmutable(), default, cancellationToken);
+        return await AnalyzeTreesAsync([analyzer], syntaxTreesBuilder.ToImmutable(), default, cancellationToken);
     }
 
     /// <summary>Compiles the given source to a <see cref="MetadataReference"/>.</summary>
@@ -98,7 +112,7 @@ public static class AnalyzerTestRunner
     }
 
     private static async Task<ImmutableArray<Diagnostic>> AnalyzeTreesAsync(
-        DiagnosticAnalyzer analyzer,
+        ImmutableArray<DiagnosticAnalyzer> analyzers,
         IEnumerable<SyntaxTree> syntaxTrees,
         AnalysisOptions options,
         CancellationToken cancellationToken)
@@ -114,9 +128,13 @@ public static class AnalyzerTestRunner
             compilationOptions);
         var configOptionsHolder = new TestAnalyzerConfigOptionsHolder(options.IsTestProject, options.IsAnalyzerProject);
         var analyzerOptions = new AnalyzerOptions(ImmutableArray<AdditionalText>.Empty, configOptionsHolder);
-        var compilationWithAnalyzers = compilation.WithAnalyzers(
-            ImmutableArray.Create(analyzer),
-            analyzerOptions);
+        var analysisOptions = new CompilationWithAnalyzersOptions(
+            analyzerOptions,
+            onAnalyzerException: null,
+            concurrentAnalysis: true,
+            logAnalyzerExecutionTime: false,
+            reportSuppressedDiagnostics: true);
+        var compilationWithAnalyzers = compilation.WithAnalyzers(analyzers, analysisOptions);
         return await compilationWithAnalyzers.GetAnalyzerDiagnosticsAsync(cancellationToken);
     }
 

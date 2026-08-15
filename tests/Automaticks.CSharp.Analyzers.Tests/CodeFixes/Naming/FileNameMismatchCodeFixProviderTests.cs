@@ -1,4 +1,5 @@
 ﻿using Automaticks.CSharp.CodeFixes.Naming;
+using Microsoft.CodeAnalysis.CodeFixes;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -35,6 +36,34 @@ public class FileNameMismatchCodeFixProviderTests
         var documentName = await CodeFixTestRunner.GetFixedDocumentNameAsync(request, cancellationToken);
 
         await Assert.That(documentName).IsEqualTo("DialogView.axaml.cs");
+    }
+
+    /// <summary>
+    ///     Tests that a mismatched delegate file is renamed to match the delegate name.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task ApplyFix_MismatchedDelegateFile_RenamesDocumentToTypeName(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public delegate void Handler();
+                              }
+                              """;
+
+        var analyzer = new FileNameMismatchAnalyzer();
+        var provider = new FileNameMismatchCodeFixProvider();
+        var request = new CodeFixRequest
+        {
+            Analyzer = analyzer,
+            Provider = provider,
+            Source = source,
+            FilePath = "Other.cs"
+        };
+        var documentName = await CodeFixTestRunner.GetFixedDocumentNameAsync(request, cancellationToken);
+
+        await Assert.That(documentName).IsEqualTo("Handler.cs");
     }
 
     /// <summary>
@@ -119,5 +148,19 @@ public class FileNameMismatchCodeFixProviderTests
         var count = await CodeFixTestRunner.CountFixableAsync(request, cancellationToken);
 
         await Assert.That(count).IsEqualTo(0);
+    }
+
+    /// <summary>
+    ///     Tests that the provider always exposes the batch Fix All provider.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task GetFixAllProvider_Always_ReturnsBatchFixer(CancellationToken cancellationToken)
+    {
+        var provider = new FileNameMismatchCodeFixProvider();
+        var fixAllProvider = provider.GetFixAllProvider();
+
+        await Assert.That(fixAllProvider).IsEqualTo(WellKnownFixAllProviders.BatchFixer);
     }
 }

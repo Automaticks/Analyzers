@@ -1,4 +1,5 @@
 ﻿using Automaticks.CSharp.CodeFixes.Formatting;
+using Microsoft.CodeAnalysis.CodeFixes;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -104,5 +105,19 @@ public class SingleBlankLineBetweenPropertiesCodeFixProviderTests
         var count = await CodeFixTestRunner.CountFixableAsync(request, cancellationToken);
 
         await Assert.That(count).IsEqualTo(0);
+    }
+
+    /// <summary>
+    ///     Tests that the provider always exposes the batch Fix All provider.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task GetFixAllProvider_Always_ReturnsBatchFixer(CancellationToken cancellationToken)
+    {
+        var provider = new SingleBlankLineBetweenPropertiesCodeFixProvider();
+        var fixAllProvider = provider.GetFixAllProvider();
+
+        await Assert.That(fixAllProvider).IsEqualTo(WellKnownFixAllProviders.BatchFixer);
     }
 }

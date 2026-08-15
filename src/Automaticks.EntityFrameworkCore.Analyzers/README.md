@@ -1,4 +1,4 @@
-# Automaticks.EntityFrameworkCore.Analyzers
+﻿# Automaticks.EntityFrameworkCore.Analyzers
 
 Roslyn analyzers and suppressors for Entity Framework Core.
 
@@ -16,7 +16,7 @@ This package defines no rules of its own — it contains only a suppressor that 
 
 | ID | Title | Category | Default Severity | Kind |
 |---|---|---|---|---|
-| `ATXLQ002` | Suppresses `ATXLQ002` (LINQ is not allowed, owned by `Automaticks.Linq.Analyzers`) for files that import `Microsoft.EntityFrameworkCore` | Linq | Error | Suppressor |
+| `ATXLQ002` | Suppresses `ATXLQ002` (LINQ is not allowed, owned by `Automaticks.Linq.Analyzers`) for files that import `Microsoft.EntityFrameworkCore` | Linq | Warning | Suppressor |
 
 ## License
 

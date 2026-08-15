@@ -23,6 +23,19 @@
     </ItemGroup>
 
     <!--
+        Some analyzers need MSBuild to feed them data (for example a coverage report as an
+        AdditionalFiles item). A package can opt in by adding build/$(PackageId).props|.targets;
+        those are shipped under both build/ and buildTransitive/ so they apply to direct consumers
+        and to projects that pick the package up transitively.
+    -->
+    <ItemGroup Condition="'$(IsAnalyzerProject)' == 'true'">
+        <None Include="build\$(PackageId).props" Pack="true" PackagePath="build/;buildTransitive/"
+              Visible="false" Condition="Exists('build\$(PackageId).props')" />
+        <None Include="build\$(PackageId).targets" Pack="true" PackagePath="build/;buildTransitive/"
+              Visible="false" Condition="Exists('build\$(PackageId).targets')" />
+    </ItemGroup>
+
+    <!--
         Ship the paired code-fix assembly inside the analyzer's own package. A ProjectReference from
         the analyzer to its CodeFixes project would be circular (the CodeFixes project references the
         analyzer), so the DLL is picked up by path instead. publish.yml builds the whole solution
@@ -98,6 +111,14 @@
                       Condition="'$(PackageId)' != 'Automaticks.Threading.Tasks.Analyzers' AND Exists('$(DogfoodAnalyzerCacheDirectory)Automaticks.Threading.Tasks.Analyzers.dll')" />
         </ItemGroup>
     </Target>
+
+    <!--
+        Dogfood the coverage rules on this repository by importing the very file the package ships
+        to consumers. Without this the AutomaticksCoverageReport property would be inert in a local
+        build, because build/ assets only apply once the package is installed.
+    -->
+    <Import Project="$(MSBuildThisFileDirectory)src\Automaticks.Testing.Analyzers\build\Automaticks.Testing.Analyzers.targets"
+            Condition="Exists('$(MSBuildThisFileDirectory)src\Automaticks.Testing.Analyzers\build\Automaticks.Testing.Analyzers.targets')" />
 
     <Target Name="UpdateDogfoodAnalyzerCache" AfterTargets="Build"
             Condition="'$(IsAnalyzerProject)' == 'true' and Exists('$(TargetPath)')">

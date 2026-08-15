@@ -1,4 +1,6 @@
 ﻿using Automaticks.CSharp.CodeFixes.Naming;
+using Microsoft.CodeAnalysis.CodeFixes;
+using Microsoft.CodeAnalysis.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -100,6 +102,41 @@ public class BooleanMemberNamingCodeFixProviderTests
     }
 
     /// <summary>
+    ///     Tests that a declaration with no declared symbol is left unchanged by the rename.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task ApplyFixForSpan_BlockSyntaxDeclaration_KeepsSourceUnchanged(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo {
+                                      public void Bar() { }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new BooleanMemberNamingAnalyzer();
+        var provider = new BooleanMemberNamingCodeFixProvider();
+        var request = new CodeFixRequest
+        {
+            Analyzer = analyzer,
+            Provider = provider,
+            Source = source
+        };
+        var start = source.IndexOf("{ }", System.StringComparison.Ordinal);
+        var span = new TextSpan(start, 1);
+        var fixedSource = await CodeFixTestRunner.ApplyFixForSpanAsync(
+            request,
+            BooleanMemberNamingAnalyzer.Rule,
+            span,
+            cancellationToken);
+
+        await Assert.That(fixedSource).IsEqualTo(source);
+    }
+
+    /// <summary>
     ///     Tests that an allowed prefix is never offered a fix.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -126,5 +163,19 @@ public class BooleanMemberNamingCodeFixProviderTests
         var count = await CodeFixTestRunner.CountFixableAsync(request, cancellationToken);
 
         await Assert.That(count).IsEqualTo(0);
+    }
+
+    /// <summary>
+    ///     Tests that the provider always exposes the batch Fix All provider.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task GetFixAllProvider_Always_ReturnsBatchFixer(CancellationToken cancellationToken)
+    {
+        var provider = new BooleanMemberNamingCodeFixProvider();
+        var fixAllProvider = provider.GetFixAllProvider();
+
+        await Assert.That(fixAllProvider).IsEqualTo(WellKnownFixAllProviders.BatchFixer);
     }
 }

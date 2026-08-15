@@ -14,6 +14,7 @@ namespace Automaticks.CSharp.Complexity;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class CyclomaticComplexityAnalyzer : DiagnosticAnalyzer
 {
+    private const string LimitKey = "automaticks.cyclomatic_complexity";
     private const int MaxComplexity = 15;
 
     /// <summary>
@@ -109,9 +110,10 @@ public sealed class CyclomaticComplexityAnalyzer : DiagnosticAnalyzer
         walker.Visit(bodyNode);
 
         var complexity = 1 + walker.Count;
-        if (complexity > MaxComplexity)
+        var maxComplexity = ConfigurableLimit.Read(context, LimitKey, MaxComplexity);
+        if (complexity > maxComplexity)
         {
-            context.ReportDiagnostic(Diagnostic.Create(Rule, location, memberName, complexity, MaxComplexity));
+            context.ReportDiagnostic(Diagnostic.Create(Rule, location, memberName, complexity, maxComplexity));
         }
     }
 

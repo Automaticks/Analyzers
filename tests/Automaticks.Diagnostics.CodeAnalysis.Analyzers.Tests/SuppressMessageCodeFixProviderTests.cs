@@ -152,4 +152,43 @@ public class SuppressMessageCodeFixProviderTests
 
         await Assert.That(count).IsEqualTo(0);
     }
+
+    /// <summary>Verifies GetFixAllProvider returns a non-null batch fixer.</summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task GetFixAllProvider_Called_ReturnsBatchFixer(CancellationToken cancellationToken)
+    {
+        var provider = new SuppressMessageCodeFixProvider();
+        var fixAllProvider = provider.GetFixAllProvider();
+
+        await Assert.That(fixAllProvider).IsNotNull();
+    }
+
+    /// <summary>Verifies a diagnostic with no enclosing attribute registers no fix.</summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task RegisterCodeFixes_DiagnosticWithoutEnclosingAttribute_RegistersNoFix(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo {
+                                      public void Bar() { }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new SuppressMessageAtMethodAnalyzer();
+        var provider = new SuppressMessageCodeFixProvider();
+        var request = new CodeFixRequest
+        {
+            Analyzer = analyzer,
+            Provider = provider,
+            Source = source
+        };
+        var count = await CodeFixTestRunner.CountRegisteredActionsAsync(request, cancellationToken);
+
+        await Assert.That(count).IsEqualTo(0);
+    }
 }
