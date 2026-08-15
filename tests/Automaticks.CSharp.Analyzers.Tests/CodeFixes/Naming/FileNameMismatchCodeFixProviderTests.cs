@@ -1,4 +1,4 @@
-using Automaticks.CSharp.CodeFixes.Naming;
+﻿using Automaticks.CSharp.CodeFixes.Naming;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -30,7 +30,7 @@ public class FileNameMismatchCodeFixProviderTests
             Analyzer = analyzer,
             Provider = provider,
             Source = source,
-            FilePath = "C:\\Project\\Other.axaml.cs"
+            FilePath = "Other.axaml.cs"
         };
         var documentName = await CodeFixTestRunner.GetFixedDocumentNameAsync(request, cancellationToken);
 
@@ -58,7 +58,7 @@ public class FileNameMismatchCodeFixProviderTests
             Analyzer = analyzer,
             Provider = provider,
             Source = source,
-            FilePath = "C:\\Project\\Gadget.cs"
+            FilePath = "Gadget.cs"
         };
         var fixedSource = await CodeFixTestRunner.ApplyFixAsync(request, cancellationToken);
 
@@ -86,7 +86,7 @@ public class FileNameMismatchCodeFixProviderTests
             Analyzer = analyzer,
             Provider = provider,
             Source = source,
-            FilePath = "C:\\Project\\Gadget.cs"
+            FilePath = "Gadget.cs"
         };
         var documentName = await CodeFixTestRunner.GetFixedDocumentNameAsync(request, cancellationToken);
 
@@ -114,7 +114,7 @@ public class FileNameMismatchCodeFixProviderTests
             Analyzer = analyzer,
             Provider = provider,
             Source = source,
-            FilePath = "C:\\Project\\Widget.cs"
+            FilePath = "Widget.cs"
         };
         var count = await CodeFixTestRunner.CountFixableAsync(request, cancellationToken);
 
