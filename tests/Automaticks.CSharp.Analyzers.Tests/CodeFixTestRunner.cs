@@ -27,7 +27,7 @@ public static class CodeFixTestRunner
     /// <returns>A task that resolves to the fully fixed source text.</returns>
     public static async Task<string> ApplyAllFixesAsync(CodeFixRequest request, CancellationToken cancellationToken)
     {
-        var document = CreateDocument(request.Source);
+        var document = CreateDocument(request);
         for (var iteration = 0; iteration < MaxFixIterations; iteration++)
         {
             var diagnostics = await GetFixableDiagnosticsAsync(request, document, cancellationToken);
@@ -53,7 +53,7 @@ public static class CodeFixTestRunner
         FixAllScope scope,
         CancellationToken cancellationToken)
     {
-        var document = CreateDocument(request.Source);
+        var document = CreateDocument(request);
         var diagnostics = await GetFixableDiagnosticsAsync(request, document, cancellationToken);
         if (diagnostics.Count == 0)
         {
@@ -101,7 +101,7 @@ public static class CodeFixTestRunner
     /// <returns>A task that resolves to the fixed source text.</returns>
     public static async Task<string> ApplyFixAsync(CodeFixRequest request, CancellationToken cancellationToken)
     {
-        var document = CreateDocument(request.Source);
+        var document = CreateDocument(request);
         var diagnostics = await GetFixableDiagnosticsAsync(request, document, cancellationToken);
         if (diagnostics.Count == 0)
         {
@@ -119,7 +119,7 @@ public static class CodeFixTestRunner
     /// <returns>A task that resolves to the number of fixable diagnostics.</returns>
     public static async Task<int> CountFixableAsync(CodeFixRequest request, CancellationToken cancellationToken)
     {
-        var document = CreateDocument(request.Source);
+        var document = CreateDocument(request);
         var diagnostics = await GetFixableDiagnosticsAsync(request, document, cancellationToken);
         return diagnostics.Count;
     }
@@ -130,7 +130,7 @@ public static class CodeFixTestRunner
     /// <returns>A task that resolves to the number of offered code actions.</returns>
     public static async Task<int> CountOfferedActionsAsync(CodeFixRequest request, CancellationToken cancellationToken)
     {
-        var document = CreateDocument(request.Source);
+        var document = CreateDocument(request);
         var diagnostics = await GetFixableDiagnosticsAsync(request, document, cancellationToken);
         if (diagnostics.Count == 0)
         {
@@ -139,6 +139,25 @@ public static class CodeFixTestRunner
 
         var actions = await GetActionsAsync(request, document, diagnostics[0], cancellationToken);
         return actions.Count;
+    }
+
+    /// <summary>Applies the fix and returns the resulting document name.</summary>
+    /// <param name="request">The analyzer, provider, and source to fix.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task that resolves to the document name after the fix.</returns>
+    public static async Task<string> GetFixedDocumentNameAsync(
+        CodeFixRequest request,
+        CancellationToken cancellationToken)
+    {
+        var document = CreateDocument(request);
+        var diagnostics = await GetFixableDiagnosticsAsync(request, document, cancellationToken);
+        if (diagnostics.Count == 0)
+        {
+            throw new InvalidOperationException("The analyzer reported no fixable diagnostic for this source.");
+        }
+
+        var fixedDocument = await ApplyOneAsync(request, document, diagnostics[0], cancellationToken);
+        return fixedDocument.Name;
     }
 
     /// <summary>Lists the Fix All scopes the provider's FixAllProvider advertises.</summary>
@@ -183,7 +202,7 @@ public static class CodeFixTestRunner
         throw new InvalidOperationException("The code action produced no ApplyChangesOperation.");
     }
 
-    private static Document CreateDocument(string source)
+    private static Document CreateDocument(CodeFixRequest request)
     {
         var workspace = new AdhocWorkspace();
         var projectId = ProjectId.CreateNewId(ProjectName);
@@ -194,8 +213,15 @@ public static class CodeFixTestRunner
             .WithMetadataReferences(GetPlatformReferences())
             .WithCompilationOptions(compilationOptions);
         var project = workspace.AddProject(projectInfo);
-        var sourceText = SourceText.From(source);
-        return project.AddDocument(DocumentName, sourceText);
+        var sourceText = SourceText.From(request.Source);
+        var filePath = request.FilePath;
+        if (string.IsNullOrEmpty(filePath))
+        {
+            return project.AddDocument(DocumentName, sourceText);
+        }
+
+        var documentName = Path.GetFileName(filePath);
+        return project.AddDocument(documentName, sourceText, null, filePath);
     }
 
     private static async Task<List<CodeAction>> GetActionsAsync(

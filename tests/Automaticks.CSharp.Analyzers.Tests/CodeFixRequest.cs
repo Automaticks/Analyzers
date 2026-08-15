@@ -12,6 +12,9 @@ public readonly struct CodeFixRequest
     /// <summary>Gets the equivalence key selecting one of several offered fixes.</summary>
     public string? EquivalenceKey { get; init; }
 
+    /// <summary>Gets the file path assigned to the document under test.</summary>
+    public string? FilePath { get; init; }
+
     /// <summary>Gets the provider that supplies the fix.</summary>
     public CodeFixProvider Provider { get; init; }
 
