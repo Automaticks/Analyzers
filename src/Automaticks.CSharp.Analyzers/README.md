@@ -33,7 +33,7 @@ dotnet add package Automaticks.CSharp.Analyzers
 | `ATXCS027` | Method defines more than one ref parameter | CSharp | Error | Analyzer |
 | `ATXCS028` | Method cyclomatic complexity exceeds the maximum | CSharp | Error | Analyzer |
 | `ATXCS029` | Direct cast to reference type is forbidden | CSharp | Error | Analyzer |
-| `ATXCS031` | Type name does not match file name | Naming | Error | Analyzer |
+| `ATXCS031` | Type name does not match file name | Naming | Error | Analyzer, CodeFix |
 | `ATXCS032` | Method nesting depth exceeds the maximum | Maintainability | Error | Analyzer |
 | `ATXCS033` | Method cognitive complexity exceeds the maximum | Maintainability | Error | Analyzer |
 | `ATXCS034` | Classes must not exceed the maximum lines-of-code limit | Maintainability | Error | Analyzer |
@@ -43,7 +43,7 @@ dotnet add package Automaticks.CSharp.Analyzers
 | `ATXCS039` | Empty lines between adjacent field or constant declarations are forbidden | Style | Error | Analyzer, CodeFix |
 | `ATXCS040` | Missing blank line adjacent to a property or indexer declaration | Style | Error | Analyzer, CodeFix |
 | `ATXCS041` | Plain comment is not allowed | CSharp | Warning | Analyzer, CodeFix |
-| `ATXCS042` | Type member is declared in the wrong section | Style | Error | Analyzer |
+| `ATXCS042` | Type member is declared in the wrong section | Style | Error | Analyzer, CodeFix |
 | `ATXCS043` | Missing blank line between using directives and namespace declaration | Style | Error | Analyzer, CodeFix |
 | `ATXCS044` | Consecutive blank lines are forbidden | Style | Error | Analyzer, CodeFix |
 | `ATXCS045` | Auto-implemented property must be declared on a single line | Style | Error | Analyzer, CodeFix |
@@ -63,7 +63,7 @@ dotnet add package Automaticks.CSharp.Analyzers
 | `ATXCS061` | Interface default implementations are forbidden | CSharp | Error | Analyzer, CodeFix |
 | `ATXCS062` | Boolean fields and properties must use an allowed prefix | CSharp | Error | Analyzer, CodeFix |
 | `ATXCS063` | Methods returning bool must use an allowed prefix | CSharp | Error | Analyzer, CodeFix |
-| `ATXCS064` | Type member violates within-group ordering | Style | Error | Analyzer |
+| `ATXCS064` | Type member violates within-group ordering | Style | Error | Analyzer, CodeFix |
 | `ATXCS065` | Init-only setter is redundant when the property is assigned in the constructor | CSharp | Error | Analyzer |
 | `ATXCS066` | Folders must not exceed the maximum number of source files | Maintainability | Error | Analyzer |
 | `ATXCS067` | Namespaces must not exceed the maximum number of source files | Maintainability | Error | Analyzer |
@@ -83,10 +83,12 @@ dotnet format analyzers --diagnostics ATXCS048 --severity error
 | `ATXCS009` | Remove the Async suffix (renames references) |
 | `ATXCS013` | Make the declaration public |
 | `ATXCS014` | Remove the redundant null check |
+| `ATXCS031` | Rename the file to match the type |
 | `ATXCS038` | Remove the `<remarks>` element |
 | `ATXCS039` | Remove the blank line between the fields |
 | `ATXCS040` | Add a blank line between the members |
 | `ATXCS041` | Remove the comment |
+| `ATXCS042` | Sort the type members into canonical order |
 | `ATXCS043` | Add a blank line before the namespace declaration |
 | `ATXCS044` | Remove the extra blank line |
 | `ATXCS045` | Put the property on a single line |
@@ -103,6 +105,7 @@ dotnet format analyzers --diagnostics ATXCS048 --severity error
 | `ATXCS061` | Remove the default implementation |
 | `ATXCS062` | Prefix the member name with `is` |
 | `ATXCS063` | Prefix the method name with `can` |
+| `ATXCS064` | Sort the type members into canonical order |
 
 Review these before committing, because they remove or invent content rather than rewrite it:
 `ATXCS038` drops `<remarks>` without merging its prose into `<summary>`, `ATXCS041` deletes the
@@ -124,6 +127,11 @@ Rules with no fix need a judgement a tool should not make: choosing a descriptiv
 (`ATXCS012`, `ATXCS020`), or changing a signature and every call site (`ATXCS024`, `ATXCS026`,
 `ATXCS055`, `ATXCS057`). `ATXCS029` is excluded because `as` returns `null` where a cast throws,
 and `ATXCS058` because extracting a `new` expression reorders argument evaluation.
+
+`ATXCS042` and `ATXCS064` describe the same ordering, so one fix settles both. It rewrites the
+whole member list rather than nudging the reported member, and documentation moves with its
+member. Blank-line spacing between the moved members is left to `ATXCS039`, `ATXCS040`
+and `ATXCS044`.
 
 ## License
 
