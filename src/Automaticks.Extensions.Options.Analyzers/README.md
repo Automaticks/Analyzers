@@ -1,4 +1,4 @@
-# Automaticks.Extensions.Options.Analyzers
+﻿# Automaticks.Extensions.Options.Analyzers
 
 Roslyn analyzers for `Microsoft.Extensions.Options` usage.
 

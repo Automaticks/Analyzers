@@ -20,6 +20,21 @@ public static class CodeFixTestRunner
     private const string DocumentName = "Test.cs";
     private const int MaxFixIterations = 64;
     private const string ProjectName = "TestProject";
+    private static readonly ImmutableArray<MetadataReference> PlatformReferences;
+
+    static CodeFixTestRunner()
+    {
+        var trustedAssemblies = AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES") as string
+            ?? throw new InvalidOperationException("TRUSTED_PLATFORM_ASSEMBLIES not available");
+        var paths = trustedAssemblies.Split(Path.PathSeparator);
+        var builder = ImmutableArray.CreateBuilder<MetadataReference>(paths.Length);
+        foreach (var path in paths)
+        {
+            builder.Add(MetadataReference.CreateFromFile(path));
+        }
+
+        PlatformReferences = builder.ToImmutable();
+    }
 
     /// <summary>Repeatedly applies the fix until no fixable diagnostic remains.</summary>
     /// <param name="request">The analyzer, provider, and source to fix.</param>
@@ -263,16 +278,7 @@ public static class CodeFixTestRunner
 
     private static ImmutableArray<MetadataReference> GetPlatformReferences()
     {
-        var trustedAssemblies = AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES") as string
-            ?? throw new InvalidOperationException("TRUSTED_PLATFORM_ASSEMBLIES not available");
-        var paths = trustedAssemblies.Split(Path.PathSeparator);
-        var builder = ImmutableArray.CreateBuilder<MetadataReference>(paths.Length);
-        foreach (var path in paths)
-        {
-            builder.Add(MetadataReference.CreateFromFile(path));
-        }
-
-        return builder.ToImmutable();
+        return PlatformReferences;
     }
 
     private static CodeAction SelectAction(List<CodeAction> actions, string? equivalenceKey)

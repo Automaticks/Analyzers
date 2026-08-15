@@ -1,4 +1,4 @@
-# Automaticks.CommunityToolkit.Mvvm.Analyzers
+﻿# Automaticks.CommunityToolkit.Mvvm.Analyzers
 
 Roslyn analyzers for `CommunityToolkit.Mvvm` usage conventions.
 
