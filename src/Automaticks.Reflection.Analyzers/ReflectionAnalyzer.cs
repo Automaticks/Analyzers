@@ -1,8 +1,9 @@
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Immutable;
 
 namespace Automaticks.Reflection;
@@ -79,9 +80,12 @@ public sealed class ReflectionAnalyzer : DiagnosticAnalyzer
     /// <inheritdoc />
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
 
-    private void AnalyzeIdentifier(SyntaxNodeAnalysisContext context, CompilationSymbols symbols)
+    private void AnalyzeIdentifier(SyntaxNodeAnalysisContext context, CompilationSymbols symbols, ConcurrentDictionary<SyntaxTree, bool> aliasTrees)
     {
-        if (context.Node is not IdentifierNameSyntax identifier)
+        var identifier = (context.Node as IdentifierNameSyntax)!;
+
+        if (!BannedReflectionTypeNames.Contains(identifier.Identifier.ValueText)
+            && !HasUsingAlias(context.Node.SyntaxTree, aliasTrees))
         {
             return;
         }
@@ -96,7 +100,7 @@ public sealed class ReflectionAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        var namespaceName = typeSymbol.ContainingNamespace?.ToDisplayString() ?? string.Empty;
+        var namespaceName = typeSymbol.ContainingNamespace!.ToDisplayString();
         if (!namespaceName.StartsWith("System.Reflection", StringComparison.Ordinal))
         {
             return;
@@ -112,10 +116,7 @@ public sealed class ReflectionAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeInvocation(SyntaxNodeAnalysisContext context, CompilationSymbols symbols)
     {
-        if (context.Node is not InvocationExpressionSyntax invocation)
-        {
-            return;
-        }
+        var invocation = (context.Node as InvocationExpressionSyntax)!;
 
         if (context.SemanticModel.GetSymbolInfo(invocation).Symbol is not IMethodSymbol methodSymbol)
         {
@@ -148,6 +149,21 @@ public sealed class ReflectionAnalyzer : DiagnosticAnalyzer
         }
     }
 
+    private bool HasAliasInTree(SyntaxTree tree)
+    {
+        var root = tree.GetRoot();
+
+        foreach (var node in root.DescendantNodes(node => node is CompilationUnitSyntax or BaseNamespaceDeclarationSyntax))
+        {
+            if (node is UsingDirectiveSyntax { Alias: not null })
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private bool HasBannedActivatorCall(IMethodSymbol methodSymbol)
     {
         if (methodSymbol.IsGenericMethod || methodSymbol.Parameters.Length == 0)
@@ -156,52 +172,26 @@ public sealed class ReflectionAnalyzer : DiagnosticAnalyzer
         }
 
         var containingType = methodSymbol.ContainingType;
-        if (containingType is null)
-        {
-            return false;
-        }
-
-        var namespaceName = containingType.ContainingNamespace?.ToDisplayString() ?? string.Empty;
+        var namespaceName = containingType.ContainingNamespace!.ToDisplayString();
         if (namespaceName != "System" || containingType.Name != "Activator" || methodSymbol.Name != "CreateInstance")
         {
             return false;
         }
 
-        return methodSymbol.Parameters[0].Type is INamedTypeSymbol { Name: "Type" };
+        return methodSymbol.Parameters[0].Type.Name == "Type";
     }
 
     private bool HasBannedTypeMethod(IMethodSymbol methodSymbol)
     {
         var containingType = methodSymbol.ContainingType;
-        if (containingType is null)
-        {
-            return false;
-        }
-
-        var namespaceName = containingType.ContainingNamespace?.ToDisplayString() ?? string.Empty;
+        var namespaceName = containingType.ContainingNamespace!.ToDisplayString();
         return namespaceName == "System"
                && containingType.Name == "Type"
                && BannedTypeMethodNames.Contains(methodSymbol.Name);
     }
 
-    private bool HasDispatchProxyHelperClassContext(SyntaxNodeAnalysisContext context, CompilationSymbols symbols)
+    private bool HasDispatchProxyHelperClassContext(IMethodSymbol methodSymbol, CompilationSymbols symbols)
     {
-        if (symbols.MethodInfoType is null)
-        {
-            return false;
-        }
-
-        var methodDeclaration = context.Node.FirstAncestorOrSelf<MethodDeclarationSyntax>();
-        if (methodDeclaration is null)
-        {
-            return false;
-        }
-
-        if (context.SemanticModel.GetDeclaredSymbol(methodDeclaration) is not IMethodSymbol methodSymbol)
-        {
-            return false;
-        }
-
         if (!methodSymbol.ContainingType.IsStatic)
         {
             return false;
@@ -220,22 +210,13 @@ public sealed class ReflectionAnalyzer : DiagnosticAnalyzer
 
     private bool HasDispatchProxySubclassContext(SyntaxNodeAnalysisContext context, CompilationSymbols symbols)
     {
-        if (symbols.DispatchProxyType is null)
-        {
-            return false;
-        }
-
         var classDeclaration = context.Node.FirstAncestorOrSelf<ClassDeclarationSyntax>();
         if (classDeclaration is null)
         {
             return false;
         }
 
-        if (context.SemanticModel.GetDeclaredSymbol(classDeclaration) is not INamedTypeSymbol classSymbol)
-        {
-            return false;
-        }
-
+        var classSymbol = context.SemanticModel.GetDeclaredSymbol(classDeclaration)!;
         var baseType = classSymbol.BaseType;
         while (baseType is not null)
         {
@@ -252,23 +233,9 @@ public sealed class ReflectionAnalyzer : DiagnosticAnalyzer
 
     private bool HasExemptContext(SyntaxNodeAnalysisContext context, CompilationSymbols symbols)
     {
-        return HasDispatchProxyHelperClassContext(context, symbols)
-               || HasDispatchProxySubclassContext(context, symbols)
-               || HasServiceCollectionExtensionContext(context, symbols)
-               || HasTypeExtensionClassContext(context, symbols);
-    }
-
-    private bool HasReflectionNamespaceMethod(IMethodSymbol methodSymbol)
-    {
-        var namespaceName = methodSymbol.ContainingType?.ContainingNamespace?.ToDisplayString() ?? string.Empty;
-        return namespaceName.StartsWith("System.Reflection", StringComparison.Ordinal);
-    }
-
-    private bool HasServiceCollectionExtensionContext(SyntaxNodeAnalysisContext context, CompilationSymbols symbols)
-    {
-        if (symbols.ServiceCollectionType is null)
+        if (HasDispatchProxySubclassContext(context, symbols))
         {
-            return false;
+            return true;
         }
 
         var methodDeclaration = context.Node.FirstAncestorOrSelf<MethodDeclarationSyntax>();
@@ -277,7 +244,21 @@ public sealed class ReflectionAnalyzer : DiagnosticAnalyzer
             return false;
         }
 
-        if (context.SemanticModel.GetDeclaredSymbol(methodDeclaration) is not IMethodSymbol methodSymbol)
+        var methodSymbol = context.SemanticModel.GetDeclaredSymbol(methodDeclaration)!;
+        return HasDispatchProxyHelperClassContext(methodSymbol, symbols)
+               || HasServiceCollectionExtensionContext(methodSymbol, symbols)
+               || HasTypeExtensionClassContext(methodSymbol, symbols);
+    }
+
+    private bool HasReflectionNamespaceMethod(IMethodSymbol methodSymbol)
+    {
+        var namespaceName = methodSymbol.ContainingType.ContainingNamespace!.ToDisplayString();
+        return namespaceName.StartsWith("System.Reflection", StringComparison.Ordinal);
+    }
+
+    private bool HasServiceCollectionExtensionContext(IMethodSymbol methodSymbol, CompilationSymbols symbols)
+    {
+        if (symbols.ServiceCollectionType is null)
         {
             return false;
         }
@@ -298,35 +279,26 @@ public sealed class ReflectionAnalyzer : DiagnosticAnalyzer
         return false;
     }
 
-    private bool HasTypeExtensionClassContext(SyntaxNodeAnalysisContext context, CompilationSymbols symbols)
+    private bool HasTypeExtensionClassContext(IMethodSymbol methodSymbol, CompilationSymbols symbols)
     {
-        if (symbols.SystemTypeSymbol is null)
-        {
-            return false;
-        }
-
-        var methodDeclaration = context.Node.FirstAncestorOrSelf<MethodDeclarationSyntax>();
-        if (methodDeclaration is null)
-        {
-            return false;
-        }
-
-        if (context.SemanticModel.GetDeclaredSymbol(methodDeclaration) is not IMethodSymbol methodSymbol)
-        {
-            return false;
-        }
-
         if (!methodSymbol.IsExtensionMethod)
         {
             return false;
         }
 
-        if (methodSymbol.Parameters.IsEmpty)
+        return SymbolEqualityComparer.Default.Equals(methodSymbol.Parameters[0].Type.OriginalDefinition, symbols.SystemTypeSymbol);
+    }
+
+    private bool HasUsingAlias(SyntaxTree tree, ConcurrentDictionary<SyntaxTree, bool> aliasTrees)
+    {
+        if (aliasTrees.TryGetValue(tree, out var hasAlias))
         {
-            return false;
+            return hasAlias;
         }
 
-        return SymbolEqualityComparer.Default.Equals(methodSymbol.Parameters[0].Type.OriginalDefinition, symbols.SystemTypeSymbol);
+        hasAlias = HasAliasInTree(tree);
+        aliasTrees[tree] = hasAlias;
+        return hasAlias;
     }
 
     private void RegisterPerCompilation(CompilationStartAnalysisContext compilationContext)
@@ -336,8 +308,9 @@ public sealed class ReflectionAnalyzer : DiagnosticAnalyzer
             compilationContext.Compilation.GetTypeByMetadataName("System.Reflection.DispatchProxy"),
             compilationContext.Compilation.GetTypeByMetadataName("System.Reflection.MethodInfo"),
             compilationContext.Compilation.GetTypeByMetadataName("System.Type"));
+        var aliasTrees = new ConcurrentDictionary<SyntaxTree, bool>();
         compilationContext.RegisterSyntaxNodeAction(
-            context => AnalyzeIdentifier(context, symbols),
+            context => AnalyzeIdentifier(context, symbols, aliasTrees),
             SyntaxKind.IdentifierName);
         compilationContext.RegisterSyntaxNodeAction(
             context => AnalyzeInvocation(context, symbols),
