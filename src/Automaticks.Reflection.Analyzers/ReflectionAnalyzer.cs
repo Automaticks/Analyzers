@@ -81,11 +81,6 @@ public sealed class ReflectionAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeIdentifier(SyntaxNodeAnalysisContext context, CompilationSymbols symbols)
     {
-        if (HasExemptContext(context, symbols))
-        {
-            return;
-        }
-
         if (context.Node is not IdentifierNameSyntax identifier)
         {
             return;
@@ -96,25 +91,27 @@ public sealed class ReflectionAnalyzer : DiagnosticAnalyzer
             return;
         }
 
+        if (!BannedReflectionTypeNames.Contains(typeSymbol.Name))
+        {
+            return;
+        }
+
         var namespaceName = typeSymbol.ContainingNamespace?.ToDisplayString() ?? string.Empty;
         if (!namespaceName.StartsWith("System.Reflection", StringComparison.Ordinal))
         {
             return;
         }
 
-        if (BannedReflectionTypeNames.Contains(typeSymbol.Name))
-        {
-            context.ReportDiagnostic(Diagnostic.Create(Rule, identifier.GetLocation(), typeSymbol.Name));
-        }
-    }
-
-    private void AnalyzeInvocation(SyntaxNodeAnalysisContext context, CompilationSymbols symbols)
-    {
         if (HasExemptContext(context, symbols))
         {
             return;
         }
 
+        context.ReportDiagnostic(Diagnostic.Create(Rule, identifier.GetLocation(), typeSymbol.Name));
+    }
+
+    private void AnalyzeInvocation(SyntaxNodeAnalysisContext context, CompilationSymbols symbols)
+    {
         if (context.Node is not InvocationExpressionSyntax invocation)
         {
             return;
@@ -127,17 +124,25 @@ public sealed class ReflectionAnalyzer : DiagnosticAnalyzer
 
         if (HasReflectionNamespaceMethod(methodSymbol))
         {
-            ReportDiagnostic(context, invocation, $"{methodSymbol.ContainingType.Name}.{methodSymbol.Name}");
+            if (!HasExemptContext(context, symbols))
+            {
+                ReportDiagnostic(context, invocation, $"{methodSymbol.ContainingType.Name}.{methodSymbol.Name}");
+            }
+
             return;
         }
 
         if (HasBannedTypeMethod(methodSymbol))
         {
-            ReportDiagnostic(context, invocation, $"Type.{methodSymbol.Name}");
+            if (!HasExemptContext(context, symbols))
+            {
+                ReportDiagnostic(context, invocation, $"Type.{methodSymbol.Name}");
+            }
+
             return;
         }
 
-        if (HasBannedActivatorCall(methodSymbol))
+        if (HasBannedActivatorCall(methodSymbol) && !HasExemptContext(context, symbols))
         {
             ReportDiagnostic(context, invocation, "Activator.CreateInstance");
         }

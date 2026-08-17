@@ -1,6 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using System;
 using System.Collections.Immutable;
@@ -36,56 +35,48 @@ public sealed class SystemTimeProviderInTestAnalyzer : DiagnosticAnalyzer
     {
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
         context.EnableConcurrentExecution();
-        context.RegisterSyntaxNodeAction(AnalyzeMemberAccess, SyntaxKind.SimpleMemberAccessExpression);
+        context.RegisterCompilationStartAction(RegisterPerCompilation);
     }
 
     /// <inheritdoc />
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
 
-    private void AnalyzeMemberAccess(SyntaxNodeAnalysisContext context)
+    private void AnalyzeMemberAccess(SyntaxNodeAnalysisContext context, INamedTypeSymbol? timeProviderType)
     {
-        if (context.Node is not MemberAccessExpressionSyntax memberAccess)
+        if (context.SemanticModel.GetSymbolInfo(context.Node).Symbol is not IPropertySymbol property)
         {
             return;
-        }
-
-        if (!HasTestProjectFlag(context.Options))
-        {
-            return;
-        }
-
-        if (!HasSystemTimeProviderTarget(memberAccess, context.SemanticModel))
-        {
-            return;
-        }
-
-        context.ReportDiagnostic(Diagnostic.Create(Rule, memberAccess.GetLocation()));
-    }
-
-    private bool HasSystemTimeProviderTarget(MemberAccessExpressionSyntax memberAccess, SemanticModel semanticModel)
-    {
-        if (semanticModel.GetSymbolInfo(memberAccess).Symbol is not IPropertySymbol property)
-        {
-            return false;
         }
 
         if (property.Name != "System")
         {
-            return false;
+            return;
         }
 
-        var timeProviderType = semanticModel.Compilation.GetTypeByMetadataName("System.TimeProvider");
-        return timeProviderType is not null
-            && SymbolEqualityComparer.Default.Equals(property.ContainingType, timeProviderType);
+        if (!SymbolEqualityComparer.Default.Equals(property.ContainingType, timeProviderType))
+        {
+            return;
+        }
+
+        context.ReportDiagnostic(Diagnostic.Create(Rule, context.Node.GetLocation()));
     }
 
     private bool HasTestProjectFlag(AnalyzerOptions options)
     {
-        if (!options.AnalyzerConfigOptionsProvider.GlobalOptions.TryGetValue("build_property.IsTestProject", out var flag))
+        options.AnalyzerConfigOptionsProvider.GlobalOptions.TryGetValue("build_property.IsTestProject", out var flag);
+        return string.Equals(flag, "true", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void RegisterPerCompilation(CompilationStartAnalysisContext compilationContext)
+    {
+        if (!HasTestProjectFlag(compilationContext.Options))
         {
-            return false;
+            return;
         }
 
-        return string.Equals(flag, "true", StringComparison.OrdinalIgnoreCase);
+        var timeProviderType = compilationContext.Compilation.GetTypeByMetadataName("System.TimeProvider");
+        compilationContext.RegisterSyntaxNodeAction(
+            context => AnalyzeMemberAccess(context, timeProviderType),
+            SyntaxKind.SimpleMemberAccessExpression);
     }
 }

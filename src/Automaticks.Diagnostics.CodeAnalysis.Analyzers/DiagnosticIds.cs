@@ -12,6 +12,11 @@ public static class DiagnosticIds
     public static class DiagnosticsCodeAnalysis
     {
         /// <summary>
+        ///     Diagnostic ID for <c>ATXDC021</c>: a generated-code marker in hand-written source is forbidden.
+        /// </summary>
+        public const string GeneratedCodeMarker = "ATXDC021";
+
+        /// <summary>
         ///     Diagnostic ID for <c>ATXDC018</c>: <c>#pragma warning disable</c> suppression directives are forbidden.
         /// </summary>
         public const string SuppressionPragma = "ATXDC018";

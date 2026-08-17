@@ -43,11 +43,7 @@ public sealed class NoOpDiscardStatementAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeExpressionStatement(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not ExpressionStatementSyntax statement)
-        {
-            return;
-        }
-
+        var statement = (context.Node as ExpressionStatementSyntax)!;
         if (statement.Expression is not AssignmentExpressionSyntax assignment)
         {
             return;

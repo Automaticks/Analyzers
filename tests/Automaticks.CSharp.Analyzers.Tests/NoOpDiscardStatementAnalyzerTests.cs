@@ -10,6 +10,28 @@ namespace Automaticks.CSharp.Analyzers.Tests;
 public class NoOpDiscardStatementAnalyzerTests
 {
     /// <summary>
+    ///     Tests that Analyze_CompoundAssignment_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_CompoundAssignment_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo {
+                                      public int Bar(int input) { var total = 0; total += input; return total; }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new NoOpDiscardStatementAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS068")).IsFalse();
+    }
+
+    /// <summary>
     ///     Tests that Analyze_DiscardOfCancellationTokenParameter_ReportsDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -123,6 +145,29 @@ public class NoOpDiscardStatementAnalyzerTests
     }
 
     /// <summary>
+    ///     Tests that Analyze_InvocationStatement_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_InvocationStatement_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo {
+                                      public void Compute() { }
+                                      public void Bar() { Compute(); }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new NoOpDiscardStatementAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS068")).IsFalse();
+    }
+
+    /// <summary>
     ///     Tests that Analyze_OutParameterDiscard_ReportsNoDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -155,7 +200,7 @@ public class NoOpDiscardStatementAnalyzerTests
         const string source = """
                               namespace MyApp {
                                   public class Foo {
-                                      public int Bar(int input) { var value = input; return value; }
+                                      public int Bar(int input) { var value = 0; value = input; return value; }
                                   }
                               }
                               """;

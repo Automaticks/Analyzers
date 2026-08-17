@@ -64,10 +64,11 @@ package under specific conditions. Rows marked `CodeFix` ship an automated fix; 
 | `ATXCS065` | Init-only setter is redundant when the property is assigned in the constructor | CSharp | Error | Analyzer | `Automaticks.CSharp.Analyzers` |
 | `ATXCS066` | Folders must not exceed the maximum number of source files | Maintainability | Error | Analyzer | `Automaticks.CSharp.Analyzers` |
 | `ATXCS067` | Namespaces must not exceed the maximum number of source files | Maintainability | Error | Analyzer | `Automaticks.CSharp.Analyzers` |
-| `ATXCS068` | No-op discard statement is forbidden | CSharp | Error | Analyzer | `Automaticks.CSharp.Analyzers` |
+| `ATXCS068` | No-op discard statement is forbidden | CSharp | Error | Analyzer, CodeFix | `Automaticks.CSharp.Analyzers` |
 | `ATXCS069` | Static methods must only exist in static classes, not records or structs | CSharp | Error | Analyzer | `Automaticks.CSharp.Analyzers` |
 | `ATXDC018` | #pragma warning disable is not allowed | Diagnostics.CodeAnalysis | Error | Analyzer, CodeFix | `Automaticks.Diagnostics.CodeAnalysis.Analyzers` |
 | `ATXDC019` | // ReSharper disable is not allowed | Diagnostics.CodeAnalysis | Error | Analyzer, CodeFix | `Automaticks.Diagnostics.CodeAnalysis.Analyzers` |
+| `ATXDC021` | Generated-code marker is not allowed in hand-written source | Diagnostics.CodeAnalysis | Error | Analyzer, CodeFix | `Automaticks.Diagnostics.CodeAnalysis.Analyzers` |
 | `ATXDC056` | [SuppressMessage] is not allowed | Diagnostics.CodeAnalysis | Error | Analyzer, CodeFix | `Automaticks.Diagnostics.CodeAnalysis.Analyzers` |
 | `ATXEO049` | BindConfiguration is forbidden | Extensions.Options | Error | Analyzer, CodeFix | `Automaticks.Extensions.Options.Analyzers` |
 | `ATXLQ002` | Suppresses `ATXLQ002` (LINQ is not allowed) for files that import `Microsoft.EntityFrameworkCore` | Linq | Warning | Suppressor | `Automaticks.EntityFrameworkCore.Analyzers` |

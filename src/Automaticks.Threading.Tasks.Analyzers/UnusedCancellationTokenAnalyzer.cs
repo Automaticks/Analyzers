@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 
 namespace Automaticks.Threading.Tasks;
@@ -36,41 +37,76 @@ public sealed class UnusedCancellationTokenAnalyzer : DiagnosticAnalyzer
     {
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
         context.EnableConcurrentExecution();
-        context.RegisterSyntaxNodeAction(AnalyzeLocalFunction, SyntaxKind.LocalFunctionStatement);
-        context.RegisterSyntaxNodeAction(AnalyzeMethod, SyntaxKind.MethodDeclaration);
+        context.RegisterCompilationStartAction(RegisterPerCompilation);
     }
 
     /// <inheritdoc />
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
 
-    private void AnalyzeLocalFunction(SyntaxNodeAnalysisContext context)
+    private void AnalyzeLocalFunction(SyntaxNodeAnalysisContext context, INamedTypeSymbol? tokenType)
     {
-        if (context.Node is not LocalFunctionStatementSyntax localFunction)
+        var localFunction = (context.Node as LocalFunctionStatementSyntax)!;
+        var unused = CollectUnusedTokens(context, localFunction.ParameterList, GetBody(localFunction.Body, localFunction.ExpressionBody), tokenType);
+        if (unused is null)
         {
             return;
         }
 
-        ReportUnusedTokens(context, localFunction.ParameterList, GetBody(localFunction.Body, localFunction.ExpressionBody));
+        Report(context, unused);
     }
 
-    private void AnalyzeMethod(SyntaxNodeAnalysisContext context)
+    private void AnalyzeMethod(SyntaxNodeAnalysisContext context, INamedTypeSymbol? tokenType)
     {
-        if (context.Node is not MethodDeclarationSyntax method)
-        {
-            return;
-        }
-
+        var method = (context.Node as MethodDeclarationSyntax)!;
         if (HasTestAttribute(method))
         {
             return;
         }
 
-        if (context.SemanticModel.GetDeclaredSymbol(method) is IMethodSymbol symbol && HasInheritedSignature(symbol))
+        var unused = CollectUnusedTokens(context, method.ParameterList, GetBody(method.Body, method.ExpressionBody), tokenType);
+        if (unused is null)
         {
             return;
         }
 
-        ReportUnusedTokens(context, method.ParameterList, GetBody(method.Body, method.ExpressionBody));
+        if (HasInheritedSignature(context.SemanticModel.GetDeclaredSymbol(method)!))
+        {
+            return;
+        }
+
+        Report(context, unused);
+    }
+
+    private List<ParameterSyntax>? CollectUnusedTokens(SyntaxNodeAnalysisContext context, ParameterListSyntax parameterList, SyntaxNode? body, INamedTypeSymbol? tokenType)
+    {
+        if (body is null)
+        {
+            return null;
+        }
+
+        List<ParameterSyntax>? unused = null;
+        foreach (var parameter in parameterList.Parameters)
+        {
+            if (!HasCancellationTokenType(parameter, context.SemanticModel, tokenType))
+            {
+                continue;
+            }
+
+            if (HasReferenceInBody(parameter, body))
+            {
+                continue;
+            }
+
+            if (unused is null)
+            {
+                var created = new List<ParameterSyntax>();
+                unused = created;
+            }
+
+            unused.Add(parameter);
+        }
+
+        return unused;
     }
 
     private SyntaxNode? GetBody(BlockSyntax? body, ArrowExpressionClauseSyntax? expressionBody)
@@ -83,21 +119,15 @@ public sealed class UnusedCancellationTokenAnalyzer : DiagnosticAnalyzer
         return expressionBody;
     }
 
-    private bool HasCancellationTokenType(ParameterSyntax parameter, SemanticModel semanticModel)
+    private bool HasCancellationTokenType(ParameterSyntax parameter, SemanticModel semanticModel, INamedTypeSymbol? tokenType)
     {
         if (parameter.Type is null)
         {
             return false;
         }
 
-        var tokenType = semanticModel.Compilation.GetTypeByMetadataName("System.Threading.CancellationToken");
-        if (tokenType is null)
-        {
-            return false;
-        }
-
         var parameterType = semanticModel.GetTypeInfo(parameter.Type).Type;
-        return parameterType is not null && SymbolEqualityComparer.Default.Equals(parameterType, tokenType);
+        return SymbolEqualityComparer.Default.Equals(parameterType, tokenType);
     }
 
     private bool HasInheritedSignature(IMethodSymbol method)
@@ -160,25 +190,21 @@ public sealed class UnusedCancellationTokenAnalyzer : DiagnosticAnalyzer
         return bare is "Test" or "Fact" or "Theory" or "TestMethod";
     }
 
-    private void ReportUnusedTokens(SyntaxNodeAnalysisContext context, ParameterListSyntax parameterList, SyntaxNode? body)
+    private void RegisterPerCompilation(CompilationStartAnalysisContext compilationContext)
     {
-        if (body is null)
+        var tokenType = compilationContext.Compilation.GetTypeByMetadataName("System.Threading.CancellationToken");
+        compilationContext.RegisterSyntaxNodeAction(
+            context => AnalyzeLocalFunction(context, tokenType),
+            SyntaxKind.LocalFunctionStatement);
+        compilationContext.RegisterSyntaxNodeAction(
+            context => AnalyzeMethod(context, tokenType),
+            SyntaxKind.MethodDeclaration);
+    }
+
+    private void Report(SyntaxNodeAnalysisContext context, List<ParameterSyntax> parameters)
+    {
+        foreach (var parameter in parameters)
         {
-            return;
-        }
-
-        foreach (var parameter in parameterList.Parameters)
-        {
-            if (!HasCancellationTokenType(parameter, context.SemanticModel))
-            {
-                continue;
-            }
-
-            if (HasReferenceInBody(parameter, body))
-            {
-                continue;
-            }
-
             context.ReportDiagnostic(Diagnostic.Create(Rule, parameter.GetLocation(), parameter.Identifier.Text));
         }
     }

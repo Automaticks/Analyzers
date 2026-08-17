@@ -42,7 +42,7 @@ public static class CodeFixTestRunner
     /// <returns>A task that resolves to the fully fixed source text.</returns>
     public static async Task<string> ApplyAllFixesAsync(CodeFixRequest request, CancellationToken cancellationToken)
     {
-        var document = CreateDocument(request.Source);
+        var document = CreateDocument(request.Source, request.DocumentName);
         for (var iteration = 0; iteration < MaxFixIterations; iteration++)
         {
             var diagnostics = await GetFixableDiagnosticsAsync(request, document, cancellationToken);
@@ -64,7 +64,7 @@ public static class CodeFixTestRunner
     /// <returns>A task that resolves to the fixed source text.</returns>
     public static async Task<string> ApplyFixAsync(CodeFixRequest request, CancellationToken cancellationToken)
     {
-        var document = CreateDocument(request.Source);
+        var document = CreateDocument(request.Source, request.DocumentName);
         var diagnostics = await GetFixableDiagnosticsAsync(request, document, cancellationToken);
         if (diagnostics.Count == 0)
         {
@@ -82,7 +82,7 @@ public static class CodeFixTestRunner
     /// <returns>A task that resolves to the number of fixable diagnostics.</returns>
     public static async Task<int> CountFixableAsync(CodeFixRequest request, CancellationToken cancellationToken)
     {
-        var document = CreateDocument(request.Source);
+        var document = CreateDocument(request.Source, request.DocumentName);
         var diagnostics = await GetFixableDiagnosticsAsync(request, document, cancellationToken);
         return diagnostics.Count;
     }
@@ -93,7 +93,7 @@ public static class CodeFixTestRunner
     /// <returns>A task that resolves to the number of registered code actions.</returns>
     public static async Task<int> CountRegisteredActionsAsync(CodeFixRequest request, CancellationToken cancellationToken)
     {
-        var document = CreateDocument(request.Source);
+        var document = CreateDocument(request.Source, request.DocumentName);
         var diagnostics = await GetFixableDiagnosticsAsync(request, document, cancellationToken);
         if (diagnostics.Count == 0)
         {
@@ -134,7 +134,7 @@ public static class CodeFixTestRunner
         throw new InvalidOperationException("The code action produced no ApplyChangesOperation.");
     }
 
-    private static Document CreateDocument(string source)
+    private static Document CreateDocument(string source, string? documentName)
     {
         var workspace = new AdhocWorkspace();
         var projectId = ProjectId.CreateNewId(ProjectName);
@@ -146,7 +146,8 @@ public static class CodeFixTestRunner
             .WithCompilationOptions(compilationOptions);
         var project = workspace.AddProject(projectInfo);
         var sourceText = SourceText.From(source);
-        return project.AddDocument(DocumentName, sourceText);
+        var name = documentName ?? DocumentName;
+        return project.AddDocument(name, sourceText, null, name);
     }
 
     private static async Task<List<Diagnostic>> GetFixableDiagnosticsAsync(

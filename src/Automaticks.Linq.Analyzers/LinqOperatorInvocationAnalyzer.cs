@@ -1,6 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using System.Collections.Immutable;
 
@@ -35,31 +34,27 @@ public sealed class LinqOperatorInvocationAnalyzer : DiagnosticAnalyzer
     {
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
         context.EnableConcurrentExecution();
-        context.RegisterSyntaxNodeAction(AnalyzeInvocation, SyntaxKind.InvocationExpression);
-        context.RegisterSyntaxNodeAction(AnalyzeQueryExpression, SyntaxKind.QueryExpression);
+        context.RegisterCompilationStartAction(RegisterPerCompilation);
     }
 
     /// <inheritdoc />
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
 
-    private void AnalyzeInvocation(SyntaxNodeAnalysisContext context)
+    private void AnalyzeInvocation(SyntaxNodeAnalysisContext context, LinqSymbols symbols)
     {
-        if (context.Node is not InvocationExpressionSyntax invocation)
+        if (context.SemanticModel.GetSymbolInfo(context.Node).Symbol is not IMethodSymbol method)
         {
             return;
         }
 
-        if (context.SemanticModel.GetSymbolInfo(invocation).Symbol is not IMethodSymbol method)
+        var containingType = method.ContainingType;
+        if (!SymbolEqualityComparer.Default.Equals(containingType, symbols.Enumerable)
+            && !SymbolEqualityComparer.Default.Equals(containingType, symbols.Queryable))
         {
             return;
         }
 
-        if (!HasLinqDeclaringType(method, context.SemanticModel.Compilation))
-        {
-            return;
-        }
-
-        context.ReportDiagnostic(Diagnostic.Create(Rule, invocation.GetLocation(), method.Name));
+        context.ReportDiagnostic(Diagnostic.Create(Rule, context.Node.GetLocation(), method.Name));
     }
 
     private void AnalyzeQueryExpression(SyntaxNodeAnalysisContext context)
@@ -67,21 +62,27 @@ public sealed class LinqOperatorInvocationAnalyzer : DiagnosticAnalyzer
         context.ReportDiagnostic(Diagnostic.Create(Rule, context.Node.GetLocation(), "query expression"));
     }
 
-    private bool HasLinqDeclaringType(IMethodSymbol method, Compilation compilation)
+    private void RegisterPerCompilation(CompilationStartAnalysisContext compilationContext)
     {
-        var containingType = method.ContainingType;
-        if (containingType is null)
-        {
-            return false;
-        }
+        var symbols = new LinqSymbols(
+            compilationContext.Compilation.GetTypeByMetadataName("System.Linq.Enumerable"),
+            compilationContext.Compilation.GetTypeByMetadataName("System.Linq.Queryable"));
+        compilationContext.RegisterSyntaxNodeAction(
+            context => AnalyzeInvocation(context, symbols),
+            SyntaxKind.InvocationExpression);
+        compilationContext.RegisterSyntaxNodeAction(AnalyzeQueryExpression, SyntaxKind.QueryExpression);
+    }
 
-        var enumerableType = compilation.GetTypeByMetadataName("System.Linq.Enumerable");
-        if (enumerableType is not null && SymbolEqualityComparer.Default.Equals(containingType, enumerableType))
-        {
-            return true;
-        }
+    private readonly struct LinqSymbols
+    {
+        public INamedTypeSymbol? Enumerable { get; }
 
-        var queryableType = compilation.GetTypeByMetadataName("System.Linq.Queryable");
-        return queryableType is not null && SymbolEqualityComparer.Default.Equals(containingType, queryableType);
+        public INamedTypeSymbol? Queryable { get; }
+
+        public LinqSymbols(INamedTypeSymbol? enumerable, INamedTypeSymbol? queryable)
+        {
+            Enumerable = enumerable;
+            Queryable = queryable;
+        }
     }
 }

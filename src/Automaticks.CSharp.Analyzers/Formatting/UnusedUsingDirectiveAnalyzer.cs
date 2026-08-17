@@ -45,11 +45,7 @@ public sealed class UnusedUsingDirectiveAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeCompilationUnit(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not CompilationUnitSyntax compilationUnit)
-        {
-            return;
-        }
-
+        var compilationUnit = (context.Node as CompilationUnitSyntax)!;
         var regularUsings = CollectRegularUsings(compilationUnit);
 
         if (regularUsings.Count == 0)
@@ -57,15 +53,22 @@ public sealed class UnusedUsingDirectiveAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        var usedNamespaces = CollectUsedNamespaces(compilationUnit, context.SemanticModel);
-
+        var names = new List<string>(regularUsings.Count);
+        var pending = new HashSet<string>(StringComparer.Ordinal);
         foreach (var usingDirective in regularUsings)
         {
-            var namespaceName = usingDirective.Name?.ToString() ?? string.Empty;
+            var namespaceName = usingDirective.Name!.ToString();
+            names.Add(namespaceName);
+            pending.Add(namespaceName);
+        }
 
-            if (!usedNamespaces.Contains(namespaceName))
+        var usedNamespaces = CollectUsedNamespaces(compilationUnit, context.SemanticModel, pending);
+
+        for (var index = 0; index < regularUsings.Count; index++)
+        {
+            if (!usedNamespaces.Contains(names[index]))
             {
-                context.ReportDiagnostic(Diagnostic.Create(Rule, usingDirective.GetLocation(), namespaceName));
+                context.ReportDiagnostic(Diagnostic.Create(Rule, regularUsings[index].GetLocation(), names[index]));
             }
         }
     }
@@ -89,48 +92,63 @@ public sealed class UnusedUsingDirectiveAnalyzer : DiagnosticAnalyzer
 
     private HashSet<string> CollectUsedNamespaces(
         CompilationUnitSyntax compilationUnit,
-        SemanticModel semanticModel)
+        SemanticModel semanticModel,
+        HashSet<string> pending)
     {
         var usedNamespaces = new HashSet<string>(StringComparer.Ordinal);
+        var namespaceNames = new Dictionary<INamespaceSymbol, string>(SymbolEqualityComparer.Default);
 
-        foreach (var node in compilationUnit.DescendantNodes())
+        foreach (var node in compilationUnit.DescendantNodes(node => node is not UsingDirectiveSyntax))
         {
-            if (node is not SimpleNameSyntax simpleName || HasUsingDirectiveAncestor(node))
+            if (node is not SimpleNameSyntax simpleName)
             {
                 continue;
             }
 
-            var symbolInfo = semanticModel.GetSymbolInfo(simpleName);
-            var symbol = symbolInfo.Symbol;
+            var name = GetNamespaceName(simpleName, semanticModel, namespaceNames);
 
-            if (symbol is null && symbolInfo.CandidateSymbols.Length > 0)
+            if (name is null || !pending.Remove(name))
             {
-                symbol = symbolInfo.CandidateSymbols[0];
+                continue;
             }
 
-            if (symbol?.ContainingNamespace is { IsGlobalNamespace: false } containingNamespace)
+            usedNamespaces.Add(name);
+
+            if (pending.Count == 0)
             {
-                usedNamespaces.Add(containingNamespace.ToDisplayString());
+                break;
             }
         }
 
         return usedNamespaces;
     }
 
-    private bool HasUsingDirectiveAncestor(SyntaxNode node)
+    private string? GetNamespaceName(
+        SimpleNameSyntax simpleName,
+        SemanticModel semanticModel,
+        Dictionary<INamespaceSymbol, string> namespaceNames)
     {
-        var current = node.Parent;
+        var symbolInfo = semanticModel.GetSymbolInfo(simpleName);
+        var symbol = symbolInfo.Symbol;
 
-        while (current is not null)
+        if (symbol is null && symbolInfo.CandidateSymbols.Length > 0)
         {
-            if (current is UsingDirectiveSyntax)
-            {
-                return true;
-            }
-
-            current = current.Parent;
+            symbol = symbolInfo.CandidateSymbols[0];
         }
 
-        return false;
+        var containingNamespace = symbol?.ContainingNamespace;
+
+        if (containingNamespace is null || containingNamespace.IsGlobalNamespace)
+        {
+            return null;
+        }
+
+        if (!namespaceNames.TryGetValue(containingNamespace, out var name))
+        {
+            name = containingNamespace.ToDisplayString();
+            namespaceNames.Add(containingNamespace, name);
+        }
+
+        return name;
     }
 }

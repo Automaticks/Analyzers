@@ -41,26 +41,18 @@ public sealed class StaticMethodInRecordOrStructAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeMethod(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not MethodDeclarationSyntax method)
-        {
-            return;
-        }
-
+        var method = (context.Node as MethodDeclarationSyntax)!;
         if (!method.Modifiers.Any(SyntaxKind.StaticKeyword))
         {
             return;
         }
 
-        if (method.Parent is not TypeDeclarationSyntax containingType)
+        if (method.Parent is not (RecordDeclarationSyntax or StructDeclarationSyntax))
         {
             return;
         }
 
-        if (containingType is not RecordDeclarationSyntax and not StructDeclarationSyntax)
-        {
-            return;
-        }
-
+        var containingType = (method.Parent as TypeDeclarationSyntax)!;
         context.ReportDiagnostic(Diagnostic.Create(
             Rule,
             method.Identifier.GetLocation(),

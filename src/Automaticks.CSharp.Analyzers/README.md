@@ -67,7 +67,7 @@ dotnet add package Automaticks.CSharp.Analyzers
 | `ATXCS065` | Init-only setter is redundant when the property is assigned in the constructor | CSharp | Error | Analyzer |
 | `ATXCS066` | Folders must not exceed the maximum number of source files | Maintainability | Error | Analyzer |
 | `ATXCS067` | Namespaces must not exceed the maximum number of source files | Maintainability | Error | Analyzer |
-| `ATXCS068` | No-op discard statement is forbidden | CSharp | Error | Analyzer |
+| `ATXCS068` | No-op discard statement is forbidden | CSharp | Error | Analyzer, CodeFix |
 | `ATXCS069` | Static methods must only exist in static classes, not records or structs | CSharp | Error | Analyzer |
 
 ## Code fixes
@@ -108,6 +108,7 @@ dotnet format analyzers --diagnostics ATXCS048 --severity error
 | `ATXCS062` | Prefix the member name with `is` |
 | `ATXCS063` | Prefix the method name with `can` |
 | `ATXCS064` | Sort the type members into canonical order |
+| `ATXCS068` | Remove the no-op discard statement |
 
 Review these before committing, because they remove or invent content rather than rewrite it:
 `ATXCS038` drops `<remarks>` without merging its prose into `<summary>`, `ATXCS041` deletes the
