@@ -37,6 +37,11 @@ public static class DiagnosticIds
         public const string MockingFramework = "ATXTST001";
 
         /// <summary>
+        ///     Diagnostic ID for <c>ATXTST014</c>: the real <c>TimeProvider.System</c> is used in a test project.
+        /// </summary>
+        public const string SystemTimeProviderInTest = "ATXTST014";
+
+        /// <summary>
         ///     Diagnostic ID for <c>ATXTST004</c>: <c>Task.Delay</c> is forbidden in test projects.
         /// </summary>
         public const string TaskDelay = "ATXTST004";

@@ -21,5 +21,11 @@ public static class DiagnosticIds
         ///     Diagnostic ID for <c>ATXTA010</c>: unobserved <see cref="System.Threading.Tasks.Task" /> invocation.
         /// </summary>
         public const string UnobservedTask = "ATXTA010";
+
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXTA011</c>: a declared
+        ///     <see cref="System.Threading.CancellationToken" /> parameter is never used.
+        /// </summary>
+        public const string UnusedCancellationToken = "ATXTA011";
     }
 }

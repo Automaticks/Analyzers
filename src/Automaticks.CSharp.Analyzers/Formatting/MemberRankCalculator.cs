@@ -47,6 +47,16 @@ public static class MemberRankCalculator
         };
     }
 
+    /// <summary>
+    ///     Maps '_' to a character that sorts before every letter, so leading-underscore names rank first.
+    /// </summary>
+    /// <param name="name">The member name to normalize.</param>
+    /// <returns>The name with underscores replaced by a low-ordinal sentinel.</returns>
+    public static string NormalizeNameForComparison(string name)
+    {
+        return name.Replace('_', '\x01');
+    }
+
     private static int GetAccessRank(MemberDeclarationSyntax member, bool isInterface)
     {
         var modifiers = member.Modifiers;

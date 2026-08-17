@@ -88,6 +88,7 @@ public sealed class FileNameMismatchCodeFixProvider : CodeFixProvider
         string newFileName,
         CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         var solution = document.Project.Solution;
         var directory = Path.GetDirectoryName(document.FilePath);
         var updated = solution.WithDocumentName(document.Id, newFileName);

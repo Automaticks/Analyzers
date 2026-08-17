@@ -67,6 +67,8 @@ dotnet add package Automaticks.CSharp.Analyzers
 | `ATXCS065` | Init-only setter is redundant when the property is assigned in the constructor | CSharp | Error | Analyzer |
 | `ATXCS066` | Folders must not exceed the maximum number of source files | Maintainability | Error | Analyzer |
 | `ATXCS067` | Namespaces must not exceed the maximum number of source files | Maintainability | Error | Analyzer |
+| `ATXCS068` | No-op discard statement is forbidden | CSharp | Error | Analyzer |
+| `ATXCS069` | Static methods must only exist in static classes, not records or structs | CSharp | Error | Analyzer |
 
 ## Code fixes
 

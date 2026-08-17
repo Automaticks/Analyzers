@@ -167,6 +167,11 @@ public static class DiagnosticIds
         public const string NestingDepth = "ATXCS032";
 
         /// <summary>
+        ///     Diagnostic ID for <c>ATXCS068</c>: discard assignment whose right-hand side is a no-op read.
+        /// </summary>
+        public const string NoOpDiscardStatement = "ATXCS068";
+
+        /// <summary>
         ///     Diagnostic ID for <c>ATXCS060</c>: object, collection, array, or <c>with</c> initializer has empty braces.
         /// </summary>
         public const string ObjectInitializerEmptyBraces = "ATXCS060";
@@ -250,6 +255,11 @@ public static class DiagnosticIds
         ///     Diagnostic ID for <c>ATXCS011</c>: static methods must only exist in static classes.
         /// </summary>
         public const string StaticMethodInNonStaticClass = "ATXCS011";
+
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXCS069</c>: static methods must only exist in static classes, not in records or structs.
+        /// </summary>
+        public const string StaticMethodInRecordOrStruct = "ATXCS069";
 
         /// <summary>
         ///     Diagnostic ID for <c>ATXCS050</c>: <c>&lt;summary&gt;</c> content must start on a new line and be indented with exactly 4 spaces.
