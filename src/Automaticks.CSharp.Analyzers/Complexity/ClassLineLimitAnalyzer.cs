@@ -79,15 +79,8 @@ public sealed class ClassLineLimitAnalyzer : DiagnosticAnalyzer
         SyntaxNodeAnalysisContext nodeContext,
         ConcurrentDictionary<INamedTypeSymbol, ConcurrentBag<ClassPart>> partsBySymbol)
     {
-        if (nodeContext.Node is not ClassDeclarationSyntax classDecl)
-        {
-            return;
-        }
-
-        if (nodeContext.SemanticModel.GetDeclaredSymbol(classDecl) is not { } symbol)
-        {
-            return;
-        }
+        var classDecl = (nodeContext.Node as ClassDeclarationSyntax)!;
+        var symbol = nodeContext.SemanticModel.GetDeclaredSymbol(classDecl)!;
 
         var sourceText = classDecl.SyntaxTree.GetText();
         var loc = CountLinesOfCode(classDecl, sourceText);
@@ -107,19 +100,17 @@ public sealed class ClassLineLimitAnalyzer : DiagnosticAnalyzer
 
         for (var lineIndex = startLine; lineIndex <= endLine; lineIndex++)
         {
-            var lineText = sourceText.Lines[lineIndex].ToString();
-            if (string.IsNullOrWhiteSpace(lineText))
+            var firstNonWhitespacePosition = FindFirstNonWhitespace(sourceText, sourceText.Lines[lineIndex].Span);
+            if (firstNonWhitespacePosition < 0)
             {
                 continue;
             }
 
-            var trimmed = lineText.TrimStart();
-            if (trimmed.StartsWith("//", StringComparison.Ordinal))
+            if (HasLineCommentStart(sourceText, firstNonWhitespacePosition, sourceText.Lines[lineIndex].Span.End))
             {
                 continue;
             }
 
-            var firstNonWhitespacePosition = sourceText.Lines[lineIndex].Start + (lineText.Length - trimmed.Length);
             if (HasContainingBlockComment(firstNonWhitespacePosition, blockCommentSpans))
             {
                 continue;
@@ -129,6 +120,19 @@ public sealed class ClassLineLimitAnalyzer : DiagnosticAnalyzer
         }
 
         return count;
+    }
+
+    private int FindFirstNonWhitespace(SourceText sourceText, TextSpan lineSpan)
+    {
+        for (var position = lineSpan.Start; position < lineSpan.End; position++)
+        {
+            if (!char.IsWhiteSpace(sourceText[position]))
+            {
+                return position;
+            }
+        }
+
+        return -1;
     }
 
     private bool HasContainingBlockComment(int position, List<TextSpan> blockCommentSpans)
@@ -146,8 +150,8 @@ public sealed class ClassLineLimitAnalyzer : DiagnosticAnalyzer
 
     private bool HasEarlierLocation(Location candidate, Location current)
     {
-        var candidatePath = candidate.SourceTree?.FilePath ?? string.Empty;
-        var currentPath = current.SourceTree?.FilePath ?? string.Empty;
+        var candidatePath = candidate.SourceTree!.FilePath;
+        var currentPath = current.SourceTree!.FilePath;
         var pathComparison = string.CompareOrdinal(candidatePath, currentPath);
 
         if (pathComparison != 0)
@@ -156,6 +160,11 @@ public sealed class ClassLineLimitAnalyzer : DiagnosticAnalyzer
         }
 
         return candidate.SourceSpan.Start < current.SourceSpan.Start;
+    }
+
+    private bool HasLineCommentStart(SourceText sourceText, int position, int lineEnd)
+    {
+        return sourceText[position] == '/' && position + 1 < lineEnd && sourceText[position + 1] == '/';
     }
 
     private void RegisterCompilationActions(CompilationStartAnalysisContext compilationContext)
@@ -194,7 +203,6 @@ public sealed class ClassLineLimitAnalyzer : DiagnosticAnalyzer
             }
         }
     }
-
     private readonly struct ClassPart
     {
         public int Loc { get; }

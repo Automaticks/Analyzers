@@ -78,6 +78,32 @@ public class ClassLineLimitAnalyzerTests
     }
 
     /// <summary>
+    ///     Tests that Analyze_ClassWithBlockCommentAndBlankLines_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ClassWithBlockCommentAndBlankLines_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp;
+                              public class Foo
+                              {
+                                  /* a block comment
+                                     spanning lines */
+
+                                  // a line comment
+                                  public int Bar() { return 1; }
+                              }
+                              """;
+
+        var analyzer = new ClassLineLimitAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS034")).IsFalse();
+    }
+
+    /// <summary>
     ///     Tests that Analyze_DiagnosticMessage_ContainsLineCount.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>

@@ -1,4 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
+using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace Automaticks.CSharp.Documentation;
@@ -9,14 +11,34 @@ namespace Automaticks.CSharp.Documentation;
 public static class DocumentationCommentText
 {
     private static readonly Regex InheritDocRegex;
+    private static readonly Regex ParamNameRegex;
     private static readonly Regex ReturnsOrInheritDocRegex;
     private static readonly Regex SummaryOrInheritDocRegex;
 
     static DocumentationCommentText()
     {
         InheritDocRegex = new("<\\s*inheritdoc\\b", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+        ParamNameRegex = new("<\\s*param\\b[^>]*\\bname\\s*=\\s*\"([^\"]*)\"", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
         ReturnsOrInheritDocRegex = new("<\\s*(returns|inheritdoc)\\b", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
         SummaryOrInheritDocRegex = new("<\\s*(summary|inheritdoc)\\b", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+    }
+
+    /// <summary>
+    ///     Collects every documented parameter name from the leading trivia in a single pass.
+    /// </summary>
+    /// <param name="node">The syntax node whose leading trivia is inspected.</param>
+    /// <returns>The set of documented parameter names, compared case-insensitively.</returns>
+    public static HashSet<string> CollectParamNames(SyntaxNode node)
+    {
+        var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var text = node.GetLeadingTrivia().ToFullString();
+
+        foreach (Match match in ParamNameRegex.Matches(text))
+        {
+            names.Add(match.Groups[1].Value);
+        }
+
+        return names;
     }
 
     /// <summary>
@@ -27,18 +49,6 @@ public static class DocumentationCommentText
     public static bool HasInheritDoc(SyntaxNode node)
     {
         return InheritDocRegex.IsMatch(node.GetLeadingTrivia().ToFullString());
-    }
-
-    /// <summary>
-    ///     Determines whether <paramref name="node" /> has a leading <c>param</c> tag for the given name.
-    /// </summary>
-    /// <param name="node">The syntax node whose leading trivia is inspected.</param>
-    /// <param name="parameterName">The parameter name to search for.</param>
-    /// <returns><see langword="true" /> when a matching <c>param</c> tag is present.</returns>
-    public static bool HasParamElement(SyntaxNode node, string parameterName)
-    {
-        var parameterPattern = $"<\\s*param\\b[^>]*\\bname\\s*=\\s*\"{Regex.Escape(parameterName)}\"";
-        return Regex.IsMatch(node.GetLeadingTrivia().ToFullString(), parameterPattern, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
     }
 
     /// <summary>

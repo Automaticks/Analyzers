@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 
@@ -43,9 +44,14 @@ public sealed class UnusedCancellationTokenAnalyzer : DiagnosticAnalyzer
     /// <inheritdoc />
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
 
-    private void AnalyzeLocalFunction(SyntaxNodeAnalysisContext context, INamedTypeSymbol? tokenType)
+    private void AnalyzeLocalFunction(SyntaxNodeAnalysisContext context, INamedTypeSymbol? tokenType, ConcurrentDictionary<SyntaxTree, bool> aliasTrees)
     {
         var localFunction = (context.Node as LocalFunctionStatementSyntax)!;
+        if (!HasCancellationTokenParameterSyntax(localFunction.ParameterList, aliasTrees))
+        {
+            return;
+        }
+
         var unused = CollectUnusedTokens(context, localFunction.ParameterList, GetBody(localFunction.Body, localFunction.ExpressionBody), tokenType);
         if (unused is null)
         {
@@ -55,9 +61,14 @@ public sealed class UnusedCancellationTokenAnalyzer : DiagnosticAnalyzer
         Report(context, unused);
     }
 
-    private void AnalyzeMethod(SyntaxNodeAnalysisContext context, INamedTypeSymbol? tokenType)
+    private void AnalyzeMethod(SyntaxNodeAnalysisContext context, INamedTypeSymbol? tokenType, ConcurrentDictionary<SyntaxTree, bool> aliasTrees)
     {
         var method = (context.Node as MethodDeclarationSyntax)!;
+        if (!HasCancellationTokenParameterSyntax(method.ParameterList, aliasTrees))
+        {
+            return;
+        }
+
         if (HasTestAttribute(method))
         {
             return;
@@ -117,6 +128,55 @@ public sealed class UnusedCancellationTokenAnalyzer : DiagnosticAnalyzer
         }
 
         return expressionBody;
+    }
+
+    private string GetRightmostName(TypeSyntax type)
+    {
+        var candidate = type;
+        if (candidate is NullableTypeSyntax nullable)
+        {
+            candidate = nullable.ElementType;
+        }
+
+        if (candidate is QualifiedNameSyntax qualified)
+        {
+            return qualified.Right.Identifier.ValueText;
+        }
+
+        if (candidate is IdentifierNameSyntax identifier)
+        {
+            return identifier.Identifier.ValueText;
+        }
+
+        return string.Empty;
+    }
+
+    private bool HasAliasInTree(SyntaxTree tree)
+    {
+        var root = tree.GetRoot();
+
+        foreach (var node in root.DescendantNodes(candidate => candidate is CompilationUnitSyntax or BaseNamespaceDeclarationSyntax))
+        {
+            if (node is UsingDirectiveSyntax { Alias: not null })
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool HasCancellationTokenParameterSyntax(ParameterListSyntax parameterList, ConcurrentDictionary<SyntaxTree, bool> aliasTrees)
+    {
+        foreach (var parameter in parameterList.Parameters)
+        {
+            if (parameter.Type is not null && GetRightmostName(parameter.Type) == "CancellationToken")
+            {
+                return true;
+            }
+        }
+
+        return HasUsingAlias(parameterList.SyntaxTree, aliasTrees);
     }
 
     private bool HasCancellationTokenType(ParameterSyntax parameter, SemanticModel semanticModel, INamedTypeSymbol? tokenType)
@@ -190,14 +250,27 @@ public sealed class UnusedCancellationTokenAnalyzer : DiagnosticAnalyzer
         return bare is "Test" or "Fact" or "Theory" or "TestMethod";
     }
 
+    private bool HasUsingAlias(SyntaxTree tree, ConcurrentDictionary<SyntaxTree, bool> aliasTrees)
+    {
+        if (aliasTrees.TryGetValue(tree, out var hasAlias))
+        {
+            return hasAlias;
+        }
+
+        hasAlias = HasAliasInTree(tree);
+        aliasTrees[tree] = hasAlias;
+        return hasAlias;
+    }
+
     private void RegisterPerCompilation(CompilationStartAnalysisContext compilationContext)
     {
         var tokenType = compilationContext.Compilation.GetTypeByMetadataName("System.Threading.CancellationToken");
+        var aliasTrees = new ConcurrentDictionary<SyntaxTree, bool>();
         compilationContext.RegisterSyntaxNodeAction(
-            context => AnalyzeLocalFunction(context, tokenType),
+            context => AnalyzeLocalFunction(context, tokenType, aliasTrees),
             SyntaxKind.LocalFunctionStatement);
         compilationContext.RegisterSyntaxNodeAction(
-            context => AnalyzeMethod(context, tokenType),
+            context => AnalyzeMethod(context, tokenType, aliasTrees),
             SyntaxKind.MethodDeclaration);
     }
 

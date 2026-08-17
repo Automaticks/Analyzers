@@ -86,6 +86,29 @@ public class GenericDelegateAnalyzerTests
     }
 
     /// <summary>
+    ///     Tests that Analyze_AliasedFuncType_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_AliasedFuncType_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using Mapper = System.Func<int, int>;
+                              namespace MyApp {
+                                  public class Foo {
+                                      public Mapper? Bar() { return null; }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new GenericDelegateAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS020")).IsTrue();
+    }
+
+    /// <summary>
     ///     Tests that Analyze_AliasUsageWhereAliasWrapsAction_ReportsDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>

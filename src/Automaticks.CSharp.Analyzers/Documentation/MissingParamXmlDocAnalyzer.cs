@@ -70,11 +70,13 @@ public sealed class MissingParamXmlDocAnalyzer : DiagnosticAnalyzer
             return;
         }
 
+        var documentedNames = DocumentationCommentText.CollectParamNames(node);
+
         foreach (var parameter in parameters)
         {
             var paramName = parameter.Identifier.ValueText;
 
-            if (!DocumentationCommentText.HasParamElement(node, paramName))
+            if (!documentedNames.Contains(paramName))
             {
                 var memberName = GetMemberName(node);
                 context.ReportDiagnostic(

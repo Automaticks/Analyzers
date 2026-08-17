@@ -2,6 +2,8 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Immutable;
 
 namespace Automaticks.CSharp.LanguageFeatures;
@@ -17,9 +19,18 @@ public sealed class GenericDelegateAnalyzer : DiagnosticAnalyzer
     /// </summary>
     public static readonly DiagnosticDescriptor Rule;
     private static readonly string[] ForbiddenMetadataNames;
+    private static readonly ImmutableHashSet<string> ForbiddenSimpleNames;
 
     static GenericDelegateAnalyzer()
     {
+        var forbiddenSimpleNames = ImmutableHashSet.CreateBuilder<string>(StringComparer.Ordinal);
+        forbiddenSimpleNames.Add("Action");
+        forbiddenSimpleNames.Add("Comparison");
+        forbiddenSimpleNames.Add("Converter");
+        forbiddenSimpleNames.Add("Func");
+        forbiddenSimpleNames.Add("Predicate");
+        ForbiddenSimpleNames = forbiddenSimpleNames.ToImmutable();
+
         var rule = new DiagnosticDescriptor(
             DiagnosticIds.CSharp.GenericDelegate,
             "Generic built-in delegate types are forbidden",
@@ -86,8 +97,15 @@ public sealed class GenericDelegateAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeNode(
         SyntaxNodeAnalysisContext context,
-        ImmutableHashSet<INamedTypeSymbol> forbiddenTypes)
+        ImmutableHashSet<INamedTypeSymbol> forbiddenTypes,
+        ConcurrentDictionary<SyntaxTree, bool> aliasTrees)
     {
+        if (!ForbiddenSimpleNames.Contains(GetSimpleName(context.Node))
+            && !HasUsingAlias(context.Node.SyntaxTree, aliasTrees))
+        {
+            return;
+        }
+
         var symbolInfo = context.SemanticModel.GetSymbolInfo(context.Node);
         var symbol = symbolInfo.Symbol;
 
@@ -117,12 +135,7 @@ public sealed class GenericDelegateAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        var displayName = context.Node switch
-        {
-            GenericNameSyntax generic => generic.Identifier.Text,
-            IdentifierNameSyntax identifier => identifier.Identifier.Text,
-            _ => namedType.Name
-        };
+        var displayName = GetSimpleName(context.Node);
 
         context.ReportDiagnostic(Diagnostic.Create(Rule, context.Node.GetLocation(), displayName));
     }
@@ -141,6 +154,31 @@ public sealed class GenericDelegateAnalyzer : DiagnosticAnalyzer
         }
 
         return builder.ToImmutable();
+    }
+
+    private string GetSimpleName(SyntaxNode node)
+    {
+        if (node is GenericNameSyntax generic)
+        {
+            return generic.Identifier.ValueText;
+        }
+
+        return (node as IdentifierNameSyntax)!.Identifier.ValueText;
+    }
+
+    private bool HasAliasInTree(SyntaxTree tree)
+    {
+        var root = tree.GetRoot();
+
+        foreach (var node in root.DescendantNodes(candidate => candidate is CompilationUnitSyntax or BaseNamespaceDeclarationSyntax))
+        {
+            if (node is UsingDirectiveSyntax { Alias: not null })
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private bool HasExpressionTypeArgumentAncestor(SyntaxNode node)
@@ -223,6 +261,18 @@ public sealed class GenericDelegateAnalyzer : DiagnosticAnalyzer
         return HasExternalImplicitInterfaceImplementation(methodSymbol);
     }
 
+    private bool HasUsingAlias(SyntaxTree tree, ConcurrentDictionary<SyntaxTree, bool> aliasTrees)
+    {
+        if (aliasTrees.TryGetValue(tree, out var hasAlias))
+        {
+            return hasAlias;
+        }
+
+        hasAlias = HasAliasInTree(tree);
+        aliasTrees[tree] = hasAlias;
+        return hasAlias;
+    }
+
     private void RegisterPerCompilation(CompilationStartAnalysisContext compilationContext)
     {
         var forbiddenTypes = BuildForbiddenTypeSet(compilationContext.Compilation);
@@ -231,8 +281,9 @@ public sealed class GenericDelegateAnalyzer : DiagnosticAnalyzer
             return;
         }
 
+        var aliasTrees = new ConcurrentDictionary<SyntaxTree, bool>();
         compilationContext.RegisterSyntaxNodeAction(
-            context => AnalyzeNode(context, forbiddenTypes),
+            context => AnalyzeNode(context, forbiddenTypes, aliasTrees),
             SyntaxKind.IdentifierName,
             SyntaxKind.GenericName);
     }
