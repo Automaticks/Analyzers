@@ -254,6 +254,73 @@ public class GenericDelegateAnalyzerTests
     }
 
     /// <summary>
+    ///     Tests that Analyze_ExplicitExternalInterfaceImplementation_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ExplicitExternalInterfaceImplementation_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string library = """
+                               using System;
+                               namespace Lib {
+                                   public interface IHandler {
+                                       int Value { get; }
+                                       void Handle(Func<int, int> mapper);
+                                   }
+                               }
+                               """;
+        const string source = """
+                              using System;
+                              using Lib;
+                              namespace MyApp {
+                                  public class Foo : IHandler {
+                                      public int Value { get { return 1; } }
+                                      void IHandler.Handle(Func<int, int> mapper) { }
+                                  }
+                              }
+                              """;
+
+        var reference = AnalyzerTestRunner.CompileToReference(library);
+        var references = new[]
+        {
+            reference
+        };
+        var options = new AnalysisOptions
+        {
+            AdditionalReferences = references
+        };
+        var analyzer = new GenericDelegateAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, options, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS020")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_ExplicitLocalInterfaceImplementation_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ExplicitLocalInterfaceImplementation_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System;
+                              namespace MyApp {
+                                  public interface IHandler { void Handle(Func<int, int> mapper); }
+                                  public class Foo : IHandler {
+                                      void IHandler.Handle(Func<int, int> mapper) { }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new GenericDelegateAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS020")).IsTrue();
+    }
+
+    /// <summary>
     ///     Tests that Analyze_FuncField_ReportsDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -375,6 +442,49 @@ public class GenericDelegateAnalyzerTests
     }
 
     /// <summary>
+    ///     Tests that Analyze_ImplicitExternalInterfaceImplementation_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ImplicitExternalInterfaceImplementation_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string library = """
+                               using System;
+                               namespace Lib {
+                                   public interface IHandler {
+                                       int Value { get; }
+                                       void Handle(Func<int, int> mapper);
+                                   }
+                               }
+                               """;
+        const string source = """
+                              using System;
+                              using Lib;
+                              namespace MyApp {
+                                  public class Foo : IHandler {
+                                      public int Value { get { return 1; } }
+                                      public void Handle(Func<int, int> mapper) { }
+                                  }
+                              }
+                              """;
+
+        var reference = AnalyzerTestRunner.CompileToReference(library);
+        var references = new[]
+        {
+            reference
+        };
+        var options = new AnalysisOptions
+        {
+            AdditionalReferences = references
+        };
+        var analyzer = new GenericDelegateAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, options, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS020")).IsFalse();
+    }
+
+    /// <summary>
     ///     Tests that Analyze_LambdaPassedToExternalLinqMethod_ReportsNoDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -402,6 +512,30 @@ public class GenericDelegateAnalyzerTests
     }
 
     /// <summary>
+    ///     Tests that Analyze_LocalInterfaceImplementation_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_LocalInterfaceImplementation_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System;
+                              namespace MyApp {
+                                  public interface IHandler { void Handle(Func<int, int> mapper); }
+                                  public class Foo : IHandler {
+                                      public void Handle(Func<int, int> mapper) { }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new GenericDelegateAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS020")).IsTrue();
+    }
+
+    /// <summary>
     ///     Tests that Analyze_MultipleViolationsInSameFile_ReportsMultipleDiagnostics.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -425,6 +559,72 @@ public class GenericDelegateAnalyzerTests
         var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
         await Assert.That(DiagnosticCollectionAssertions.CountId(diagnostics, "ATXCS020")).IsEqualTo(2);
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_NamespaceAlias_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_NamespaceAlias_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using Sys = System;
+                              namespace MyApp {
+                                  public class Foo {
+                                      public Sys.DateTime Bar() { return Sys.DateTime.MaxValue; }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new GenericDelegateAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS020")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_NonImplementingMethodInExternalInterfaceType_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_NonImplementingMethodInExternalInterfaceType_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string library = """
+                               namespace Lib {
+                                   public interface IHandler {
+                                       int Value { get; }
+                                       void Handle();
+                                   }
+                               }
+                               """;
+        const string source = """
+                              using System;
+                              using Lib;
+                              namespace MyApp {
+                                  public class Foo : IHandler {
+                                      public int Value { get { return 1; } }
+                                      public void Handle() { }
+                                      public void Map(Func<int, int> mapper) { }
+                                  }
+                              }
+                              """;
+
+        var reference = AnalyzerTestRunner.CompileToReference(library);
+        var references = new[]
+        {
+            reference
+        };
+        var options = new AnalysisOptions
+        {
+            AdditionalReferences = references
+        };
+        var analyzer = new GenericDelegateAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, options, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS020")).IsTrue();
     }
 
     /// <summary>

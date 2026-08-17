@@ -209,6 +209,53 @@ public partial class TypeMemberOrderAnalyzerTests
     }
 
     /// <summary>
+    ///     Tests that Analyze_ConversionOperatorBeforeOperator_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ConversionOperatorBeforeOperator_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp;
+                              public class Foo
+                              {
+                                  public static explicit operator int(Foo value) { return 0; }
+                                  public static Foo operator +(Foo left, Foo right) { return left; }
+                              }
+                              """;
+
+        var analyzer = new TypeMemberOrderAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS042")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_DestructorAfterConstructor_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_DestructorAfterConstructor_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp;
+                              public class Foo
+                              {
+                                  public Foo() { }
+                                  ~Foo() { }
+                                  public void Bar() { }
+                              }
+                              """;
+
+        var analyzer = new TypeMemberOrderAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS042")).IsFalse();
+    }
+
+    /// <summary>
     ///     Tests that Analyze_EmptyClass_ReportsNoDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -253,6 +300,55 @@ public partial class TypeMemberOrderAnalyzerTests
     }
 
     /// <summary>
+    ///     Tests that Analyze_EventDeclarationBeforeMethod_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_EventDeclarationBeforeMethod_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp;
+                              public delegate void Notifier();
+                              public class Foo
+                              {
+                                  public event Notifier Changed { add { } remove { } }
+                                  public void Bar() { }
+                              }
+                              """;
+
+        var analyzer = new TypeMemberOrderAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS042")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_EventFieldBeforeConstant_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_EventFieldBeforeConstant_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp;
+                              public delegate void Notifier();
+                              public class Foo
+                              {
+                                  public event Notifier? Changed;
+                                  public const int Limit = 1;
+                                  public void Bar() { }
+                              }
+                              """;
+
+        var analyzer = new TypeMemberOrderAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS042")).IsFalse();
+    }
+
+    /// <summary>
     ///     Tests that Analyze_ExplicitImplBeforeImplicitImpl_ReportsNoDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -267,6 +363,31 @@ public partial class TypeMemberOrderAnalyzerTests
                                       void IService.Execute() { }
                                       public void Execute() { }
                                   }
+                              }
+                              """;
+
+        var analyzer = new TypeMemberOrderAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS042")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_ExplicitInterfaceEventBeforeMethod_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ExplicitInterfaceEventBeforeMethod_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp;
+                              public delegate void Notifier();
+                              public interface IBell { event Notifier Rang; }
+                              public class Foo : IBell
+                              {
+                                  event Notifier IBell.Rang { add { } remove { } }
+                                  public void Bar() { }
                               }
                               """;
 
@@ -485,4 +606,76 @@ public partial class TypeMemberOrderAnalyzerTests
         await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS042")).IsTrue();
     }
 
+    /// <summary>
+    ///     Tests that Analyze_NestedEnumAndDelegateLast_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_NestedEnumAndDelegateLast_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp;
+                              public class Foo
+                              {
+                                  public void Bar() { }
+                                  public enum Kind { One }
+                                  public delegate void Notifier();
+                              }
+                              """;
+
+        var analyzer = new TypeMemberOrderAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS042")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_ProtectedMethodBetweenPublicAndPrivate_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ProtectedMethodBetweenPublicAndPrivate_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp;
+                              public class Foo
+                              {
+                                  public void Alpha() { }
+                                  protected void Beta() { }
+                                  private void Gamma() { }
+                              }
+                              """;
+
+        var analyzer = new TypeMemberOrderAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS042")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_StaticConstructorBeforeInstanceConstructor_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_StaticConstructorBeforeInstanceConstructor_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp;
+                              public class Foo
+                              {
+                                  private static readonly int Value;
+                                  static Foo() { Value = 1; }
+                                  public Foo() { }
+                                  public void Bar() { }
+                              }
+                              """;
+
+        var analyzer = new TypeMemberOrderAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS042")).IsFalse();
+    }
 }

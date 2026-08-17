@@ -1,4 +1,4 @@
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -120,7 +120,6 @@ public static class MemberRankCalculator
             IndexerDeclarationSyntax => 5,
             ConstructorDeclarationSyntax or DestructorDeclarationSyntax => 6,
             MethodDeclarationSyntax or OperatorDeclarationSyntax or ConversionOperatorDeclarationSyntax => 8,
-            TypeDeclarationSyntax or EnumDeclarationSyntax or DelegateDeclarationSyntax => 9,
             _ => 9
         };
     }
@@ -129,13 +128,12 @@ public static class MemberRankCalculator
     {
         return member switch
         {
-            FieldDeclarationSyntax field when field.Declaration.Variables.Count > 0 => field.Declaration.Variables[0].Identifier.Text,
-            EventFieldDeclarationSyntax eventField when eventField.Declaration.Variables.Count > 0 => eventField.Declaration.Variables[0].Identifier.Text,
+            FieldDeclarationSyntax field => field.Declaration.Variables[0].Identifier.Text,
+            EventFieldDeclarationSyntax eventField => eventField.Declaration.Variables[0].Identifier.Text,
             IndexerDeclarationSyntax => "this",
             DestructorDeclarationSyntax destructor => $"~{destructor.Identifier.Text}",
             OperatorDeclarationSyntax operatorDeclaration => $"operator {operatorDeclaration.OperatorToken.Text}",
-            ConversionOperatorDeclarationSyntax conversionOperator => $"{conversionOperator.ImplicitOrExplicitKeyword.Text} operator",
-            _ => member.GetType().Name
+            _ => $"{(member as ConversionOperatorDeclarationSyntax)!.ImplicitOrExplicitKeyword.Text} operator"
         };
     }
 
@@ -163,13 +161,8 @@ public static class MemberRankCalculator
             return false;
         }
 
-        var symbol = semanticModel.GetDeclaredSymbol(member);
-        if (symbol?.ContainingType is not { } containingType)
-        {
-            return false;
-        }
-
-        return HasInterfaceImplementation(symbol, containingType);
+        var symbol = semanticModel.GetDeclaredSymbol(member)!;
+        return HasInterfaceImplementation(symbol, symbol.ContainingType);
     }
 
     private static bool HasInterfaceImplementation(ISymbol symbol, INamedTypeSymbol containingType)

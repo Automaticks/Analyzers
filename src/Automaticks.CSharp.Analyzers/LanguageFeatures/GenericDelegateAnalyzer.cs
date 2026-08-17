@@ -107,20 +107,15 @@ public sealed class GenericDelegateAnalyzer : DiagnosticAnalyzer
         }
 
         var symbolInfo = context.SemanticModel.GetSymbolInfo(context.Node);
-        var symbol = symbolInfo.Symbol;
 
-        INamedTypeSymbol? namedType = null;
-
-        if (symbol is INamedTypeSymbol directType)
+        if (symbolInfo.Symbol is not INamedTypeSymbol directType)
         {
-            namedType = directType.OriginalDefinition;
-        }
-        else if (symbol is IAliasSymbol { Target: INamedTypeSymbol aliasTarget })
-        {
-            namedType = aliasTarget.OriginalDefinition;
+            return;
         }
 
-        if (namedType is null || !forbiddenTypes.Contains(namedType))
+        var namedType = directType.OriginalDefinition;
+
+        if (!forbiddenTypes.Contains(namedType))
         {
             return;
         }
@@ -189,13 +184,8 @@ public sealed class GenericDelegateAnalyzer : DiagnosticAnalyzer
             return false;
         }
 
-        var grandParent = typeArgumentList.Parent;
-        if (grandParent is not GenericNameSyntax genericName)
-        {
-            return false;
-        }
-
-        return genericName.Identifier.Text == "Expression";
+        var grandParent = (typeArgumentList.Parent as GenericNameSyntax)!;
+        return grandParent.Identifier.Text == "Expression";
     }
 
     private bool HasExternalExplicitInterfaceImplementation(IMethodSymbol methodSymbol)
@@ -243,11 +233,7 @@ public sealed class GenericDelegateAnalyzer : DiagnosticAnalyzer
             return false;
         }
 
-        if (context.SemanticModel.GetDeclaredSymbol(methodDeclaration) is not IMethodSymbol methodSymbol)
-        {
-            return false;
-        }
-
+        var methodSymbol = (context.SemanticModel.GetDeclaredSymbol(methodDeclaration) as IMethodSymbol)!;
         if (HasExternalExplicitInterfaceImplementation(methodSymbol))
         {
             return true;
@@ -276,11 +262,6 @@ public sealed class GenericDelegateAnalyzer : DiagnosticAnalyzer
     private void RegisterPerCompilation(CompilationStartAnalysisContext compilationContext)
     {
         var forbiddenTypes = BuildForbiddenTypeSet(compilationContext.Compilation);
-        if (forbiddenTypes.IsEmpty)
-        {
-            return;
-        }
-
         var aliasTrees = new ConcurrentDictionary<SyntaxTree, bool>();
         compilationContext.RegisterSyntaxNodeAction(
             context => AnalyzeNode(context, forbiddenTypes, aliasTrees),

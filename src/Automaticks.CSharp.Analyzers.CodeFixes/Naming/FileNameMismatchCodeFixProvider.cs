@@ -75,12 +75,7 @@ public sealed class FileNameMismatchCodeFixProvider : CodeFixProvider
             return typeDeclaration.Identifier.ValueText;
         }
 
-        if (declaration is DelegateDeclarationSyntax delegateDeclaration)
-        {
-            return delegateDeclaration.Identifier.ValueText;
-        }
-
-        return string.Empty;
+        return (declaration as DelegateDeclarationSyntax)!.Identifier.ValueText;
     }
 
     private Task<Solution> RenameFileAsync(

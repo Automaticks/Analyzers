@@ -238,6 +238,22 @@ public class ClassLineLimitAnalyzerTests
     }
 
     /// <summary>
+    ///     Tests that Analyze_PartialClassTwiceInSameFile_ReportsSingleDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_PartialClassTwiceInSameFile_ReportsSingleDiagnostic(CancellationToken cancellationToken)
+    {
+        var source = BuildPartialClassTwiceInOneFile(300);
+
+        var analyzer = new ClassLineLimitAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, DiagnosticIds.CSharp.ClassLineLimit)).IsTrue();
+    }
+
+    /// <summary>
     ///     Tests that Analyze_RegionDirectivesCounted_ExceedsLimit.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -437,6 +453,32 @@ public class ClassLineLimitAnalyzerTests
 
         stringBuilder.AppendLine("        }");
         stringBuilder.AppendLine("    }");
+        stringBuilder.AppendLine("}");
+        return stringBuilder.ToString();
+    }
+
+    private string BuildPartialClassTwiceInOneFile(int bodyLineCount)
+    {
+        var stringBuilder = new StringBuilder();
+        stringBuilder.AppendLine("namespace MyApp");
+        stringBuilder.AppendLine("{");
+        for (var partIndex = 0; partIndex < 2; partIndex++)
+        {
+            stringBuilder.AppendLine("    public partial class Foo");
+            stringBuilder.AppendLine("    {");
+            for (var lineIndex = 0; lineIndex < bodyLineCount; lineIndex++)
+            {
+                stringBuilder
+                    .Append("        var x")
+                    .Append(partIndex.ToString(CultureInfo.InvariantCulture))
+                    .Append('_')
+                    .Append(lineIndex.ToString(CultureInfo.InvariantCulture))
+                    .AppendLine(" = 0;");
+            }
+
+            stringBuilder.AppendLine("    }");
+        }
+
         stringBuilder.AppendLine("}");
         return stringBuilder.ToString();
     }

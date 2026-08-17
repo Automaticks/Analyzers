@@ -38,6 +38,56 @@ public class FileNameMismatchCodeFixProviderTests
         await Assert.That(documentName).IsEqualTo("DialogView.axaml.cs");
     }
 
+    /// <summary>Verifies a document inside a directory keeps that directory after renaming.</summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task ApplyFix_FileInsideDirectory_KeepsDirectory(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp;
+                              public class Widget { }
+                              """;
+
+        var analyzer = new FileNameMismatchAnalyzer();
+        var provider = new FileNameMismatchCodeFixProvider();
+        var request = new CodeFixRequest
+        {
+            Analyzer = analyzer,
+            FilePath = "C:\\repo\\src\\Gadget.cs",
+            Provider = provider,
+            Source = source
+        };
+        var fixedName = await CodeFixTestRunner.GetFixedDocumentNameAsync(request, cancellationToken);
+
+        await Assert.That(fixedName).IsEqualTo("Widget.cs");
+    }
+
+    /// <summary>Verifies a file name with no extension yields the bare type name.</summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task ApplyFix_FileWithoutExtension_UsesBareTypeName(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp;
+                              public class Widget { }
+                              """;
+
+        var analyzer = new FileNameMismatchAnalyzer();
+        var provider = new FileNameMismatchCodeFixProvider();
+        var request = new CodeFixRequest
+        {
+            Analyzer = analyzer,
+            FilePath = "Gadget",
+            Provider = provider,
+            Source = source
+        };
+        var fixedName = await CodeFixTestRunner.GetFixedDocumentNameAsync(request, cancellationToken);
+
+        await Assert.That(fixedName).IsEqualTo("Widget");
+    }
+
     /// <summary>
     ///     Tests that a mismatched delegate file is renamed to match the delegate name.
     /// </summary>
