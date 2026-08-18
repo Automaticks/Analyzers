@@ -108,6 +108,25 @@ public class FileLineCoverageAnalyzerTests
         await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTST013")).IsFalse();
     }
     /// <summary>
+    ///     Tests that Analyze_ReportWithoutLines_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ReportWithoutLines_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string report = """
+                              <coverage version="1.9"><packages><package name="MyApp"><classes>
+                                <class name="MyApp.Foo" filename="MyApp/Foo.cs"><lines></lines></class>
+                              </classes></package></packages></coverage>
+                              """;
+
+        var diagnostics = await AnalyzeWithReportAsync(report, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTST013")).IsFalse();
+    }
+
+    /// <summary>
     ///     Tests that Analyze_WithoutReport_ReportsNoDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>

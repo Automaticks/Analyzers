@@ -163,6 +163,29 @@ public class UnusedUsingDirectiveAnalyzerTests
     }
 
     /// <summary>
+    ///     Tests that Analyze_ImportOfOwnNamespace_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ImportOfOwnNamespace_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using MyApp.Core;
+
+                              namespace MyApp.Core;
+                              public class Foo {
+                                  public int Value => 1;
+                              }
+                              """;
+
+        var analyzer = new UnusedUsingDirectiveAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS048")).IsTrue();
+    }
+
+    /// <summary>
     ///     Tests that Analyze_ImportUsedByTypeOutsideAnyNamespace_ReportsNoDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>

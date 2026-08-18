@@ -10,6 +10,28 @@ public class AsyncCancellationTokenAnalyzerTests
 {
 
     /// <summary>
+    ///     Tests that Analyze_ArrayReturnTypeMethod_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ArrayReturnTypeMethod_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo {
+                                      public int[] Values() => null!;
+                                  }
+                              }
+                              """;
+
+        var analyzer = new AsyncCancellationTokenAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTA008")).IsFalse();
+    }
+
+    /// <summary>
     ///     Tests that Analyze_ExplicitImplementationOfExternalInterfaceMethod_ReportsNoDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
