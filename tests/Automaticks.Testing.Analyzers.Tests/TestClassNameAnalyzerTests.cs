@@ -1,4 +1,3 @@
-using Automaticks.Testing;
 using System.Threading;
 using System.Threading.Tasks;
 

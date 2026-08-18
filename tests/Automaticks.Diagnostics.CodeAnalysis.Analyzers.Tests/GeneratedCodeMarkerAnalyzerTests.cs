@@ -1,5 +1,4 @@
-﻿using Automaticks.Diagnostics.CodeAnalysis;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 
 namespace Automaticks.Diagnostics.CodeAnalysis.Analyzers.Tests;

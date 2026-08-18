@@ -1,5 +1,4 @@
-﻿using Automaticks.EntityFrameworkCore;
-using Automaticks.Linq;
+﻿using Automaticks.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;

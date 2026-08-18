@@ -1,5 +1,4 @@
-﻿using Automaticks.Threading.Tasks;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 
 namespace Automaticks.Threading.Tasks.Analyzers.Tests;

@@ -1,4 +1,3 @@
-using Automaticks.CommunityToolkit.Mvvm;
 using System.Threading;
 using System.Threading.Tasks;
 

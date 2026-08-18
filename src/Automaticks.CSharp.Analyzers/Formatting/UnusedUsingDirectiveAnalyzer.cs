@@ -59,10 +59,18 @@ public sealed class UnusedUsingDirectiveAnalyzer : DiagnosticAnalyzer
         {
             var namespaceName = usingDirective.Name!.ToString();
             names.Add(namespaceName);
-            pending.Add(namespaceName);
+
+            if (!HasEnclosingNamespaceImport(compilationUnit, namespaceName))
+            {
+                pending.Add(namespaceName);
+            }
         }
 
-        var usedNamespaces = CollectUsedNamespaces(compilationUnit, context.SemanticModel, pending);
+        var usedNamespaces = new HashSet<string>(StringComparer.Ordinal);
+        if (pending.Count > 0)
+        {
+            usedNamespaces = CollectUsedNamespaces(compilationUnit, context.SemanticModel, pending);
+        }
 
         for (var index = 0; index < regularUsings.Count; index++)
         {
@@ -100,7 +108,7 @@ public sealed class UnusedUsingDirectiveAnalyzer : DiagnosticAnalyzer
 
         foreach (var node in compilationUnit.DescendantNodes(node => node is not UsingDirectiveSyntax))
         {
-            if (node is not SimpleNameSyntax simpleName)
+            if (node is not SimpleNameSyntax simpleName || HasInferredTypeKeyword(simpleName))
             {
                 continue;
             }
@@ -155,6 +163,43 @@ public sealed class UnusedUsingDirectiveAnalyzer : DiagnosticAnalyzer
         }
 
         return name;
+    }
+
+    /// <summary>
+    ///     A namespace that encloses every namespace declared in the file is already in scope,
+    ///     so importing it is always redundant. Detected syntactically, with no symbol lookup.
+    /// </summary>
+    private bool HasEnclosingNamespaceImport(CompilationUnitSyntax compilationUnit, string namespaceName)
+    {
+        var declared = false;
+
+        foreach (var member in compilationUnit.Members)
+        {
+            if (member is not BaseNamespaceDeclarationSyntax namespaceDeclaration)
+            {
+                return false;
+            }
+
+            var declaredName = namespaceDeclaration.Name.ToString();
+            if (declaredName != namespaceName
+                && !declaredName.StartsWith(namespaceName + ".", StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            declared = true;
+        }
+
+        return declared;
+    }
+
+    /// <summary>
+    ///     'var' binds to the inferred type, which would otherwise credit that type's namespace
+    ///     even though the keyword needs no import. Checked syntactically to skip the symbol lookup.
+    /// </summary>
+    private bool HasInferredTypeKeyword(SimpleNameSyntax simpleName)
+    {
+        return simpleName is IdentifierNameSyntax { IsVar: true };
     }
 
     /// <summary>

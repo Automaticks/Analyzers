@@ -1,5 +1,4 @@
-﻿using Automaticks.CSharp;
-using Automaticks.CSharp.Complexity;
+﻿using Automaticks.CSharp.Complexity;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
