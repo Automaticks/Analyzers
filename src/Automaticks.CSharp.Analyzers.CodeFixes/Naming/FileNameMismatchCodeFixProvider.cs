@@ -32,12 +32,8 @@ public sealed class FileNameMismatchCodeFixProvider : CodeFixProvider
     /// <inheritdoc />
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
-        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken);
-        var filePath = context.Document.FilePath;
-        if (root is null || filePath is null || filePath.Length == 0)
-        {
-            return;
-        }
+        var root = (await context.Document.GetSyntaxRootAsync(context.CancellationToken))!;
+        var filePath = root.SyntaxTree.FilePath;
 
         foreach (var diagnostic in context.Diagnostics)
         {

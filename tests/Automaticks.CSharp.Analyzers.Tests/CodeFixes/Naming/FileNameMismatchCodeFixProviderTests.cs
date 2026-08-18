@@ -201,6 +201,33 @@ public class FileNameMismatchCodeFixProviderTests
     }
 
     /// <summary>
+    ///     Tests that a type whose identifier is missing offers no rename.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task CountOfferedActions_TypeWithMissingIdentifier_ReportsZero(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class { }
+                              }
+                              """;
+
+        var analyzer = new FileNameMismatchAnalyzer();
+        var provider = new FileNameMismatchCodeFixProvider();
+        var request = new CodeFixRequest
+        {
+            Analyzer = analyzer,
+            Provider = provider,
+            Source = source,
+            FilePath = "Other.cs"
+        };
+        var offered = await CodeFixTestRunner.CountOfferedActionsAsync(request, cancellationToken);
+
+        await Assert.That(offered).IsEqualTo(0);
+    }
+    /// <summary>
     ///     Tests that the provider always exposes the batch Fix All provider.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
