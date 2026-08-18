@@ -10,6 +10,7 @@ namespace Automaticks.Testing.Coverage;
 public sealed class FileCoverage
 {
     private readonly HashSet<int> _countedLines;
+    private readonly HashSet<int> _coveredLineNumbers;
     private readonly Dictionary<string, MethodCoverage> _methods;
 
     /// <summary>
@@ -41,23 +42,25 @@ public sealed class FileCoverage
         ReportedPath = reportedPath;
         _methods = new Dictionary<string, MethodCoverage>(StringComparer.Ordinal);
         _countedLines = new HashSet<int>();
+        _coveredLineNumbers = new HashSet<int>();
     }
 
     /// <summary>
-    ///     Records one reported line against the file totals, ignoring repeats of a line already
-    ///     seen. Cobertura lists the same line both inside a method and at class level.
+    ///     Records one reported line against the file totals. A line counts once towards the
+    ///     total, and counts as covered when any report shows it executed. Cobertura repeats a
+    ///     line at class and method level, and a solution-wide run emits one report per test
+    ///     project, so the same line arrives several times with different hit counts.
     /// </summary>
     /// <param name="lineNumber">The one-based source line number.</param>
     /// <param name="hits">The number of times the line was executed.</param>
     public void AddLine(int lineNumber, int hits)
     {
-        if (!_countedLines.Add(lineNumber))
+        if (_countedLines.Add(lineNumber))
         {
-            return;
+            TotalLines += 1;
         }
 
-        TotalLines += 1;
-        if (hits > 0)
+        if (hits > 0 && _coveredLineNumbers.Add(lineNumber))
         {
             CoveredLines += 1;
         }

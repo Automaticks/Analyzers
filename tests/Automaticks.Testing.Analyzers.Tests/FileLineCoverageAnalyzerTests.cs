@@ -71,6 +71,43 @@ public class FileLineCoverageAnalyzerTests
     }
 
     /// <summary>
+    ///     Tests that Analyze_LineCoveredOnlyInSecondReport_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_LineCoveredOnlyInSecondReport_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string unexercised = """
+                                   <coverage version="1.9"><packages><package name="MyApp"><classes>
+                                     <class name="MyApp.Foo" filename="MyApp/Foo.cs"><lines>
+                                       <line number="3" hits="0" /><line number="4" hits="0" />
+                                       <line number="5" hits="0" /><line number="6" hits="0" />
+                                       <line number="7" hits="0" /><line number="8" hits="0" />
+                                     </lines></class>
+                                   </classes></package></packages></coverage>
+                                   """;
+        const string exercised = """
+                                 <coverage version="1.9"><packages><package name="MyApp"><classes>
+                                   <class name="MyApp.Foo" filename="MyApp/Foo.cs"><lines>
+                                     <line number="3" hits="1" /><line number="4" hits="1" />
+                                     <line number="5" hits="1" /><line number="6" hits="1" />
+                                     <line number="7" hits="1" /><line number="8" hits="1" />
+                                   </lines></class>
+                                 </classes></package></packages></coverage>
+                                 """;
+
+        var reports = new[]
+        {
+            unexercised,
+            exercised,
+        };
+
+        var diagnostics = await AnalyzeWithReportsAsync(reports, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTST013")).IsFalse();
+    }
+    /// <summary>
     ///     Tests that Analyze_WithoutReport_ReportsNoDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -98,6 +135,27 @@ public class FileLineCoverageAnalyzerTests
         {
             additionalText,
         };
+        var options = new AnalysisOptions
+        {
+            FilePath = "C:/repo/MyApp/Foo.cs",
+            AdditionalFiles = additionalFiles,
+        };
+        return await AnalyzerTestRunner.AnalyzeAsync(analyzer, Source, options, cancellationToken);
+    }
+    private async Task<ImmutableArray<Diagnostic>> AnalyzeWithReportsAsync(
+        IReadOnlyList<string> reportContents,
+        CancellationToken cancellationToken)
+    {
+        var analyzer = new FileLineCoverageAnalyzer();
+        var additionalFiles = new List<AdditionalText>();
+        for (var index = 0; index < reportContents.Count; index++)
+        {
+            var additionalText = new TestAdditionalText(
+                $"C:/repo/artifacts/coverage{index}.cobertura.xml",
+                reportContents[index]);
+            additionalFiles.Add(additionalText);
+        }
+
         var options = new AnalysisOptions
         {
             FilePath = "C:/repo/MyApp/Foo.cs",
