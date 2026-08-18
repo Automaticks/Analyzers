@@ -23,6 +23,7 @@ dotnet add package Automaticks.Testing.Analyzers
 | `ATXTST010` | Ambient dependency must be reached through an injectable seam | Testing | Warning | Analyzer |
 | `ATXTST012` | Public member must be covered by a test | Testing | Warning | Analyzer |
 | `ATXTST013` | File line coverage must meet the configured minimum | Testing | Warning | Analyzer |
+| `ATXTST014` | TimeProvider.System is not allowed in tests | Testing | Warning | Analyzer |
 
 ## Coverage rules
 

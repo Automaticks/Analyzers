@@ -16,6 +16,11 @@ dotnet add package Automaticks.Threading.Tasks.Analyzers
 |---|---|---|---|---|
 | `ATXTA008` | Async-returning methods must accept CancellationToken as the last parameter | Threading.Tasks | Error | Analyzer |
 | `ATXTA010` | Unobserved Task invocation | Threading.Tasks | Error | Analyzer, CodeFix |
+| `ATXTA011` | CancellationToken parameter is never used | Threading.Tasks | Warning | Analyzer |
+
+`ATXTA008` checks only the declared type of the last parameter. `ATXTA011` reads the body, so a
+token that is accepted to satisfy the signature and then ignored is still reported. Methods
+carrying a test attribute are exempt, because test frameworks inject the token.
 
 ## Code fixes
 

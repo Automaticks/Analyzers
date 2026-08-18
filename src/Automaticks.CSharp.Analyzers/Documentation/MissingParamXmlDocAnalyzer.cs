@@ -70,11 +70,13 @@ public sealed class MissingParamXmlDocAnalyzer : DiagnosticAnalyzer
             return;
         }
 
+        var documentedNames = DocumentationCommentText.CollectParamNames(node);
+
         foreach (var parameter in parameters)
         {
             var paramName = parameter.Identifier.ValueText;
 
-            if (!DocumentationCommentText.HasParamElement(node, paramName))
+            if (!documentedNames.Contains(paramName))
             {
                 var memberName = GetMemberName(node);
                 context.ReportDiagnostic(
@@ -128,12 +130,7 @@ public sealed class MissingParamXmlDocAnalyzer : DiagnosticAnalyzer
             return delegateDecl.Identifier.ValueText;
         }
 
-        if (node is IndexerDeclarationSyntax)
-        {
-            return "this[]";
-        }
-
-        return "member";
+        return "this[]";
     }
 
     private SyntaxTokenList GetModifiers(SyntaxNode node)
@@ -148,12 +145,7 @@ public sealed class MissingParamXmlDocAnalyzer : DiagnosticAnalyzer
             return delegateDecl.Modifiers;
         }
 
-        if (node is IndexerDeclarationSyntax indexer)
-        {
-            return indexer.Modifiers;
-        }
-
-        return SyntaxFactory.TokenList();
+        return (node as IndexerDeclarationSyntax)!.Modifiers;
     }
 
     private SeparatedSyntaxList<ParameterSyntax> GetParameters(SyntaxNode node)
@@ -173,12 +165,7 @@ public sealed class MissingParamXmlDocAnalyzer : DiagnosticAnalyzer
             return delegateDecl.ParameterList.Parameters;
         }
 
-        if (node is IndexerDeclarationSyntax indexer)
-        {
-            return indexer.ParameterList.Parameters;
-        }
-
-        return SyntaxFactory.SeparatedList<ParameterSyntax>();
+        return (node as IndexerDeclarationSyntax)!.ParameterList.Parameters;
     }
 
     private bool HasExplicitInterfaceSpecifier(SyntaxNode node)

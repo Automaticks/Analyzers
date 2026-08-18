@@ -45,11 +45,7 @@ public sealed class UnusedUsingDirectiveAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeCompilationUnit(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not CompilationUnitSyntax compilationUnit)
-        {
-            return;
-        }
-
+        var compilationUnit = (context.Node as CompilationUnitSyntax)!;
         var regularUsings = CollectRegularUsings(compilationUnit);
 
         if (regularUsings.Count == 0)
@@ -57,15 +53,30 @@ public sealed class UnusedUsingDirectiveAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        var usedNamespaces = CollectUsedNamespaces(compilationUnit, context.SemanticModel);
-
+        var names = new List<string>(regularUsings.Count);
+        var pending = new HashSet<string>(StringComparer.Ordinal);
         foreach (var usingDirective in regularUsings)
         {
-            var namespaceName = usingDirective.Name?.ToString() ?? string.Empty;
+            var namespaceName = usingDirective.Name!.ToString();
+            names.Add(namespaceName);
 
-            if (!usedNamespaces.Contains(namespaceName))
+            if (!HasEnclosingNamespaceImport(compilationUnit, namespaceName))
             {
-                context.ReportDiagnostic(Diagnostic.Create(Rule, usingDirective.GetLocation(), namespaceName));
+                pending.Add(namespaceName);
+            }
+        }
+
+        var usedNamespaces = new HashSet<string>(StringComparer.Ordinal);
+        if (pending.Count > 0)
+        {
+            usedNamespaces = CollectUsedNamespaces(compilationUnit, context.SemanticModel, pending);
+        }
+
+        for (var index = 0; index < regularUsings.Count; index++)
+        {
+            if (!usedNamespaces.Contains(names[index]))
+            {
+                context.ReportDiagnostic(Diagnostic.Create(Rule, regularUsings[index].GetLocation(), names[index]));
             }
         }
     }
@@ -89,48 +100,123 @@ public sealed class UnusedUsingDirectiveAnalyzer : DiagnosticAnalyzer
 
     private HashSet<string> CollectUsedNamespaces(
         CompilationUnitSyntax compilationUnit,
-        SemanticModel semanticModel)
+        SemanticModel semanticModel,
+        HashSet<string> pending)
     {
         var usedNamespaces = new HashSet<string>(StringComparer.Ordinal);
+        var namespaceNames = new Dictionary<INamespaceSymbol, string>(SymbolEqualityComparer.Default);
 
-        foreach (var node in compilationUnit.DescendantNodes())
+        foreach (var node in compilationUnit.DescendantNodes(node => node is not UsingDirectiveSyntax))
         {
-            if (node is not SimpleNameSyntax simpleName || HasUsingDirectiveAncestor(node))
+            if (node is not SimpleNameSyntax simpleName || HasInferredTypeKeyword(simpleName))
             {
                 continue;
             }
 
-            var symbolInfo = semanticModel.GetSymbolInfo(simpleName);
-            var symbol = symbolInfo.Symbol;
+            var name = GetNamespaceName(simpleName, semanticModel, namespaceNames);
 
-            if (symbol is null && symbolInfo.CandidateSymbols.Length > 0)
+            if (name is null || !pending.Remove(name))
             {
-                symbol = symbolInfo.CandidateSymbols[0];
+                continue;
             }
 
-            if (symbol?.ContainingNamespace is { IsGlobalNamespace: false } containingNamespace)
+            usedNamespaces.Add(name);
+
+            if (pending.Count == 0)
             {
-                usedNamespaces.Add(containingNamespace.ToDisplayString());
+                break;
             }
         }
 
         return usedNamespaces;
     }
 
-    private bool HasUsingDirectiveAncestor(SyntaxNode node)
+    private string? GetNamespaceName(
+        SimpleNameSyntax simpleName,
+        SemanticModel semanticModel,
+        Dictionary<INamespaceSymbol, string> namespaceNames)
     {
-        var current = node.Parent;
+        var symbolInfo = semanticModel.GetSymbolInfo(simpleName);
+        var symbol = symbolInfo.Symbol;
 
-        while (current is not null)
+        if (symbol is null && symbolInfo.CandidateSymbols.Length > 0)
         {
-            if (current is UsingDirectiveSyntax)
-            {
-                return true;
-            }
-
-            current = current.Parent;
+            symbol = symbolInfo.CandidateSymbols[0];
         }
 
-        return false;
+        if (HasQualifiedReference(simpleName, symbol))
+        {
+            return null;
+        }
+
+        var containingNamespace = symbol?.ContainingNamespace;
+
+        if (containingNamespace is null || containingNamespace.IsGlobalNamespace)
+        {
+            return null;
+        }
+
+        if (!namespaceNames.TryGetValue(containingNamespace, out var name))
+        {
+            name = containingNamespace.ToDisplayString();
+            namespaceNames.Add(containingNamespace, name);
+        }
+
+        return name;
+    }
+
+    /// <summary>
+    ///     A namespace that encloses every namespace declared in the file is already in scope,
+    ///     so importing it is always redundant. Detected syntactically, with no symbol lookup.
+    /// </summary>
+    private bool HasEnclosingNamespaceImport(CompilationUnitSyntax compilationUnit, string namespaceName)
+    {
+        var declared = false;
+
+        foreach (var member in compilationUnit.Members)
+        {
+            if (member is not BaseNamespaceDeclarationSyntax namespaceDeclaration)
+            {
+                return false;
+            }
+
+            var declaredName = namespaceDeclaration.Name.ToString();
+            if (declaredName != namespaceName
+                && !declaredName.StartsWith(namespaceName + ".", StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            declared = true;
+        }
+
+        return declared;
+    }
+
+    /// <summary>
+    ///     'var' binds to the inferred type, which would otherwise credit that type's namespace
+    ///     even though the keyword needs no import. Checked syntactically to skip the symbol lookup.
+    /// </summary>
+    private bool HasInferredTypeKeyword(SimpleNameSyntax simpleName)
+    {
+        return simpleName is IdentifierNameSyntax { IsVar: true };
+    }
+
+    /// <summary>
+    ///     A name that is already qualified resolves without the using directive, and a member
+    ///     name never needs one. Extension methods are the exception: they do rely on the import.
+    /// </summary>
+    private bool HasQualifiedReference(SimpleNameSyntax simpleName, ISymbol? symbol)
+    {
+        var parent = simpleName.Parent;
+
+        if (parent is QualifiedNameSyntax qualifiedName && qualifiedName.Right == simpleName)
+        {
+            return true;
+        }
+
+        return parent is MemberAccessExpressionSyntax memberAccess
+               && memberAccess.Name == simpleName
+               && symbol is not IMethodSymbol { IsExtensionMethod: true };
     }
 }

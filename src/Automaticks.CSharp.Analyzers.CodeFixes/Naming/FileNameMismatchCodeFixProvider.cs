@@ -2,7 +2,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System;
 using System.Collections.Immutable;
 using System.Composition;
 using System.IO;
@@ -33,12 +32,8 @@ public sealed class FileNameMismatchCodeFixProvider : CodeFixProvider
     /// <inheritdoc />
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
-        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken);
-        var filePath = context.Document.FilePath;
-        if (root is null || filePath is null || filePath.Length == 0)
-        {
-            return;
-        }
+        var root = (await context.Document.GetSyntaxRootAsync(context.CancellationToken))!;
+        var filePath = root.SyntaxTree.FilePath;
 
         foreach (var diagnostic in context.Diagnostics)
         {
@@ -75,12 +70,7 @@ public sealed class FileNameMismatchCodeFixProvider : CodeFixProvider
             return typeDeclaration.Identifier.ValueText;
         }
 
-        if (declaration is DelegateDeclarationSyntax delegateDeclaration)
-        {
-            return delegateDeclaration.Identifier.ValueText;
-        }
-
-        return string.Empty;
+        return (declaration as DelegateDeclarationSyntax)!.Identifier.ValueText;
     }
 
     private Task<Solution> RenameFileAsync(
@@ -88,6 +78,7 @@ public sealed class FileNameMismatchCodeFixProvider : CodeFixProvider
         string newFileName,
         CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         var solution = document.Project.Solution;
         var directory = Path.GetDirectoryName(document.FilePath);
         var updated = solution.WithDocumentName(document.Id, newFileName);

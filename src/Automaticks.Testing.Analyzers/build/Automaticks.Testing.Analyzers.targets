@@ -32,4 +32,12 @@
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="IsCoverageReport" />
     </ItemGroup>
 
+    <!--
+        ATXTST014 only applies to test code, so the analyzer needs to know whether the project it is
+        compiling is a test project.
+    -->
+    <ItemGroup>
+        <CompilerVisibleProperty Include="IsTestProject" />
+    </ItemGroup>
+
 </Project>

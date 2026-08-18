@@ -2,7 +2,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Text;
 using System.Collections.Immutable;
 using System.Composition;
 using System.Threading;
@@ -32,21 +31,13 @@ public sealed class MissingParamXmlDocCodeFixProvider : CodeFixProvider
     /// <inheritdoc />
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
-        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken);
-        if (root is null)
-        {
-            return;
-        }
+        var root = (await context.Document.GetSyntaxRootAsync(context.CancellationToken))!;
 
         foreach (var diagnostic in context.Diagnostics)
         {
             var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
-            var parameter = node.FirstAncestorOrSelf<ParameterSyntax>();
-            var member = parameter?.FirstAncestorOrSelf<MemberDeclarationSyntax>();
-            if (parameter is null || member is null)
-            {
-                continue;
-            }
+            var parameter = node.FirstAncestorOrSelf<ParameterSyntax>()!;
+            var member = parameter.FirstAncestorOrSelf<MemberDeclarationSyntax>()!;
 
             var parameterName = parameter.Identifier.ValueText;
             var action = CodeAction.Create(

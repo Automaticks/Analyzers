@@ -105,8 +105,8 @@ public readonly struct MemberRank : IComparable<MemberRank>
         }
 
         var nameComparison = string.Compare(
-            NormalizeNameForComparison(_name),
-            NormalizeNameForComparison(other._name),
+            MemberRankCalculator.NormalizeNameForComparison(_name),
+            MemberRankCalculator.NormalizeNameForComparison(other._name),
             StringComparison.OrdinalIgnoreCase);
         return nameComparison;
     }
@@ -176,6 +176,4 @@ public readonly struct MemberRank : IComparable<MemberRank>
     {
         return left.CompareTo(right) >= 0;
     }
-
-    private static string NormalizeNameForComparison(string name) => name.Replace('_', '\x01');
 }

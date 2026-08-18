@@ -2,6 +2,8 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Immutable;
 
 namespace Automaticks.Testing.Testability;
@@ -14,10 +16,21 @@ namespace Automaticks.Testing.Testability;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class AmbientDependencyAnalyzer : DiagnosticAnalyzer
 {
+    private static readonly ImmutableHashSet<string> AmbientTypeNames;
     private static readonly DiagnosticDescriptor Rule;
 
     static AmbientDependencyAnalyzer()
     {
+        var ambientTypeNames = ImmutableHashSet.CreateBuilder<string>(StringComparer.Ordinal);
+        ambientTypeNames.Add("DateTime");
+        ambientTypeNames.Add("DateTimeOffset");
+        ambientTypeNames.Add("Directory");
+        ambientTypeNames.Add("Environment");
+        ambientTypeNames.Add("File");
+        ambientTypeNames.Add("Guid");
+        ambientTypeNames.Add("Thread");
+        AmbientTypeNames = ambientTypeNames.ToImmutable();
+
         var rule = new DiagnosticDescriptor(
             DiagnosticIds.Testing.AmbientDependency,
             "Ambient dependency must be reached through an injectable seam",
@@ -34,16 +47,18 @@ public sealed class AmbientDependencyAnalyzer : DiagnosticAnalyzer
     {
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
         context.EnableConcurrentExecution();
-        context.RegisterSyntaxNodeAction(AnalyzeMemberAccess, SyntaxKind.SimpleMemberAccessExpression);
-        context.RegisterSyntaxNodeAction(AnalyzeObjectCreation, SyntaxKind.ObjectCreationExpression);
+        context.RegisterCompilationStartAction(RegisterPerCompilation);
     }
 
     /// <inheritdoc />
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
 
-    private void AnalyzeMemberAccess(SyntaxNodeAnalysisContext context)
+    private void AnalyzeMemberAccess(SyntaxNodeAnalysisContext context, ConcurrentDictionary<SyntaxTree, bool> aliasTrees)
     {
-        if (context.Node is not MemberAccessExpressionSyntax memberAccess)
+        var memberAccess = (context.Node as MemberAccessExpressionSyntax)!;
+
+        if (!AmbientTypeNames.Contains(GetRightmostName(memberAccess.Expression))
+            && !HasUsingAlias(context.Node.SyntaxTree, aliasTrees))
         {
             return;
         }
@@ -66,10 +81,7 @@ public sealed class AmbientDependencyAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeObjectCreation(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not ObjectCreationExpressionSyntax creation)
-        {
-            return;
-        }
+        var creation = (context.Node as ObjectCreationExpressionSyntax)!;
 
         if (context.SemanticModel.GetSymbolInfo(creation).Symbol is not IMethodSymbol constructor)
         {
@@ -109,6 +121,11 @@ public sealed class AmbientDependencyAnalyzer : DiagnosticAnalyzer
             return null;
         }
 
+        if (!AmbientTypeNames.Contains(symbol.ContainingType.Name))
+        {
+            return null;
+        }
+
         switch (symbol.ContainingType.ToDisplayString())
         {
             case "System.DateTime":
@@ -128,8 +145,59 @@ public sealed class AmbientDependencyAnalyzer : DiagnosticAnalyzer
         }
     }
 
+    private string GetRightmostName(ExpressionSyntax expression)
+    {
+        if (expression is MemberAccessExpressionSyntax memberAccess)
+        {
+            return memberAccess.Name.Identifier.ValueText;
+        }
+
+        if (expression is IdentifierNameSyntax identifier)
+        {
+            return identifier.Identifier.ValueText;
+        }
+
+        return string.Empty;
+    }
+
+    private bool HasAliasInTree(SyntaxTree tree)
+    {
+        var root = tree.GetRoot();
+
+        foreach (var node in root.DescendantNodes(candidate => candidate is CompilationUnitSyntax or BaseNamespaceDeclarationSyntax))
+        {
+            if (node is UsingDirectiveSyntax { Alias: not null })
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private bool HasClockMemberName(string name)
     {
         return name == "Now" || name == "UtcNow" || name == "Today";
+    }
+
+    private bool HasUsingAlias(SyntaxTree tree, ConcurrentDictionary<SyntaxTree, bool> aliasTrees)
+    {
+        if (aliasTrees.TryGetValue(tree, out var hasAlias))
+        {
+            return hasAlias;
+        }
+
+        hasAlias = HasAliasInTree(tree);
+        aliasTrees[tree] = hasAlias;
+        return hasAlias;
+    }
+
+    private void RegisterPerCompilation(CompilationStartAnalysisContext compilationContext)
+    {
+        var aliasTrees = new ConcurrentDictionary<SyntaxTree, bool>();
+        compilationContext.RegisterSyntaxNodeAction(
+            context => AnalyzeMemberAccess(context, aliasTrees),
+            SyntaxKind.SimpleMemberAccessExpression);
+        compilationContext.RegisterSyntaxNodeAction(AnalyzeObjectCreation, SyntaxKind.ObjectCreationExpression);
     }
 }

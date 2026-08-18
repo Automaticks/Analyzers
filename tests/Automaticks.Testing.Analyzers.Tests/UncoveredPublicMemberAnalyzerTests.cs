@@ -48,6 +48,30 @@ public class UncoveredPublicMemberAnalyzerTests
                                   """;
 
     /// <summary>
+    ///     Tests that Analyze_MethodMissingFromReport_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_MethodMissingFromReport_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string report = """
+                              <coverage version="1.9"><packages><package name="MyApp"><classes>
+                                <class name="MyApp.Foo" filename="MyApp/Foo.cs">
+                                  <methods><method name="NotInSource" signature="()">
+                                    <lines><line number="3" hits="0" /></lines>
+                                  </method></methods>
+                                  <lines><line number="3" hits="0" /></lines>
+                                </class>
+                              </classes></package></packages></coverage>
+                              """;
+
+        var diagnostics = await AnalyzeWithReportAsync(report, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTST012")).IsFalse();
+    }
+
+    /// <summary>
     ///     Tests that Analyze_MethodWithCoverage_ReportsNoDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>

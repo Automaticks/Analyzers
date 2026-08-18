@@ -1,5 +1,4 @@
 ﻿
-using Automaticks.CSharp;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
@@ -75,6 +74,32 @@ public class ClassLineLimitAnalyzerTests
         var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
         await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, DiagnosticIds.CSharp.ClassLineLimit)).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_ClassWithBlockCommentAndBlankLines_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ClassWithBlockCommentAndBlankLines_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp;
+                              public class Foo
+                              {
+                                  /* a block comment
+                                     spanning lines */
+
+                                  // a line comment
+                                  public int Bar() { return 1; }
+                              }
+                              """;
+
+        var analyzer = new ClassLineLimitAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS034")).IsFalse();
     }
 
     /// <summary>
@@ -209,6 +234,22 @@ public class ClassLineLimitAnalyzerTests
         var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, sourceFiles, cancellationToken);
 
         await Assert.That(DiagnosticCollectionAssertions.CountId(diagnostics, DiagnosticIds.CSharp.ClassLineLimit)).IsEqualTo(1);
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_PartialClassTwiceInSameFile_ReportsSingleDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_PartialClassTwiceInSameFile_ReportsSingleDiagnostic(CancellationToken cancellationToken)
+    {
+        var source = BuildPartialClassTwiceInOneFile(300);
+
+        var analyzer = new ClassLineLimitAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, DiagnosticIds.CSharp.ClassLineLimit)).IsTrue();
     }
 
     /// <summary>
@@ -411,6 +452,32 @@ public class ClassLineLimitAnalyzerTests
 
         stringBuilder.AppendLine("        }");
         stringBuilder.AppendLine("    }");
+        stringBuilder.AppendLine("}");
+        return stringBuilder.ToString();
+    }
+
+    private string BuildPartialClassTwiceInOneFile(int bodyLineCount)
+    {
+        var stringBuilder = new StringBuilder();
+        stringBuilder.AppendLine("namespace MyApp");
+        stringBuilder.AppendLine("{");
+        for (var partIndex = 0; partIndex < 2; partIndex++)
+        {
+            stringBuilder.AppendLine("    public partial class Foo");
+            stringBuilder.AppendLine("    {");
+            for (var lineIndex = 0; lineIndex < bodyLineCount; lineIndex++)
+            {
+                stringBuilder
+                    .Append("        var x")
+                    .Append(partIndex.ToString(CultureInfo.InvariantCulture))
+                    .Append('_')
+                    .Append(lineIndex.ToString(CultureInfo.InvariantCulture))
+                    .AppendLine(" = 0;");
+            }
+
+            stringBuilder.AppendLine("    }");
+        }
+
         stringBuilder.AppendLine("}");
         return stringBuilder.ToString();
     }

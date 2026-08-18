@@ -9,6 +9,9 @@ public readonly struct CodeFixRequest
     /// <summary>Gets the analyzer that produces the diagnostic being fixed.</summary>
     public DiagnosticAnalyzer Analyzer { get; init; }
 
+    /// <summary>Gets the file name to use for the document under test.</summary>
+    public string? DocumentName { get; init; }
+
     /// <summary>Gets the equivalence key selecting one of several offered fixes.</summary>
     public string? EquivalenceKey { get; init; }
 
