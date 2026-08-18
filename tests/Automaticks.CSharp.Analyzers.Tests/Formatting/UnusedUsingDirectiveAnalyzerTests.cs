@@ -1,5 +1,4 @@
-﻿using Automaticks.CSharp;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 
 namespace Automaticks.CSharp.Analyzers.Tests.Formatting;
@@ -29,6 +28,76 @@ public class UnusedUsingDirectiveAnalyzerTests
         var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
         await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS048")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_ExtensionMethodUsage_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ExtensionMethodUsage_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System.Collections.Generic;
+                              using System.Linq;
+
+                              namespace MyApp;
+                              public class Foo {
+                                  public IEnumerable<int> Filter(List<int> values) => values.Where(value => value > 0);
+                              }
+                              """;
+
+        var analyzer = new UnusedUsingDirectiveAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS048")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_FullyQualifiedNameOnly_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_FullyQualifiedNameOnly_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System.Text;
+
+                              namespace MyApp;
+                              public class Foo {
+                                  public System.Text.StringBuilder Builder { get; set; }
+                              }
+                              """;
+
+        var analyzer = new UnusedUsingDirectiveAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS048")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_FullyQualifiedStaticMemberAccess_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_FullyQualifiedStaticMemberAccess_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System.Text;
+
+                              namespace MyApp;
+                              public class Foo {
+                                  public string Value() => System.Text.Encoding.UTF8.EncodingName;
+                              }
+                              """;
+
+        var analyzer = new UnusedUsingDirectiveAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS048")).IsTrue();
     }
 
     /// <summary>
@@ -212,7 +281,7 @@ public class UnusedUsingDirectiveAnalyzerTests
 
                               namespace MyApp;
                               public class Foo {
-                                  public System.Text.StringBuilder Builder { get; set; }
+                                  public StringBuilder Builder { get; set; }
                               }
                               """;
 

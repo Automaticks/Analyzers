@@ -1,5 +1,4 @@
-﻿using Automaticks.CSharp;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 
 namespace Automaticks.CSharp.Analyzers.Tests.Complexity;

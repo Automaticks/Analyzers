@@ -136,6 +136,11 @@ public sealed class UnusedUsingDirectiveAnalyzer : DiagnosticAnalyzer
             symbol = symbolInfo.CandidateSymbols[0];
         }
 
+        if (HasQualifiedReference(simpleName, symbol))
+        {
+            return null;
+        }
+
         var containingNamespace = symbol?.ContainingNamespace;
 
         if (containingNamespace is null || containingNamespace.IsGlobalNamespace)
@@ -150,5 +155,23 @@ public sealed class UnusedUsingDirectiveAnalyzer : DiagnosticAnalyzer
         }
 
         return name;
+    }
+
+    /// <summary>
+    ///     A name that is already qualified resolves without the using directive, and a member
+    ///     name never needs one. Extension methods are the exception: they do rely on the import.
+    /// </summary>
+    private bool HasQualifiedReference(SimpleNameSyntax simpleName, ISymbol? symbol)
+    {
+        var parent = simpleName.Parent;
+
+        if (parent is QualifiedNameSyntax qualifiedName && qualifiedName.Right == simpleName)
+        {
+            return true;
+        }
+
+        return parent is MemberAccessExpressionSyntax memberAccess
+               && memberAccess.Name == simpleName
+               && symbol is not IMethodSymbol { IsExtensionMethod: true };
     }
 }
