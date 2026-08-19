@@ -124,7 +124,7 @@ Some fixes are deliberately narrower than the rule:
 |---|---|
 | `ATXCS060` | Array creation such as `new int[] { }`, which has no valid brace-free form |
 | `ATXCS061` | Fields and static members, which cannot become a contract without being deleted |
-| `ATXCS070` | Static fields and properties must only exist in static classes | CSharp | Error | Analyzer |
+| `ATXCS070` | Mutable static state must not exist in a non-static class | CSharp | Error | Analyzer |
 | `ATXCS071` | XML documentation element is too long | Documentation | Error | Analyzer |
 
 Rules with no fix need a judgement a tool should not make: choosing a descriptive name

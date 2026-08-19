@@ -17,7 +17,7 @@ public sealed class BooleanMemberNamingAnalyzer : DiagnosticAnalyzer
     ///     The diagnostic rule reported when a boolean field or property does not start with an allowed prefix.
     /// </summary>
     public static readonly DiagnosticDescriptor Rule;
-    private readonly string[] AllowedPrefixes;
+    private static readonly ImmutableArray<string> AllowedPrefixes;
 
     static BooleanMemberNamingAnalyzer()
     {
@@ -30,13 +30,6 @@ public sealed class BooleanMemberNamingAnalyzer : DiagnosticAnalyzer
             true,
             "Rename the field or property so its name begins with 'is', 'allow', or 'has' (any casing). Examples: 'enabled' \u2192 'isEnabled', 'canRetry' \u2192 'isRetry', 'AllowRetry' is already valid. Overrides and interface implementations where renaming would break an external contract are exempt.");
         Rule = rule;
-    }
-
-    /// <summary>
-    ///     Initializes the lookup tables used during analysis.
-    /// </summary>
-    public BooleanMemberNamingAnalyzer()
-    {
         AllowedPrefixes = ["is", "allow", "has"];
     }
 

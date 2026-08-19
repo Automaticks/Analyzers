@@ -18,7 +18,7 @@ public sealed class BooleanMethodNamingAnalyzer : DiagnosticAnalyzer
     ///     does not start with an allowed prefix.
     /// </summary>
     public static readonly DiagnosticDescriptor Rule;
-    private readonly string[] AllowedPrefixes;
+    private static readonly ImmutableArray<string> AllowedPrefixes;
 
     static BooleanMethodNamingAnalyzer()
     {
@@ -31,13 +31,6 @@ public sealed class BooleanMethodNamingAnalyzer : DiagnosticAnalyzer
             true,
             "Rename the method or local function so its name begins with 'can', 'has', or 'is' (any casing). Examples: 'Validate' \u2192 'CanValidate', 'AllowRetry' \u2192 'CanRetry', 'hasAccess' is already valid. Exempt: overrides and interface implementations where renaming would break an external contract.");
         Rule = rule;
-    }
-
-    /// <summary>
-    ///     Initializes the lookup tables used during analysis.
-    /// </summary>
-    public BooleanMethodNamingAnalyzer()
-    {
         AllowedPrefixes = ["can", "has", "is"];
     }
 

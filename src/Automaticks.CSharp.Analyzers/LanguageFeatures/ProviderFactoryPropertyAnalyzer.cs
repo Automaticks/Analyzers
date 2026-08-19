@@ -11,12 +11,11 @@ namespace Automaticks.CSharp.LanguageFeatures;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class ProviderFactoryPropertyAnalyzer : DiagnosticAnalyzer
 {
-    private static readonly DiagnosticDescriptor Rule;
-
     /// <summary>
     ///     The diagnostic rule reported when a provider/factory/builder/client/session type exposes a property.
     /// </summary>
-    private readonly string[] ForbiddenSuffixes;
+    private static readonly ImmutableArray<string> ForbiddenSuffixes;
+    private static readonly DiagnosticDescriptor Rule;
 
     static ProviderFactoryPropertyAnalyzer()
     {
@@ -29,13 +28,6 @@ public sealed class ProviderFactoryPropertyAnalyzer : DiagnosticAnalyzer
             true,
             "Convert the property to a method. Types whose name ends with Provider, Factory, Builder, Client, or Session are service types and must only expose methods, not properties. Example: rename `public Foo CurrentFoo { get; }` to `public Foo GetCurrentFoo()` or `public Foo CreateFoo()`. Exempt: properties that override an external base member or implement an external interface, since their shape is fixed by an assembly outside this compilation.");
         Rule = rule;
-    }
-
-    /// <summary>
-    ///     Initializes the service-type suffixes inspected during analysis.
-    /// </summary>
-    public ProviderFactoryPropertyAnalyzer()
-    {
         ForbiddenSuffixes = ["Provider", "Factory", "Builder", "Client", "Session"];
     }
 

@@ -7,36 +7,49 @@ using System.Collections.Immutable;
 namespace Automaticks.CSharp.Naming;
 
 /// <summary>
-///     Flags static fields and static properties declared in a non-static class.
+///     Flags mutable static state declared in a non-static class.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class StaticMemberInNonStaticClassAnalyzer : DiagnosticAnalyzer
 {
     /// <summary>
-    ///     The <c>.editorconfig</c> key listing type names exempt from this rule.
+    ///     The <c>.editorconfig</c> key listing extra type names treated as mutable.
     /// </summary>
-    public const string ExcludedTypesKey = "automaticks.static_member_excluded_types";
+    public const string MutableTypesKey = "automaticks.static_member_mutable_types";
+    private static readonly ImmutableArray<string> DefaultMutableTypes;
     private static readonly DiagnosticDescriptor Rule;
-    private readonly string[] DefaultExcludedTypes;
 
     static StaticMemberInNonStaticClassAnalyzer()
     {
         Rule = new(
             DiagnosticIds.CSharp.StaticMemberInNonStaticClass,
-            "Static fields and properties must only exist in static classes",
-            "{0} '{1}' is static but is declared in non-static class '{2}'. Move it to a dedicated static class, or exempt its type through '" + ExcludedTypesKey + "'.",
+            "Mutable static state must not exist in a non-static class",
+            "{0} '{1}' is mutable static state in non-static class '{2}'. Make it a readonly field of an immutable type, or move it to a dedicated static class.",
             "CSharp",
             DiagnosticSeverity.Error,
             true,
-            "Move the static member to a dedicated `public static class`. Static state in an instantiable class cannot participate in dependency injection and is hard to substitute in tests. Types that are inherently static configuration, such as Roslyn's `DiagnosticDescriptor`, are exempt by default and the list is configurable through `automaticks.static_member_excluded_types` in `.editorconfig`. Constants declared with `const` are not reported.");
-    }
-
-    /// <summary>
-    ///     Initializes the lookup tables used during analysis.
-    /// </summary>
-    public StaticMemberInNonStaticClassAnalyzer()
-    {
-        DefaultExcludedTypes = ["DiagnosticDescriptor", "SuppressionDescriptor"];
+            "Mutable static state in an instantiable class is shared across every instance and every thread, which is where state-management bugs hide. A field is reported when it is not `readonly`, or when it is `readonly` but its type has mutable contents, because `readonly` freezes the reference and not the object. Prefer an immutable type such as `ImmutableArray<T>` or `ImmutableHashSet<T>`. Additional mutable type names can be declared through `automaticks.static_member_mutable_types` in `.editorconfig`. Constants and computed properties hold no state and are never reported.");
+        DefaultMutableTypes =
+        [
+            "ArrayList",
+            "Collection",
+            "ConcurrentBag",
+            "ConcurrentDictionary",
+            "ConcurrentQueue",
+            "ConcurrentStack",
+            "Dictionary",
+            "HashSet",
+            "Hashtable",
+            "LinkedList",
+            "List",
+            "ObservableCollection",
+            "Queue",
+            "SortedDictionary",
+            "SortedList",
+            "SortedSet",
+            "Stack",
+            "StringBuilder"
+        ];
     }
 
     /// <inheritdoc />
@@ -59,7 +72,8 @@ public sealed class StaticMemberInNonStaticClassAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        if (HasExcludedType(context, field.Declaration.Type))
+        var isReadOnly = field.Modifiers.Any(SyntaxKind.ReadOnlyKeyword);
+        if (isReadOnly && !HasMutableType(context, field.Declaration.Type))
         {
             return;
         }
@@ -83,7 +97,7 @@ public sealed class StaticMemberInNonStaticClassAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        if (HasExcludedType(context, property.Type))
+        if (!HasStoredState(context, property))
         {
             return;
         }
@@ -97,8 +111,7 @@ public sealed class StaticMemberInNonStaticClassAnalyzer : DiagnosticAnalyzer
     }
 
     /// <summary>
-    ///     Reduces a type reference to its bare name, so <c>ImmutableHashSet&lt;string&gt;</c> and
-    ///     <c>System.Text.RegularExpressions.Regex</c> match the configured entries.
+    ///     Reduces a type reference to its bare name so generic and qualified forms match.
     /// </summary>
     private string GetSimpleTypeName(TypeSyntax type)
     {
@@ -110,9 +123,6 @@ public sealed class StaticMemberInNonStaticClassAnalyzer : DiagnosticAnalyzer
             {
                 case NullableTypeSyntax nullable:
                     current = nullable.ElementType;
-                    continue;
-                case ArrayTypeSyntax array:
-                    current = array.ElementType;
                     continue;
                 case QualifiedNameSyntax qualified:
                     current = qualified.Right;
@@ -127,10 +137,18 @@ public sealed class StaticMemberInNonStaticClassAnalyzer : DiagnosticAnalyzer
         }
     }
 
-    private bool HasExcludedType(SyntaxNodeAnalysisContext context, TypeSyntax type)
+    /// <summary>
+    ///     Returns whether the type carries mutable contents that <c>readonly</c> cannot freeze.
+    /// </summary>
+    private bool HasMutableType(SyntaxNodeAnalysisContext context, TypeSyntax type)
     {
-        var excluded = ConfigurableTypeList.Read(context, ExcludedTypesKey, DefaultExcludedTypes);
-        return excluded.Contains(GetSimpleTypeName(type));
+        if (type is ArrayTypeSyntax)
+        {
+            return true;
+        }
+
+        var mutableTypes = ConfigurableTypeList.Read(context, MutableTypesKey, DefaultMutableTypes);
+        return mutableTypes.Contains(GetSimpleTypeName(type));
     }
 
     private bool HasStaticMemberInNonStaticClass(
@@ -153,5 +171,32 @@ public sealed class StaticMemberInNonStaticClassAnalyzer : DiagnosticAnalyzer
 
         containingClass = declaration;
         return true;
+    }
+
+    /// <summary>
+    ///     Returns whether the property stores state rather than computing a value.
+    /// </summary>
+    private bool HasStoredState(SyntaxNodeAnalysisContext context, PropertyDeclarationSyntax property)
+    {
+        if (property.ExpressionBody is not null || property.AccessorList is null)
+        {
+            return false;
+        }
+
+        foreach (var accessor in property.AccessorList.Accessors)
+        {
+            if (accessor.IsKind(SyntaxKind.SetAccessorDeclaration)
+                || accessor.IsKind(SyntaxKind.InitAccessorDeclaration))
+            {
+                return true;
+            }
+
+            if (accessor.Body is not null || accessor.ExpressionBody is not null)
+            {
+                return false;
+            }
+        }
+
+        return HasMutableType(context, property.Type);
     }
 }

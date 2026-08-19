@@ -14,9 +14,9 @@ namespace Automaticks.Reflection;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class ReflectionAnalyzer : DiagnosticAnalyzer
 {
+    private static readonly ImmutableHashSet<string> BannedReflectionTypeNames;
+    private static readonly ImmutableHashSet<string> BannedTypeMethodNames;
     private static readonly DiagnosticDescriptor Rule;
-    private readonly ImmutableHashSet<string> BannedReflectionTypeNames;
-    private readonly ImmutableHashSet<string> BannedTypeMethodNames;
 
     static ReflectionAnalyzer()
     {
@@ -29,13 +29,6 @@ public sealed class ReflectionAnalyzer : DiagnosticAnalyzer
             true,
             "Remove the reflective API call and redesign using dependency injection interfaces, compile-time generics, or source generators. Reflection bypasses static type safety, breaks ahead-of-time compilation, and complicates trimming. Auto-exemptions: reflection inside `IServiceCollection` extension methods and `DispatchProxy` subclasses is allowed.");
         Rule = rule;
-    }
-
-    /// <summary>
-    ///     Initializes the banned reflection type and method names.
-    /// </summary>
-    public ReflectionAnalyzer()
-    {
         var bannedReflectionTypeNames = ImmutableHashSet.CreateBuilder<string>(StringComparer.Ordinal);
         bannedReflectionTypeNames.Add("Assembly");
         bannedReflectionTypeNames.Add("BindingFlags");
@@ -49,7 +42,6 @@ public sealed class ReflectionAnalyzer : DiagnosticAnalyzer
         bannedReflectionTypeNames.Add("PropertyInfo");
         bannedReflectionTypeNames.Add("TypeInfo");
         BannedReflectionTypeNames = bannedReflectionTypeNames.ToImmutable();
-
         var bannedTypeMethodNames = ImmutableHashSet.CreateBuilder<string>(StringComparer.Ordinal);
         bannedTypeMethodNames.Add("GetConstructor");
         bannedTypeMethodNames.Add("GetConstructors");

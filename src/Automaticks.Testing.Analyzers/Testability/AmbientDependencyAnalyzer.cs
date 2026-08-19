@@ -14,8 +14,8 @@ namespace Automaticks.Testing.Testability;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class AmbientDependencyAnalyzer : DiagnosticAnalyzer
 {
+    private static readonly ImmutableHashSet<string> AmbientTypeNames;
     private static readonly DiagnosticDescriptor Rule;
-    private readonly ImmutableHashSet<string> AmbientTypeNames;
 
     static AmbientDependencyAnalyzer()
     {
@@ -29,13 +29,6 @@ public sealed class AmbientDependencyAnalyzer : DiagnosticAnalyzer
             true,
             "Code that reaches straight for the clock, the file system, the network, or the random source has no seam a test can substitute, so its error-handling paths stay unexercised. Route the dependency through an injected abstraction that a test can replace with one that fails on demand, the way a pluggable virtual file system and allocator let a database engine test every I/O and out-of-memory path.");
         Rule = rule;
-    }
-
-    /// <summary>
-    ///     Initializes the lookup tables used during analysis.
-    /// </summary>
-    public AmbientDependencyAnalyzer()
-    {
         var ambientTypeNames = ImmutableHashSet.CreateBuilder<string>(StringComparer.Ordinal);
         ambientTypeNames.Add("DateTime");
         ambientTypeNames.Add("DateTimeOffset");

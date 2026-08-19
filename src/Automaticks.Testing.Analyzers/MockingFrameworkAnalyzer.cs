@@ -13,8 +13,8 @@ namespace Automaticks.Testing;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class MockingFrameworkAnalyzer : DiagnosticAnalyzer
 {
+    private static readonly ImmutableArray<string> ForbiddenPrefixes;
     private static readonly DiagnosticDescriptor Rule;
-    private readonly string[] ForbiddenPrefixes;
 
     static MockingFrameworkAnalyzer()
     {
@@ -27,13 +27,6 @@ public sealed class MockingFrameworkAnalyzer : DiagnosticAnalyzer
             true,
             "Remove the mocking-framework usage. Instead, create a hand-written stub class (e.g., `StubFooService : IFooService`) in the `Stubs/` subdirectory of the test project and use that in your test. Banned frameworks: Moq, NSubstitute, FakeItEasy, Telerik.JustMock, Rhino.Mocks.");
         Rule = rule;
-    }
-
-    /// <summary>
-    ///     Initializes the banned namespace prefixes inspected during analysis.
-    /// </summary>
-    public MockingFrameworkAnalyzer()
-    {
         ForbiddenPrefixes =
         [
             "Moq",

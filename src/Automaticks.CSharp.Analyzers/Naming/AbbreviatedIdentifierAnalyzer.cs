@@ -17,9 +17,9 @@ public sealed class AbbreviatedIdentifierAnalyzer : DiagnosticAnalyzer
     /// <summary>
     ///     The diagnostic rule reported when an identifier contains an abbreviated segment.
     /// </summary>
+    private static readonly ImmutableHashSet<string> AxisSegments;
     private static readonly DiagnosticDescriptor Rule;
-    private readonly HashSet<string> AxisSegments;
-    private readonly HashSet<char> Vowels;
+    private static readonly ImmutableHashSet<char> Vowels;
 
     static AbbreviatedIdentifierAnalyzer()
     {
@@ -32,20 +32,13 @@ public sealed class AbbreviatedIdentifierAnalyzer : DiagnosticAnalyzer
             true,
             "Identifiers must use full, descriptive names — never abbreviations. Common banned abbreviations include: `ct`/`cts` (use `cancellationToken`), `sb` (use `stringBuilder`), `ctx` (use `context`), `vm` (use `viewModel`), `e` on event handlers (use the full event args name). Rename the flagged segment to its full English word or phrase.");
         Rule = rule;
-    }
-
-    /// <summary>
-    ///     Initializes the lookup tables used during analysis.
-    /// </summary>
-    public AbbreviatedIdentifierAnalyzer()
-    {
         var axisSegments = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "x",
             "y",
             "z"
         };
-        AxisSegments = axisSegments;
+        AxisSegments = axisSegments.ToImmutableHashSet(StringComparer.OrdinalIgnoreCase);
         Vowels = ['a', 'e', 'i', 'o', 'u', 'y'];
     }
 

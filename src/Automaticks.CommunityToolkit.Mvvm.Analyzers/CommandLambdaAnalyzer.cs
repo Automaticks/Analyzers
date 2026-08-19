@@ -13,8 +13,8 @@ namespace Automaticks.CommunityToolkit.Mvvm;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class CommandLambdaAnalyzer : DiagnosticAnalyzer
 {
+    private static readonly ImmutableArray<string> CommandTypeMetadataNames;
     private static readonly DiagnosticDescriptor Rule;
-    private readonly string[] CommandTypeMetadataNames;
 
     static CommandLambdaAnalyzer()
     {
@@ -27,13 +27,6 @@ public sealed class CommandLambdaAnalyzer : DiagnosticAnalyzer
             true,
             "Replace the lambda expression with a named method group. Example: change `new RelayCommand(() => Execute())` to `new RelayCommand(Execute)` where `Execute` is a named method on the same class. This applies to all `RelayCommand` and `AsyncRelayCommand` constructor arguments.");
         Rule = rule;
-    }
-
-    /// <summary>
-    ///     Initializes the command type names inspected during analysis.
-    /// </summary>
-    public CommandLambdaAnalyzer()
-    {
         CommandTypeMetadataNames =
         [
             "CommunityToolkit.Mvvm.Input.RelayCommand",

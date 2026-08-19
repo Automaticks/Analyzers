@@ -63,6 +63,29 @@ public class AnonymousTupleAnalyzerTests
     }
 
     /// <summary>
+    ///     Tests that Analyze_DeconstructionOfTypeParameter_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_DeconstructionOfTypeParameter_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo {
+                                      public void Run<TValue>(TValue value) {
+                                          var (first, second) = value;
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new AnonymousTupleAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS012")).IsFalse();
+    }
+    /// <summary>
     ///     Tests that Analyze_ForEachDeconstructionVariable_ReportsNoDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
