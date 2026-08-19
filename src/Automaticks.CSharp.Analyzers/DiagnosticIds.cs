@@ -16,6 +16,11 @@ public static class DiagnosticIds
         public const string AbbreviatedIdentifier = "ATXCS017";
 
         /// <summary>
+        ///     Diagnostic ID for <c>ATXCS074</c>: using-alias and extern-alias directives are forbidden.
+        /// </summary>
+        public const string AliasDirective = "ATXCS074";
+
+        /// <summary>
         ///     Diagnostic ID for <c>ATXCS012</c>: anonymous tuple types are forbidden.
         /// </summary>
         public const string AnonymousTuple = "ATXCS012";
@@ -111,6 +116,11 @@ public static class DiagnosticIds
         public const string GenericDelegate = "ATXCS020";
 
         /// <summary>
+        ///     Diagnostic ID for <c>ATXCS073</c>: the <c>global::</c> alias qualifier is forbidden.
+        /// </summary>
+        public const string GlobalAliasQualifier = "ATXCS073";
+
+        /// <summary>
         ///     Diagnostic ID for <c>ATXCS036</c>: fields and auto-properties must not be initialized inline; initialization must move to the constructor.
         /// </summary>
         public const string InlineFieldInitializer = "ATXCS036";
@@ -159,6 +169,11 @@ public static class DiagnosticIds
         ///     Diagnostic ID for <c>ATXCS067</c>: a namespace is declared by more than the maximum number of source files.
         /// </summary>
         public const string NamespaceFileCount = "ATXCS067";
+
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXCS072</c>: namespace-qualified type references are forbidden.
+        /// </summary>
+        public const string NamespaceQualifiedTypeReference = "ATXCS072";
 
         /// <summary>
         ///     Diagnostic ID for <c>ATXCS032</c>: method nesting depth exceeds the maximum.

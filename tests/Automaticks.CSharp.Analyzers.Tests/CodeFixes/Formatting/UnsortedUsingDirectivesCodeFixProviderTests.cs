@@ -1,5 +1,6 @@
 ﻿using Automaticks.CSharp.CodeFixes.Formatting;
 using Microsoft.CodeAnalysis.CodeFixes;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -107,8 +108,8 @@ public class UnsortedUsingDirectivesCodeFixProviderTests
             Source = source
         };
         var fixedSource = await CodeFixTestRunner.ApplyFixAsync(request, cancellationToken);
-        var systemIndex = fixedSource.IndexOf("using System;", System.StringComparison.Ordinal);
-        var textIndex = fixedSource.IndexOf("using System.Text;", System.StringComparison.Ordinal);
+        var systemIndex = fixedSource.IndexOf("using System;", StringComparison.Ordinal);
+        var textIndex = fixedSource.IndexOf("using System.Text;", StringComparison.Ordinal);
 
         await Assert.That(systemIndex).IsLessThan(textIndex);
     }

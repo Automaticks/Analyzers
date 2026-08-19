@@ -1,5 +1,6 @@
 ﻿using Automaticks.CSharp.CodeFixes.Documentation;
 using Microsoft.CodeAnalysis.CodeFixes;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -82,9 +83,9 @@ public class MissingReturnsXmlDocCodeFixProviderTests
             Source = source
         };
         var fixedSource = await CodeFixTestRunner.ApplyFixAsync(request, cancellationToken);
-        var summaryEnd = fixedSource.IndexOf("</summary>", System.StringComparison.Ordinal);
-        var returnsIndex = fixedSource.IndexOf("<returns>", System.StringComparison.Ordinal);
-        var memberIndex = fixedSource.IndexOf("public int Bar", System.StringComparison.Ordinal);
+        var summaryEnd = fixedSource.IndexOf("</summary>", StringComparison.Ordinal);
+        var returnsIndex = fixedSource.IndexOf("<returns>", StringComparison.Ordinal);
+        var memberIndex = fixedSource.IndexOf("public int Bar", StringComparison.Ordinal);
 
         await Assert.That(summaryEnd).IsLessThan(returnsIndex);
         await Assert.That(returnsIndex).IsLessThan(memberIndex);

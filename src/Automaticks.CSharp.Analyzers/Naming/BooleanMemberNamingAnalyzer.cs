@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using System;
 using System.Collections.Immutable;
 
 namespace Automaticks.CSharp.Naming;
@@ -136,7 +137,7 @@ public sealed class BooleanMemberNamingAnalyzer : DiagnosticAnalyzer
         {
             var remaining = name.Length - start;
             if (remaining >= prefix.Length &&
-                string.Compare(name, start, prefix, 0, prefix.Length, System.StringComparison.OrdinalIgnoreCase) == 0)
+                string.Compare(name, start, prefix, 0, prefix.Length, StringComparison.OrdinalIgnoreCase) == 0)
             {
                 return true;
             }

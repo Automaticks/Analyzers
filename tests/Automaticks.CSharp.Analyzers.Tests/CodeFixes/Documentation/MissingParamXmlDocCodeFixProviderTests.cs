@@ -1,5 +1,6 @@
 ﻿using Automaticks.CSharp.CodeFixes.Documentation;
 using Microsoft.CodeAnalysis.CodeFixes;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -101,9 +102,9 @@ public class MissingParamXmlDocCodeFixProviderTests
             Source = source
         };
         var fixedSource = await CodeFixTestRunner.ApplyFixAsync(request, cancellationToken);
-        var summaryEnd = fixedSource.IndexOf("</summary>", System.StringComparison.Ordinal);
-        var paramIndex = fixedSource.IndexOf("<param", System.StringComparison.Ordinal);
-        var memberIndex = fixedSource.IndexOf("public void Bar", System.StringComparison.Ordinal);
+        var summaryEnd = fixedSource.IndexOf("</summary>", StringComparison.Ordinal);
+        var paramIndex = fixedSource.IndexOf("<param", StringComparison.Ordinal);
+        var memberIndex = fixedSource.IndexOf("public void Bar", StringComparison.Ordinal);
 
         await Assert.That(summaryEnd).IsLessThan(paramIndex);
         await Assert.That(paramIndex).IsLessThan(memberIndex);

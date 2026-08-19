@@ -1,6 +1,7 @@
 ﻿using Automaticks.CSharp.CodeFixes.Naming;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Text;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -125,7 +126,7 @@ public class BooleanMemberNamingCodeFixProviderTests
             Provider = provider,
             Source = source
         };
-        var start = source.IndexOf("{ }", System.StringComparison.Ordinal);
+        var start = source.IndexOf("{ }", StringComparison.Ordinal);
         var span = new TextSpan(start, 1);
         var fixedSource = await CodeFixTestRunner.ApplyFixForSpanAsync(
             request,

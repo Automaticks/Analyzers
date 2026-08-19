@@ -1,5 +1,6 @@
 ﻿using Automaticks.CSharp.CodeFixes.Documentation;
 using Microsoft.CodeAnalysis.CodeFixes;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -75,8 +76,8 @@ public class MissingSummaryXmlDocCodeFixProviderTests
             Source = source
         };
         var fixedSource = await CodeFixTestRunner.ApplyFixAsync(request, cancellationToken);
-        var summaryIndex = fixedSource.IndexOf("/// <summary>", System.StringComparison.Ordinal);
-        var attributeIndex = fixedSource.IndexOf("[Obsolete", System.StringComparison.Ordinal);
+        var summaryIndex = fixedSource.IndexOf("/// <summary>", StringComparison.Ordinal);
+        var attributeIndex = fixedSource.IndexOf("[Obsolete", StringComparison.Ordinal);
 
         await Assert.That(summaryIndex).IsLessThan(attributeIndex);
     }

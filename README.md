@@ -18,11 +18,11 @@ Roslyn analyzers for C#, Entity Framework Core, CommunityToolkit.Mvvm, and more.
 
 ## Rules
 
-All 72 diagnostic rules and suppressors are catalogued in [docs/RULES.md](docs/RULES.md).
+All 83 diagnostic rules and suppressors are catalogued in [docs/RULES.md](docs/RULES.md).
 
 ## Code fixes
 
-33 of the catalogued rules ship an automated fix. Fixes appear on the IDE light bulb and support the
+36 of the catalogued rules ship an automated fix. Fixes appear on the IDE light bulb and support the
 document, project, and solution Fix All scopes. To apply them in bulk:
 
 ```shell
@@ -31,11 +31,11 @@ dotnet format analyzers --diagnostics ATXCS048 --severity error
 
 | Package | Rules with a fix |
 |---|---|
-| `Automaticks.CSharp.Analyzers` | 27 |
-| `Automaticks.Diagnostics.CodeAnalysis.Analyzers` | 3 — every rule in the package |
+| `Automaticks.CSharp.Analyzers` | 29 |
+| `Automaticks.Diagnostics.CodeAnalysis.Analyzers` | 4 — every rule in the package |
 | `Automaticks.CommunityToolkit.Mvvm.Analyzers` | 1 — every rule in the package |
 | `Automaticks.Extensions.Options.Analyzers` | 1 — every rule in the package |
-| `Automaticks.Threading.Tasks.Analyzers` | 1 of 2 |
+| `Automaticks.Threading.Tasks.Analyzers` | 1 of 3 |
 
 Each package README lists its fixes and notes where a fix deliberately declines to act. A rule ships
 no fix when resolving it needs a judgement a tool should not make — naming, decomposition, designing

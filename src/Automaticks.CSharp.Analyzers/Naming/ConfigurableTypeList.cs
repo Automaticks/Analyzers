@@ -1,4 +1,5 @@
-using Microsoft.CodeAnalysis.Diagnostics;
+﻿using Microsoft.CodeAnalysis.Diagnostics;
+using System;
 using System.Collections.Generic;
 
 namespace Automaticks.CSharp.Naming;
@@ -22,7 +23,7 @@ public static class ConfigurableTypeList
         IReadOnlyList<string> defaultValue)
     {
         var options = context.Options.AnalyzerConfigOptionsProvider.GetOptions(context.Node.SyntaxTree);
-        var names = new HashSet<string>(System.StringComparer.Ordinal);
+        var names = new HashSet<string>(StringComparer.Ordinal);
 
         if (!options.TryGetValue(key, out var raw) || raw.Length == 0)
         {

@@ -1,6 +1,7 @@
 ﻿using Automaticks.CSharp.CodeFixes.Formatting;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Text;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -112,7 +113,7 @@ public class DuplicateUsingDirectiveCodeFixProviderTests
             Provider = provider,
             Source = source
         };
-        var start = source.IndexOf("Foo", System.StringComparison.Ordinal);
+        var start = source.IndexOf("Foo", StringComparison.Ordinal);
         var span = new TextSpan(start, "Foo".Length);
         var count = await CodeFixTestRunner.CountActionsForSpanAsync(
             request,

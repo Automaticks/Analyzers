@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using System;
 using System.Collections.Immutable;
 
 namespace Automaticks.CSharp.Documentation;
@@ -56,12 +57,12 @@ public sealed class RemarksXmlDocAnalyzer : DiagnosticAnalyzer
         foreach (var node in docComment.Content)
         {
             if (node is XmlElementSyntax element &&
-                element.StartTag.Name.LocalName.ValueText.Equals(RemarksTagName, System.StringComparison.Ordinal))
+                element.StartTag.Name.LocalName.ValueText.Equals(RemarksTagName, StringComparison.Ordinal))
             {
                 context.ReportDiagnostic(Diagnostic.Create(Rule, element.StartTag.GetLocation()));
             }
             else if (node is XmlEmptyElementSyntax emptyElement &&
-                     emptyElement.Name.LocalName.ValueText.Equals(RemarksTagName, System.StringComparison.Ordinal))
+                     emptyElement.Name.LocalName.ValueText.Equals(RemarksTagName, StringComparison.Ordinal))
             {
                 context.ReportDiagnostic(Diagnostic.Create(Rule, emptyElement.GetLocation()));
             }
