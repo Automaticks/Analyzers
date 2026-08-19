@@ -36,6 +36,33 @@ public class AnonymousTupleAnalyzerTests
     }
 
     /// <summary>
+    ///     Tests that Analyze_DeconstructionOfNonTupleType_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_DeconstructionOfNonTupleType_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Point {
+                                      public void Deconstruct(out int first, out int second) { first = 1; second = 2; }
+                                  }
+                                  public class Foo {
+                                      public void Run(Point point) {
+                                          (var first, var second) = point;
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new AnonymousTupleAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS012")).IsTrue();
+    }
+
+    /// <summary>
     ///     Tests that Analyze_ForEachDeconstructionVariable_ReportsNoDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -135,6 +162,85 @@ public class AnonymousTupleAnalyzerTests
         var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
         await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS012")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_TupleAssignedFromNonTupleExpression_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_TupleAssignedFromNonTupleExpression_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo {
+                                      public void Run() {
+                                          var a = 1;
+                                          var b = 2;
+                                          var pair = System.Tuple.Create(1, 2);
+                                          (a, b) = (pair.Item1, pair.Item2);
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new AnonymousTupleAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS012")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_TupleAssignedFromTupleVariable_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_TupleAssignedFromTupleVariable_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo {
+                                      public void Run(System.ValueTuple<int, int> pair) {
+                                          var a = 1;
+                                          var b = 2;
+                                          (a, b) = pair;
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new AnonymousTupleAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS012")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_TupleAssignedToDeclarationExpression_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_TupleAssignedToDeclarationExpression_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo {
+                                      public void Run() {
+                                          var a = 1;
+                                          var b = 2;
+                                          (var x, var y) = (a, b);
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new AnonymousTupleAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS012")).IsTrue();
     }
 
     /// <summary>
@@ -241,6 +347,32 @@ public class AnonymousTupleAnalyzerTests
     }
 
     /// <summary>
+    ///     Tests that Analyze_TupleSwapAssignment_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_TupleSwapAssignment_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo {
+                                      public void Swap() {
+                                          var a = 1;
+                                          var b = 2;
+                                          (a, b) = (b, a);
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new AnonymousTupleAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS012")).IsFalse();
+    }
+
+    /// <summary>
     ///     Tests that Analyze_TupleTypeDeclaration_ReportsDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -253,6 +385,59 @@ public class AnonymousTupleAnalyzerTests
                                   public class Foo {
                                       public void Bar() {
                                           (string, int) x = ("a", 1);
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new AnonymousTupleAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS012")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_TupleWithCallExpressionInAssignment_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_TupleWithCallExpressionInAssignment_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo {
+                                      public int Get() => 1;
+                                      public void Run() {
+                                          var a = 1;
+                                          var b = 2;
+                                          (a, b) = (Get(), a);
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new AnonymousTupleAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS012")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_TupleWithNamedElementInAssignment_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_TupleWithNamedElementInAssignment_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo {
+                                      public void Run() {
+                                          var a = 1;
+                                          var b = 2;
+                                          (a, b) = (First: b, Second: a);
                                       }
                                   }
                               }

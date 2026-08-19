@@ -7,9 +7,7 @@ using System.Collections.Immutable;
 namespace Automaticks.Testing.Testability;
 
 /// <summary>
-///     Flags a bitmask test performed against a mask that has more than one bit set. A single
-///     test cannot show that each individual bit changes the outcome, so the bits stay
-///     effectively untested even at full branch coverage.
+///     Flags a bitmask test performed against a mask that has more than one bit set.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class CompositeBitmaskTestAnalyzer : DiagnosticAnalyzer

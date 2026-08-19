@@ -1,3 +1,5 @@
+using System;
+
 namespace Automaticks.CSharp.CodeFixes.Naming;
 
 /// <summary>
@@ -5,9 +7,15 @@ namespace Automaticks.CSharp.CodeFixes.Naming;
 /// </summary>
 public static class PrefixedIdentifier
 {
+    private static readonly string[] BooleanPrefixes;
+
+    static PrefixedIdentifier()
+    {
+        BooleanPrefixes = ["allow", "can", "has", "is"];
+    }
+
     /// <summary>
-    ///     Prepends <paramref name="prefix" /> to <paramref name="name" />, preserving any leading
-    ///     underscores and matching the original pascal or camel casing.
+    ///     Prepends to , preserving any leading underscores and matching the original pascal or camel casing.
     /// </summary>
     /// <param name="name">The identifier to prefix.</param>
     /// <param name="prefix">The lowercase prefix to prepend.</param>
@@ -21,17 +29,44 @@ public static class PrefixedIdentifier
         }
 
         var leading = name.Substring(0, underscoreCount);
-        var core = name.Substring(underscoreCount);
-        if (core.Length == 0)
+        var original = name.Substring(underscoreCount);
+        if (original.Length == 0)
         {
             return name;
         }
 
-        if (char.IsUpper(core[0]))
+        var isPascalCase = char.IsUpper(original[0]);
+        var core = StripBooleanPrefix(original);
+
+        if (isPascalCase)
         {
             return leading + char.ToUpperInvariant(prefix[0]) + prefix.Substring(1) + core;
         }
 
         return leading + prefix + char.ToUpperInvariant(core[0]) + core.Substring(1);
+    }
+
+    /// <summary>
+    ///     Removes a leading boolean prefix when the next character starts a new word, so
+    ///     <c>IsKnown</c> loses its prefix but <c>Island</c> does not.
+    /// </summary>
+    private static string StripBooleanPrefix(string core)
+    {
+        foreach (var candidate in BooleanPrefixes)
+        {
+            if (core.Length <= candidate.Length
+                || !core.StartsWith(candidate, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            var remainder = core.Substring(candidate.Length);
+            if (char.IsUpper(remainder[0]))
+            {
+                return remainder;
+            }
+        }
+
+        return core;
     }
 }

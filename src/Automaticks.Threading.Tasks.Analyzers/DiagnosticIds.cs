@@ -1,8 +1,7 @@
 namespace Automaticks.Threading.Tasks;
 
 /// <summary>
-///     Centralised registry of all diagnostic IDs emitted by the Threading.Tasks Roslyn analyzers.
-///     Use these constants when suppressing a diagnostic or referencing it from documentation.
+///     Diagnostic IDs emitted by the Threading.Tasks analyzers.
 /// </summary>
 public static class DiagnosticIds
 {

@@ -6,10 +6,7 @@ using System.Collections.Immutable;
 namespace Automaticks.Linq;
 
 /// <summary>
-///     Flags calls to <c>System.Linq.Enumerable</c> and <c>System.Linq.Queryable</c> operators, and
-///     query expressions, by resolving the called symbol rather than reading using directives.
-///     <c>ATXLQ002</c> only inspects using directives, so it goes silent when
-///     <c>ImplicitUsings</c> brings <c>System.Linq</c> into scope through a generated global using.
+///     Flags calls to System.Linq.Enumerable and System.Linq.Queryable operators, and query expressions, by resolving the called symbol rather than readin...
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class LinqOperatorInvocationAnalyzer : DiagnosticAnalyzer

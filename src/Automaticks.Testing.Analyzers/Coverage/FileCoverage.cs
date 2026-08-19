@@ -5,7 +5,6 @@ namespace Automaticks.Testing.Coverage;
 
 /// <summary>
 ///     Accumulated coverage counters for a single source file taken from a coverage report.
-///     Overloads that share a name are merged, so a name counts as covered when any overload ran.
 /// </summary>
 public sealed class FileCoverage
 {
@@ -46,10 +45,7 @@ public sealed class FileCoverage
     }
 
     /// <summary>
-    ///     Records one reported line against the file totals. A line counts once towards the
-    ///     total, and counts as covered when any report shows it executed. Cobertura repeats a
-    ///     line at class and method level, and a solution-wide run emits one report per test
-    ///     project, so the same line arrives several times with different hit counts.
+    ///     Records one reported line against the file totals.
     /// </summary>
     /// <param name="lineNumber">The one-based source line number.</param>
     /// <param name="hits">The number of times the line was executed.</param>

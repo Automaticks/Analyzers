@@ -14,8 +14,7 @@ using System.Threading.Tasks;
 namespace Automaticks.CSharp.CodeFixes.Documentation;
 
 /// <summary>
-///     Reformats the <c>&lt;summary&gt;</c> block reported by ATXCS050 so its prose starts on a
-///     new line indented by four spaces. Existing prose is preserved, including inline tags.
+///     Reformats the &lt;summary&gt; block reported by ATXCS050 so its prose starts on a new line indented by four spaces.
 /// </summary>
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(SummaryXmlDocFormatCodeFixProvider))]
 [Shared]

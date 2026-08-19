@@ -6,20 +6,16 @@ using System.Text.RegularExpressions;
 namespace Automaticks.Testing;
 
 /// <summary>
-///     Warns when a test method name does not follow the three-part
-///     <c>Method_Scenario_ExpectedResult</c> naming convention.
-///     Only applies to methods decorated with <c>[Test]</c> or <c>[Arguments]</c> in test projects.
+///     Warns when a test method name does not follow the three-part Method_Scenario_ExpectedResult naming convention.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class TestMethodNamingAnalyzer : DiagnosticAnalyzer
 {
-    private static readonly Regex NamingPattern;
     private static readonly DiagnosticDescriptor Rule;
+    private readonly Regex NamingPattern;
 
     static TestMethodNamingAnalyzer()
     {
-        var namingPattern = new Regex(@"^[A-Za-z0-9]+(?:_[A-Za-z0-9]+){2,}$", RegexOptions.Compiled);
-        NamingPattern = namingPattern;
         var rule = new DiagnosticDescriptor(
             DiagnosticIds.Testing.TestMethodNaming,
             "Test method name must follow the three-part convention",
@@ -29,6 +25,15 @@ public sealed class TestMethodNamingAnalyzer : DiagnosticAnalyzer
             true,
             "Rename the test method to use exactly three underscore-separated PascalCase segments: `{Method}_{Scenario}_{ExpectedResult}`. Example: `GetUser_UserNotFound_ThrowsNotFoundException`. Each segment is a PascalCase word or phrase; no additional underscores are allowed within a segment.");
         Rule = rule;
+    }
+
+    /// <summary>
+    ///     Initializes the lookup tables used during analysis.
+    /// </summary>
+    public TestMethodNamingAnalyzer()
+    {
+        var namingPattern = new Regex(@"^[A-Za-z0-9]+(?:_[A-Za-z0-9]+){2,}$", RegexOptions.Compiled);
+        NamingPattern = namingPattern;
     }
 
     /// <inheritdoc />

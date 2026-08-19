@@ -8,11 +8,6 @@ namespace Automaticks.CSharp.Formatting;
 
 /// <summary>
 ///     Enforces that auto-implemented properties are declared on a single line.
-///     A property is considered auto-implemented when every accessor in its accessor list
-///     has neither a block body nor an expression body (e.g. <c>{ get; }</c>,
-///     <c>{ get; set; }</c>, <c>{ get; init; }</c>, <c>{ set; }</c>).
-///     Expression-bodied properties (<c>=> value</c>) have no accessor list and are exempt.
-///     Attribute lists attached to the property are excluded from the line-span check.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class AutoPropertySingleLineAnalyzer : DiagnosticAnalyzer

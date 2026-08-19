@@ -7,9 +7,7 @@ using System.Collections.Immutable;
 namespace Automaticks.CSharp.LanguageFeatures;
 
 /// <summary>
-///     Flags any parameter declared with the <c>params</c> modifier.
-///     <c>params</c> implicitly allocates a new array on every call site; callers must instead
-///     pass a typed collection directly.
+///     Flags any parameter declared with the params modifier. params implicitly allocates a new array on every call site; callers must instead pass a type...
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class ParamsParameterAnalyzer : DiagnosticAnalyzer

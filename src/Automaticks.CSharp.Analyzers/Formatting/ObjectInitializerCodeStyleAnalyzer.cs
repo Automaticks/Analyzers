@@ -7,27 +7,7 @@ using System.Collections.Immutable;
 namespace Automaticks.CSharp.Formatting;
 
 /// <summary>
-///     Enforces that object, collection, array, and <c>with</c>-expression initializers always use
-///     the multi-line format where the opening brace, every member, and the closing brace each
-///     appear on their own line.
-///     <para>
-///         Bad:
-///         <code>
-///             var x = new Foo { A = 1, B = 2 };
-///         </code>
-///     </para>
-///     <para>
-///         Good:
-///         <code>
-///             var x = new Foo
-///             {
-///                 A = 1,
-///                 B = 2
-///             };
-///         </code>
-///     </para>
-///     Empty initializer braces (<c>{ }</c>) are reported as a separate violation
-///     (<see cref="EmptyBracesRule" />).
+///     Enforces that object, collection, array, and with-expression initializers always use the multi-line format where the opening brace, every member, a...
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class ObjectInitializerCodeStyleAnalyzer : DiagnosticAnalyzer

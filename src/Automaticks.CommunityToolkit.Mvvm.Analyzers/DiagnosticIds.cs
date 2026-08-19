@@ -2,7 +2,6 @@ namespace Automaticks.CommunityToolkit.Mvvm;
 
 /// <summary>
 ///     Centralised registry of all diagnostic IDs emitted by the CommunityToolkit.Mvvm Roslyn analyzers.
-///     Use these constants when suppressing a diagnostic or referencing it from documentation.
 /// </summary>
 public static class DiagnosticIds
 {
@@ -12,7 +11,7 @@ public static class DiagnosticIds
     public static class ModelViewViewModel
     {
         /// <summary>
-        ///     Diagnostic ID for <c>ATXMV001</c>: command constructors must use method groups, not lambdas.
+        ///     Diagnostic ID for ATXMV001: command constructors must use method groups, not lambdas.
         /// </summary>
         public const string CommandLambda = "ATXMV001";
     }

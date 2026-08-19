@@ -8,7 +8,7 @@ namespace Automaticks.CSharp.Naming;
 
 /// <summary>
 ///     Flags methods and local functions that return <c>bool</c> or <c>bool?</c>
-///     but whose names do not begin with an allowed prefix: <c>can</c> or <c>has</c> (case-insensitive).
+///     but whose names do not begin with an allowed prefix: <c>can</c>, <c>has</c>, or <c>is</c> (case-insensitive).
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class BooleanMethodNamingAnalyzer : DiagnosticAnalyzer
@@ -18,20 +18,27 @@ public sealed class BooleanMethodNamingAnalyzer : DiagnosticAnalyzer
     ///     does not start with an allowed prefix.
     /// </summary>
     public static readonly DiagnosticDescriptor Rule;
-    private static readonly string[] AllowedPrefixes;
+    private readonly string[] AllowedPrefixes;
 
     static BooleanMethodNamingAnalyzer()
     {
         var rule = new DiagnosticDescriptor(
             DiagnosticIds.CSharp.BooleanMethodNaming,
             "Methods returning bool must use an allowed prefix",
-            "'{0}' returns bool or bool? but its name does not start with an allowed prefix ('can' or 'has', case-insensitive). Rename it to start with one of those prefixes (e.g. '{0}' \u2192 'Can{0}' or 'Has{0}'). This convention signals intent at every call site and is required for codebase consistency. A code fix is available (dotnet format analyzers --diagnostics ATXCS063).",
+            "'{0}' returns bool or bool? but its name does not start with an allowed prefix ('can', 'has', or 'is', case-insensitive). Rename it to start with one of those prefixes, replacing any existing prefix rather than adding to it. This convention signals intent at every call site and is required for codebase consistency. A code fix is available (dotnet format analyzers --diagnostics ATXCS063).",
             "CSharp",
             DiagnosticSeverity.Error,
             true,
-            "Rename the method or local function so its name begins with 'can' or 'has' (any casing). Examples: 'Validate' \u2192 'CanValidate', 'hasAccess' is already valid. Exempt: overrides and interface implementations where renaming would break an external contract.");
+            "Rename the method or local function so its name begins with 'can', 'has', or 'is' (any casing). Examples: 'Validate' \u2192 'CanValidate', 'AllowRetry' \u2192 'CanRetry', 'hasAccess' is already valid. Exempt: overrides and interface implementations where renaming would break an external contract.");
         Rule = rule;
-        AllowedPrefixes = ["can", "has"];
+    }
+
+    /// <summary>
+    ///     Initializes the lookup tables used during analysis.
+    /// </summary>
+    public BooleanMethodNamingAnalyzer()
+    {
+        AllowedPrefixes = ["can", "has", "is"];
     }
 
     /// <inheritdoc />

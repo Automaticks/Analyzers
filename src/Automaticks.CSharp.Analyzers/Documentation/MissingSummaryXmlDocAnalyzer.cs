@@ -7,9 +7,7 @@ using System.Collections.Immutable;
 namespace Automaticks.CSharp.Documentation;
 
 /// <summary>
-///     Flags public, protected, and protected-internal members and type declarations
-///     that are missing a <c>&lt;summary&gt;</c> or <c>&lt;inheritdoc/&gt;</c> XML
-///     documentation comment. Override members are exempt.
+///     Flags public, protected, and protected-internal members and type declarations that are missing a &lt;summary&gt; or &lt;inheritdoc/&gt; XML documen...
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class MissingSummaryXmlDocAnalyzer : DiagnosticAnalyzer

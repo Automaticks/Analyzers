@@ -8,22 +8,7 @@ using System.Collections.Immutable;
 namespace Automaticks.CSharp.Formatting;
 
 /// <summary>
-///     Flags any <c>new</c> expression that is used inline — not directly assigned to a local variable
-///     or used as the right-hand side of a top-level simple-assignment statement.
-///     The following positions are exempt from this rule:
-///     <list type="bullet">
-///         <item>The direct right-hand side of a local variable declaration: <c>var x = new Foo()</c>, including <c>for</c> and <c>using</c> declarations.</item>
-///         <item>The direct right-hand side of a top-level simple-assignment statement: <c>_field = new Foo();</c>, <c>this.Prop = new Foo();</c>, <c>dict[key] = new Foo();</c>. Only the simple <c>=</c> operator is exempt; compound assignments (<c>??=</c>, <c>+=</c>, etc.) remain flagged.</item>
-///         <item>The direct expression of a <c>return</c> or <c>yield return</c> statement.</item>
-///         <item>The direct body of an expression-bodied member (<c>=&gt;</c>).</item>
-///         <item>Inside an attribute argument list.</item>
-///         <item>The result expression of a switch expression arm: <c>x switch { T t =&gt; new Foo() }</c>.</item>
-///         <item>The direct operand of a <c>throw</c> statement or <c>throw</c> expression: <c>throw new FooException()</c>.</item>
-///     </list>
-///     All other usages — constructor arguments, method arguments, collection initializer elements,
-///     object initializer member values, field and property initializers, conditional expressions,
-///     compound assignments, tuple/deconstruction assignments, and chained assignments —
-///     must extract the instance to a named local variable first.
+///     Flags any new expression that is used inline — not directly assigned to a local variable or used as the right-hand side of a top-level simple-assig...
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class InlineNewExpressionAnalyzer : DiagnosticAnalyzer

@@ -7,9 +7,7 @@ using System.Collections.Immutable;
 namespace Automaticks.CSharp.Complexity;
 
 /// <summary>
-///     Flags methods, operators, and property accessors whose cyclomatic complexity exceeds
-///     the maximum of <c>10</c>. Lambdas and local functions nested inside a member contribute
-///     to the enclosing member's score rather than being evaluated independently.
+///     Flags methods, operators, and property accessors whose cyclomatic complexity exceeds the maximum of 10.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class CyclomaticComplexityAnalyzer : DiagnosticAnalyzer
@@ -167,8 +165,6 @@ public sealed class CyclomaticComplexityAnalyzer : DiagnosticAnalyzer
 
     /// <summary>
     ///     Walks a member body and counts cyclomatic complexity decision points.
-    ///     Lambdas and local functions are not treated as separate units — their decision
-    ///     points roll up into the enclosing member's score.
     /// </summary>
     private sealed class CyclomaticComplexityWalker : CSharpSyntaxWalker
     {

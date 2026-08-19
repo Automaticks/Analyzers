@@ -8,8 +8,6 @@ namespace Automaticks.CSharp.Naming;
 
 /// <summary>
 ///     Flags static methods declared inside a record, record struct, or struct.
-///     <c>ATXCS011</c> only inspects class declarations, so moving a static helper into a record or
-///     struct hides it from that rule while keeping the same design smell.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class StaticMethodInRecordOrStructAnalyzer : DiagnosticAnalyzer

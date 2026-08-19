@@ -12,8 +12,6 @@ namespace Automaticks.Diagnostics.CodeAnalysis.CodeFixes;
 
 /// <summary>
 ///     Deletes the generated-code marker comment reported by ATXDC021 so the file is analyzed again.
-///     Diagnostics raised for a generated file name are not fixable here, because resolving those
-///     means renaming the file.
 /// </summary>
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(GeneratedCodeMarkerCodeFixProvider))]
 [Shared]

@@ -66,6 +66,8 @@ package under specific conditions. Rows marked `CodeFix` ship an automated fix; 
 | `ATXCS067` | Namespaces must not exceed the maximum number of source files | Maintainability | Error | Analyzer | `Automaticks.CSharp.Analyzers` |
 | `ATXCS068` | No-op discard statement is forbidden | CSharp | Error | Analyzer, CodeFix | `Automaticks.CSharp.Analyzers` |
 | `ATXCS069` | Static methods must only exist in static classes, not records or structs | CSharp | Error | Analyzer | `Automaticks.CSharp.Analyzers` |
+| `ATXCS070` | Static fields and properties must only exist in static classes | CSharp | Error | Analyzer | `Automaticks.CSharp.Analyzers` |
+| `ATXCS071` | XML documentation element is too long | Documentation | Error | Analyzer | `Automaticks.CSharp.Analyzers` |
 | `ATXDC018` | #pragma warning disable is not allowed | Diagnostics.CodeAnalysis | Error | Analyzer, CodeFix | `Automaticks.Diagnostics.CodeAnalysis.Analyzers` |
 | `ATXDC019` | // ReSharper disable is not allowed | Diagnostics.CodeAnalysis | Error | Analyzer, CodeFix | `Automaticks.Diagnostics.CodeAnalysis.Analyzers` |
 | `ATXDC021` | Generated-code marker is not allowed in hand-written source | Diagnostics.CodeAnalysis | Error | Analyzer, CodeFix | `Automaticks.Diagnostics.CodeAnalysis.Analyzers` |

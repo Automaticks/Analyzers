@@ -7,10 +7,7 @@ using System.Collections.Immutable;
 namespace Automaticks.Testing;
 
 /// <summary>
-///     Flags <c>TimeProvider.System</c> in test code. <c>ATXTST004</c> exempts any <c>Task.Delay</c>
-///     that takes a <c>TimeProvider</c>, on the assumption the provider is controllable, so passing
-///     the real system clock satisfies that rule while keeping the wall-clock flakiness it exists to
-///     remove.
+///     Flags TimeProvider.System in test code.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class SystemTimeProviderInTestAnalyzer : DiagnosticAnalyzer

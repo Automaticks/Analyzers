@@ -13,8 +13,6 @@ namespace Automaticks.CSharp.CodeFixes.LanguageFeatures;
 
 /// <summary>
 ///     Strips the default implementation from the interface member reported by ATXCS061.
-///     Only methods and properties are fixed; the rule also flags fields and static members,
-///     which cannot be reduced to a contract without deleting them.
 /// </summary>
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(InterfaceDefaultImplementationCodeFixProvider))]
 [Shared]

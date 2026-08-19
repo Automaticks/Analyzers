@@ -7,13 +7,7 @@ using System.Collections.Immutable;
 namespace Automaticks.EntityFrameworkCore;
 
 /// <summary>
-///     Suppresses <c>ATXLQ002</c> (LinqUsage) in files that import <c>Microsoft.EntityFrameworkCore</c>
-///     or any <c>Microsoft.EntityFrameworkCore.*</c> namespace.
-///     EF Core''s LINQ provider operates on expression trees rather than in-memory collections,
-///     so LINQ queries in EF Core files are translated to SQL and do not carry the performance
-///     concerns that ban LINQ in general production code.
-///     Install both <c>Automaticks.Linq</c> and this package to enforce the
-///     architecture rule while automatically allowing it where EF Core is used.
+///     Suppresses ATXLQ002 (LinqUsage) in files that import Microsoft.EntityFrameworkCore or any Microsoft.EntityFrameworkCore.* namespace.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class LinqUsageSuppressor : DiagnosticSuppressor

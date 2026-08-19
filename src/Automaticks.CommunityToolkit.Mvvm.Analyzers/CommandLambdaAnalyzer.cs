@@ -8,25 +8,16 @@ using System.Collections.Immutable;
 namespace Automaticks.CommunityToolkit.Mvvm;
 
 /// <summary>
-///     Flags <c>RelayCommand</c> and <c>AsyncRelayCommand</c> constructor arguments that use
-///     lambda expressions or anonymous methods. Method groups must be used instead so that the
-///     command handler is a named, discoverable method.
+///     Flags RelayCommand and AsyncRelayCommand constructor arguments that use lambda expressions or anonymous methods.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class CommandLambdaAnalyzer : DiagnosticAnalyzer
 {
-    private static readonly string[] CommandTypeMetadataNames;
     private static readonly DiagnosticDescriptor Rule;
+    private readonly string[] CommandTypeMetadataNames;
 
     static CommandLambdaAnalyzer()
     {
-        CommandTypeMetadataNames =
-        [
-            "CommunityToolkit.Mvvm.Input.RelayCommand",
-            "CommunityToolkit.Mvvm.Input.RelayCommand`1",
-            "CommunityToolkit.Mvvm.Input.AsyncRelayCommand",
-            "CommunityToolkit.Mvvm.Input.AsyncRelayCommand`1"
-        ];
         var rule = new DiagnosticDescriptor(
             DiagnosticIds.ModelViewViewModel.CommandLambda,
             "Command constructors must use method groups, not lambdas",
@@ -36,6 +27,20 @@ public sealed class CommandLambdaAnalyzer : DiagnosticAnalyzer
             true,
             "Replace the lambda expression with a named method group. Example: change `new RelayCommand(() => Execute())` to `new RelayCommand(Execute)` where `Execute` is a named method on the same class. This applies to all `RelayCommand` and `AsyncRelayCommand` constructor arguments.");
         Rule = rule;
+    }
+
+    /// <summary>
+    ///     Initializes the command type names inspected during analysis.
+    /// </summary>
+    public CommandLambdaAnalyzer()
+    {
+        CommandTypeMetadataNames =
+        [
+            "CommunityToolkit.Mvvm.Input.RelayCommand",
+            "CommunityToolkit.Mvvm.Input.RelayCommand`1",
+            "CommunityToolkit.Mvvm.Input.AsyncRelayCommand",
+            "CommunityToolkit.Mvvm.Input.AsyncRelayCommand`1"
+        ];
     }
 
     /// <inheritdoc />

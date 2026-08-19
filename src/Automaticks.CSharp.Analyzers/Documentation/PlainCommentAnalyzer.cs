@@ -7,9 +7,7 @@ using System.Collections.Immutable;
 namespace Automaticks.CSharp.Documentation;
 
 /// <summary>
-///     Flags plain single-line (<c>//</c>) and block (<c>/* */</c>) comments.
-///     Code must be self-documenting; supplementary context must be expressed as
-///     XML documentation comments (<c>///</c>) or removed entirely.
+///     Flags plain single-line (//) and block (/* */) comments.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class PlainCommentAnalyzer : DiagnosticAnalyzer

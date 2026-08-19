@@ -1,8 +1,7 @@
 namespace Automaticks.Diagnostics.CodeAnalysis;
 
 /// <summary>
-///     Centralised registry of all diagnostic IDs emitted by the Diagnostics.CodeAnalysis Roslyn analyzers.
-///     Use these constants when suppressing a diagnostic or referencing it from documentation.
+///     Diagnostic IDs emitted by the Diagnostics.CodeAnalysis analyzers.
 /// </summary>
 public static class DiagnosticIds
 {

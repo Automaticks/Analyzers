@@ -166,8 +166,7 @@ public sealed class UnusedUsingDirectiveAnalyzer : DiagnosticAnalyzer
     }
 
     /// <summary>
-    ///     A namespace that encloses every namespace declared in the file is already in scope,
-    ///     so importing it is always redundant. Detected syntactically, with no symbol lookup.
+    ///     A namespace that encloses every namespace declared in the file is already in scope, so importing it is always redundant.
     /// </summary>
     private bool HasEnclosingNamespaceImport(CompilationUnitSyntax compilationUnit, string namespaceName)
     {
@@ -194,8 +193,7 @@ public sealed class UnusedUsingDirectiveAnalyzer : DiagnosticAnalyzer
     }
 
     /// <summary>
-    ///     'var' binds to the inferred type, which would otherwise credit that type's namespace
-    ///     even though the keyword needs no import. Checked syntactically to skip the symbol lookup.
+    ///     'var' binds to the inferred type, which would otherwise credit that type's namespace even though the keyword needs no import.
     /// </summary>
     private bool HasInferredTypeKeyword(SimpleNameSyntax simpleName)
     {
@@ -203,8 +201,7 @@ public sealed class UnusedUsingDirectiveAnalyzer : DiagnosticAnalyzer
     }
 
     /// <summary>
-    ///     A name that is already qualified resolves without the using directive, and a member
-    ///     name never needs one. Extension methods are the exception: they do rely on the import.
+    ///     A name that is already qualified resolves without the using directive, and a member name never needs one.
     /// </summary>
     private bool HasQualifiedReference(SimpleNameSyntax simpleName, ISymbol? symbol)
     {

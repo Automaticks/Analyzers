@@ -18,19 +18,11 @@ public sealed class GenericDelegateAnalyzer : DiagnosticAnalyzer
     ///     The diagnostic rule reported when a forbidden BCL generic delegate type is referenced.
     /// </summary>
     public static readonly DiagnosticDescriptor Rule;
-    private static readonly string[] ForbiddenMetadataNames;
-    private static readonly ImmutableHashSet<string> ForbiddenSimpleNames;
+    private readonly string[] ForbiddenMetadataNames;
+    private readonly ImmutableHashSet<string> ForbiddenSimpleNames;
 
     static GenericDelegateAnalyzer()
     {
-        var forbiddenSimpleNames = ImmutableHashSet.CreateBuilder<string>(StringComparer.Ordinal);
-        forbiddenSimpleNames.Add("Action");
-        forbiddenSimpleNames.Add("Comparison");
-        forbiddenSimpleNames.Add("Converter");
-        forbiddenSimpleNames.Add("Func");
-        forbiddenSimpleNames.Add("Predicate");
-        ForbiddenSimpleNames = forbiddenSimpleNames.ToImmutable();
-
         var rule = new DiagnosticDescriptor(
             DiagnosticIds.CSharp.GenericDelegate,
             "Generic built-in delegate types are forbidden",
@@ -40,6 +32,21 @@ public sealed class GenericDelegateAnalyzer : DiagnosticAnalyzer
             true,
             "Replace the built-in generic delegate (`Action<>`, `Func<>`, `Predicate<T>`, `Comparison<T>`, or `Converter<TIn,TOut>`) with a named delegate declaration. Example: replace a field of type `Func<int, string>` with a `public delegate string IntFormatter(int value)` declaration and use `IntFormatter` as the type. Named delegates make intent explicit.");
         Rule = rule;
+
+    }
+
+    /// <summary>
+    ///     Initializes the forbidden delegate type names inspected during analysis.
+    /// </summary>
+    public GenericDelegateAnalyzer()
+    {
+        var forbiddenSimpleNames = ImmutableHashSet.CreateBuilder<string>(StringComparer.Ordinal);
+        forbiddenSimpleNames.Add("Action");
+        forbiddenSimpleNames.Add("Comparison");
+        forbiddenSimpleNames.Add("Converter");
+        forbiddenSimpleNames.Add("Func");
+        forbiddenSimpleNames.Add("Predicate");
+        ForbiddenSimpleNames = forbiddenSimpleNames.ToImmutable();
 
         var forbiddenMetadataNames = new[]
         {
@@ -102,6 +109,11 @@ public sealed class GenericDelegateAnalyzer : DiagnosticAnalyzer
     {
         if (!ForbiddenSimpleNames.Contains(GetSimpleName(context.Node))
             && !HasUsingAlias(context.Node.SyntaxTree, aliasTrees))
+        {
+            return;
+        }
+
+        if (context.Node.IsPartOfStructuredTrivia())
         {
             return;
         }

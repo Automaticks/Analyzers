@@ -3,8 +3,7 @@
 namespace Automaticks.CSharp.Complexity;
 
 /// <summary>
-///     Reads a positive integer limit from <c>.editorconfig</c>, falling back to a built-in default.
-///     Complexity rules document their key so a repository can tune the threshold.
+///     Reads a positive integer limit from .editorconfig, falling back to a built-in default.
 /// </summary>
 public static class ConfigurableLimit
 {

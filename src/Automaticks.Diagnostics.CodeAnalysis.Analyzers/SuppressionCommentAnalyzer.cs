@@ -9,16 +9,6 @@ namespace Automaticks.Diagnostics.CodeAnalysis;
 
 /// <summary>
 ///     Flags suppression comments that hide diagnostics rather than fixing their root cause.
-///     Two forms are forbidden:
-///     <list type="bullet">
-///         <item>
-///             <description><c>#pragma warning disable</c> directives (ATXDC018).</description>
-///         </item>
-///         <item>
-///             <description><c>// ReSharper disable</c> inline comments (ATXDC019).</description>
-///         </item>
-///     </list>
-///     Both rules apply to all project types — production and test alike.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class SuppressionCommentAnalyzer : DiagnosticAnalyzer

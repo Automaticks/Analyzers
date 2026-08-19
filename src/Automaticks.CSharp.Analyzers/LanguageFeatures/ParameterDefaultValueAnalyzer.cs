@@ -7,10 +7,7 @@ using System.Collections.Immutable;
 namespace Automaticks.CSharp.LanguageFeatures;
 
 /// <summary>
-///     Flags any parameter that declares a default value in a method, constructor, local function,
-///     lambda expression, anonymous method, or indexer.
-///     Callers must always supply explicit arguments — optional parameters create hidden coupling
-///     and make method signatures ambiguous.
+///     Flags any parameter that declares a default value in a method, constructor, local function, lambda expression, anonymous method, or indexer.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class ParameterDefaultValueAnalyzer : DiagnosticAnalyzer
@@ -200,9 +197,7 @@ public sealed class ParameterDefaultValueAnalyzer : DiagnosticAnalyzer
     }
 
     /// <summary>
-    ///     Returns <see langword="true" /> when <paramref name="method" /> is the implicit
-    ///     implementation of a method declared on an external (metadata-only) interface.
-    ///     Such methods cannot be changed by the developer, so they are exempt from the rule.
+    ///     Returns when is the implicit implementation of a method declared on an external (metadata-only) interface.
     /// </summary>
     private bool HasImplicitExternalInterfaceImplementation(IMethodSymbol method)
     {
@@ -234,9 +229,7 @@ public sealed class ParameterDefaultValueAnalyzer : DiagnosticAnalyzer
     }
 
     /// <summary>
-    ///     Returns <see langword="true" /> when <paramref name="property" /> is the implicit
-    ///     implementation of an indexer declared on an external (metadata-only) interface.
-    ///     Such indexers cannot be changed by the developer, so they are exempt from the rule.
+    ///     Returns when is the implicit implementation of an indexer declared on an external (metadata-only) interface.
     /// </summary>
     private bool HasImplicitExternalInterfaceIndexerImplementation(IPropertySymbol property)
     {

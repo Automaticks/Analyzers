@@ -9,19 +9,32 @@ using System.Collections.Immutable;
 namespace Automaticks.Reflection;
 
 /// <summary>
-///     Flags usage of reflection APIs — <c>System.Reflection.*</c> types, reflection-related methods on
-///     <c>System.Type</c>, and <c>Activator.CreateInstance(Type, ...)</c> non-generic overloads.
-///     Auto-exempted in <c>IServiceCollection</c> extension methods and <c>DispatchProxy</c> subclasses.
-///     Enforced in all projects (production, test, and analyzer).
+///     Flags usage of reflection APIs — System.Reflection.* types, reflection-related methods on System.Type, and Activator.CreateInstance(Type, ...) non-...
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class ReflectionAnalyzer : DiagnosticAnalyzer
 {
-    private static readonly ImmutableHashSet<string> BannedReflectionTypeNames;
-    private static readonly ImmutableHashSet<string> BannedTypeMethodNames;
     private static readonly DiagnosticDescriptor Rule;
+    private readonly ImmutableHashSet<string> BannedReflectionTypeNames;
+    private readonly ImmutableHashSet<string> BannedTypeMethodNames;
 
     static ReflectionAnalyzer()
+    {
+        var rule = new DiagnosticDescriptor(
+            DiagnosticIds.Reflection.ReflectionUsage,
+            "Reflection is forbidden",
+            "Use of reflection ('{0}') is forbidden. Auto-exempted only in IServiceCollection extension methods and DispatchProxy subclasses.",
+            "Reflection",
+            DiagnosticSeverity.Error,
+            true,
+            "Remove the reflective API call and redesign using dependency injection interfaces, compile-time generics, or source generators. Reflection bypasses static type safety, breaks ahead-of-time compilation, and complicates trimming. Auto-exemptions: reflection inside `IServiceCollection` extension methods and `DispatchProxy` subclasses is allowed.");
+        Rule = rule;
+    }
+
+    /// <summary>
+    ///     Initializes the banned reflection type and method names.
+    /// </summary>
+    public ReflectionAnalyzer()
     {
         var bannedReflectionTypeNames = ImmutableHashSet.CreateBuilder<string>(StringComparer.Ordinal);
         bannedReflectionTypeNames.Add("Assembly");
@@ -57,16 +70,6 @@ public sealed class ReflectionAnalyzer : DiagnosticAnalyzer
         bannedTypeMethodNames.Add("GetTypeInfo");
         bannedTypeMethodNames.Add("MakeGenericType");
         BannedTypeMethodNames = bannedTypeMethodNames.ToImmutable();
-
-        var rule = new DiagnosticDescriptor(
-            DiagnosticIds.Reflection.ReflectionUsage,
-            "Reflection is forbidden",
-            "Use of reflection ('{0}') is forbidden. Auto-exempted only in IServiceCollection extension methods and DispatchProxy subclasses.",
-            "Reflection",
-            DiagnosticSeverity.Error,
-            true,
-            "Remove the reflective API call and redesign using dependency injection interfaces, compile-time generics, or source generators. Reflection bypasses static type safety, breaks ahead-of-time compilation, and complicates trimming. Auto-exemptions: reflection inside `IServiceCollection` extension methods and `DispatchProxy` subclasses is allowed.");
-        Rule = rule;
     }
 
     /// <inheritdoc />

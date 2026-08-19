@@ -8,13 +8,7 @@ using System.Collections.Immutable;
 namespace Automaticks.Diagnostics.CodeAnalysis;
 
 /// <summary>
-///     Flags a generated-code marker on a hand-written source file. Roslyn treats a file as
-///     generated when its name ends in <c>.g.cs</c>, <c>.generated.cs</c> or <c>.g.i.cs</c>, or when
-///     it opens with an <c>&lt;auto-generated&gt;</c> comment. Every other rule in this suite calls
-///     <c>ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None)</c>, so one such marker
-///     silently exempts the whole file from every rule and leaves no suppression to review.
-///     Files under <c>obj</c> or <c>bin</c> are genuine build output and are ignored, as are
-///     <c>.designer.cs</c> files, which tooling legitimately checks in.
+///     Flags a generated-code marker on a hand-written source file.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class GeneratedCodeMarkerAnalyzer : DiagnosticAnalyzer

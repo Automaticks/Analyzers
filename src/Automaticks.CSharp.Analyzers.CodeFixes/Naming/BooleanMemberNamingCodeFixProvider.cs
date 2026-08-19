@@ -10,9 +10,7 @@ using System.Threading.Tasks;
 namespace Automaticks.CSharp.CodeFixes.Naming;
 
 /// <summary>
-///     Renames the boolean field or property reported by ATXCS062 so it starts with <c>is</c>.
-///     The rule also accepts <c>allow</c>; the fix offers the <c>is</c> form because it suits
-///     most members, and the developer can pick a different name by hand.
+///     Renames the boolean field or property reported by ATXCS062 so it starts with is.
 /// </summary>
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(BooleanMemberNamingCodeFixProvider))]
 [Shared]

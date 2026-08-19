@@ -1,8 +1,7 @@
 ﻿namespace Automaticks.Testing;
 
 /// <summary>
-///     Centralised registry of all diagnostic IDs emitted by the Testing Roslyn analyzers.
-///     Use these constants when suppressing a diagnostic or referencing it from documentation.
+///     Diagnostic IDs emitted by the Testing analyzers.
 /// </summary>
 public static class DiagnosticIds
 {

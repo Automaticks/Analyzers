@@ -1,8 +1,7 @@
 ﻿namespace Automaticks.CSharp;
 
 /// <summary>
-///     Centralised registry of all diagnostic IDs emitted by the CSharp Roslyn analyzers.
-///     Use these constants when suppressing a diagnostic or referencing it from documentation.
+///     Diagnostic IDs emitted by the CSharp analyzers.
 /// </summary>
 public static class DiagnosticIds
 {
@@ -177,7 +176,7 @@ public static class DiagnosticIds
         public const string ObjectInitializerEmptyBraces = "ATXCS060";
 
         /// <summary>
-        ///     Diagnostic ID for <c>ATXCS059</c>: object, collection, array, or <c>with</c> initializer does not follow the one-member-per-line format with braces on their own lines.
+        ///     Diagnostic ID for <c>ATXCS059</c>: initializer does not use one member per line with braces on their own lines.
         /// </summary>
         public const string ObjectInitializerFormat = "ATXCS059";
 
@@ -192,7 +191,7 @@ public static class DiagnosticIds
         public const string OutParameterPosition = "ATXCS024";
 
         /// <summary>
-        ///     Diagnostic ID for <c>ATXCS057</c>: parameter default values are forbidden in methods, constructors, local functions, lambdas, anonymous methods, and indexers.
+        ///     Diagnostic ID for <c>ATXCS057</c>: parameter default values are forbidden on any callable.
         /// </summary>
         public const string ParameterDefaultValue = "ATXCS057";
 
@@ -252,6 +251,11 @@ public static class DiagnosticIds
         public const string SingleBlankLineBetweenUsingsAndNamespace = "ATXCS043";
 
         /// <summary>
+        ///     Diagnostic ID for <c>ATXCS070</c>: static fields and properties must only exist in static classes.
+        /// </summary>
+        public const string StaticMemberInNonStaticClass = "ATXCS070";
+
+        /// <summary>
         ///     Diagnostic ID for <c>ATXCS011</c>: static methods must only exist in static classes.
         /// </summary>
         public const string StaticMethodInNonStaticClass = "ATXCS011";
@@ -285,5 +289,10 @@ public static class DiagnosticIds
         ///     Diagnostic ID for <c>ATXCS048</c>: unused <c>using</c> directive.
         /// </summary>
         public const string UnusedUsingDirective = "ATXCS048";
+
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXCS071</c>: XML documentation element exceeds the maximum prose length.
+        /// </summary>
+        public const string XmlDocLength = "ATXCS071";
     }
 }

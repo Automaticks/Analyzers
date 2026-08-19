@@ -9,19 +9,15 @@ namespace Automaticks.Testing;
 
 /// <summary>
 ///     Warns when a test class name does not match any real type in the compilation.
-///     The analyzer strips the <c>Tests</c> suffix and searches for a progressively shorter
-///     PascalCase prefix until a match is found.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class TestClassNameAnalyzer : DiagnosticAnalyzer
 {
-    private static readonly Regex PascalWordPattern;
     private static readonly DiagnosticDescriptor Rule;
+    private readonly Regex PascalWordPattern;
 
     static TestClassNameAnalyzer()
     {
-        var pascalWordPattern = new Regex("[A-Z][a-z0-9]*", RegexOptions.Compiled);
-        PascalWordPattern = pascalWordPattern;
         var rule = new DiagnosticDescriptor(
             DiagnosticIds.Testing.TestClassName,
             "Test class name must match the class under test",
@@ -31,6 +27,15 @@ public sealed class TestClassNameAnalyzer : DiagnosticAnalyzer
             true,
             "Rename the test class to follow the pattern `{TypeUnderTest}Tests`. For example, a test class for `FooService` must be named `FooServiceTests`. A qualifier suffix is allowed: `FooService{Qualifier}Tests`. The type `{TypeUnderTest}` must be an actual type present in the compilation.");
         Rule = rule;
+    }
+
+    /// <summary>
+    ///     Initializes the lookup tables used during analysis.
+    /// </summary>
+    public TestClassNameAnalyzer()
+    {
+        var pascalWordPattern = new Regex("[A-Z][a-z0-9]*", RegexOptions.Compiled);
+        PascalWordPattern = pascalWordPattern;
     }
 
     /// <inheritdoc />

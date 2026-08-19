@@ -9,14 +9,7 @@ using System.IO;
 namespace Automaticks.CSharp.Complexity;
 
 /// <summary>
-///     Enforces a maximum number of source files directly inside a single folder. A folder
-///     whose direct <c>.cs</c> file count exceeds <see cref="MaxFiles" /> is flagged.
-///     <para>
-///         Files in subfolders are not counted toward their parent folder; each folder is
-///         evaluated independently. Files with no path (e.g. in-memory syntax trees) and
-///         generated files (those containing an <c>&lt;auto-generated&gt;</c> header) are
-///         skipped automatically.
-///     </para>
+///     Enforces a maximum number of source files directly inside a single folder.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class FolderFileCountAnalyzer : DiagnosticAnalyzer

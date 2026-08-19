@@ -9,15 +9,7 @@ using System.Collections.Immutable;
 namespace Automaticks.CSharp.Complexity;
 
 /// <summary>
-///     Enforces a maximum number of distinct source files that declare a given namespace. A
-///     namespace whose file count exceeds <see cref="MaxFiles" /> is flagged.
-///     <para>
-///         Matching is exact: a file contributes only to the innermost (leaf) namespace it
-///         declares, so files in a child namespace (e.g. <c>MyApp.Services.Impl</c>) do not
-///         count toward a parent namespace (e.g. <c>MyApp.Services</c>). Files with no declared
-///         namespace and generated files (those containing an <c>&lt;auto-generated&gt;</c>
-///         header) are skipped automatically.
-///     </para>
+///     Enforces a maximum number of distinct source files that declare a given namespace.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class NamespaceFileCountAnalyzer : DiagnosticAnalyzer
