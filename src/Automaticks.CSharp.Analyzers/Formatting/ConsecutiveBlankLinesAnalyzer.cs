@@ -6,9 +6,6 @@ namespace Automaticks.CSharp.Formatting;
 
 /// <summary>
 ///     Flags any location in a C# source file where two or more consecutive blank lines appear.
-///     A blank line is a line that contains only whitespace (or nothing) followed by a line terminator.
-///     The rule fires once per run of consecutive blank lines, pointing at the second blank line.
-///     Zero blank lines are handled by more specific rules (ATXCS039, ATXCS040, ATXCS043).
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class ConsecutiveBlankLinesAnalyzer : DiagnosticAnalyzer

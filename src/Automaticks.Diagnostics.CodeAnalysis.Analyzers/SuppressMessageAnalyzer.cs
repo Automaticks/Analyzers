@@ -7,10 +7,7 @@ using System.Collections.Immutable;
 namespace Automaticks.Diagnostics.CodeAnalysis;
 
 /// <summary>
-///     Flags any use of the <c>[SuppressMessage]</c> attribute.
-///     Diagnostic suppression via <c>[SuppressMessage]</c> hides rule violations instead of fixing their root cause.
-///     Every analyzer rule must be addressed through proper code changes, analyzer updates, or legitimate
-///     architectural exemptions built directly into the analyzer logic.
+///     Flags any use of the [SuppressMessage] attribute.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class SuppressMessageAnalyzer : DiagnosticAnalyzer

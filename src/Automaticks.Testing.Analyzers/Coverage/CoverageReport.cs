@@ -6,8 +6,7 @@ using System.Xml;
 namespace Automaticks.Testing.Coverage;
 
 /// <summary>
-///     A Cobertura coverage report parsed into per-file and per-method counters. Parsing streams
-///     the document so a large report never materialises as an object graph.
+///     A Cobertura coverage report parsed into per-file and per-method counters.
 /// </summary>
 public sealed class CoverageReport
 {
@@ -63,8 +62,7 @@ public sealed class CoverageReport
     }
 
     /// <summary>
-    ///     Merges a further Cobertura report into this one. A solution-wide test run emits one
-    ///     report per test project, and each covers a different slice of the source.
+    ///     Merges a further Cobertura report into this one.
     /// </summary>
     /// <param name="reportXml">The Cobertura report contents to merge.</param>
     public void Include(string reportXml)

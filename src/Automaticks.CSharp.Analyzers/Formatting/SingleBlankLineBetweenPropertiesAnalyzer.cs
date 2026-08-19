@@ -7,11 +7,7 @@ using System.Collections.Immutable;
 namespace Automaticks.CSharp.Formatting;
 
 /// <summary>
-///     Enforces exactly one blank line between a property or indexer declaration and the member
-///     immediately adjacent to it (before or after) inside any type declaration.
-///     Zero blank lines (cramped) and two or more blank lines (over-spaced) are both violations.
-///     A comment line between two members resets the blank-line counter — a blank line that precedes
-///     a doc-comment preamble still counts as the required separator.
+///     Enforces exactly one blank line between a property or indexer declaration and the member immediately adjacent to it (before or after) inside any ty...
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class SingleBlankLineBetweenPropertiesAnalyzer : DiagnosticAnalyzer

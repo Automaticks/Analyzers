@@ -12,10 +12,7 @@ using System.Threading.Tasks;
 namespace Automaticks.Extensions.Options.CodeFixes;
 
 /// <summary>
-///     Rewrites <c>AddOptions&lt;T&gt;().BindConfiguration("X")</c> into
-///     <c>Configure&lt;T&gt;(configuration.GetRequiredSection("X"))</c> for ATXEO049.
-///     The fix is offered only when the call has that shape and an <c>IConfiguration</c> is in
-///     scope, because otherwise there is nothing to pass to <c>GetRequiredSection</c>.
+///     Rewrites AddOptions&lt;T&gt;().BindConfiguration("X") into Configure&lt;T&gt;(configuration.GetRequiredSection("X")) for ATXEO049.
 /// </summary>
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(BindConfigurationCodeFixProvider))]
 [Shared]

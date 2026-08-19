@@ -8,25 +8,7 @@ using System.Collections.Immutable;
 namespace Automaticks.CSharp.LanguageFeatures;
 
 /// <summary>
-///     Enforces three rules around <c>ref</c> parameters:
-///     <list type="bullet">
-///         <item>
-///             <description>
-///                 <b>ATXCS025</b> — <c>ref</c> parameters are forbidden in any method not named <c>SetProperty</c>.
-///             </description>
-///         </item>
-///         <item>
-///             <description>
-///                 <b>ATXCS026</b> — a <c>ref</c> parameter must be the first parameter of its method.
-///             </description>
-///         </item>
-///         <item>
-///             <description>
-///                 <b>ATXCS027</b> — a method may not define more than one <c>ref</c> parameter.
-///             </description>
-///         </item>
-///     </list>
-///     External overrides and external interface implementations are exempt.
+///     Enforces three rules around ref parameters: ATXCS025 — ref parameters are forbidden in any method not named SetProperty.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class RefParameterAnalyzer : DiagnosticAnalyzer

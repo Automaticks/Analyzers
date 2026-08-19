@@ -7,9 +7,7 @@ using System.Collections.Immutable;
 namespace Automaticks.CSharp.LanguageFeatures;
 
 /// <summary>
-///     Flags anonymous tuple types (<c>(T1, T2)</c> syntax) used as return types, field types,
-///     parameter types, or inline deconstruction targets. Named records, classes, or structs
-///     must be used instead.
+///     Flags anonymous tuple types ((T1, T2) syntax) used as return types, field types, parameter types, or inline deconstruction targets.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class AnonymousTupleAnalyzer : DiagnosticAnalyzer
@@ -47,10 +45,7 @@ public sealed class AnonymousTupleAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeDeclarationExpression(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not DeclarationExpressionSyntax declaration)
-        {
-            return;
-        }
+        var declaration = (context.Node as DeclarationExpressionSyntax)!;
 
         if (declaration.Designation is not ParenthesizedVariableDesignationSyntax)
         {
@@ -58,11 +53,6 @@ public sealed class AnonymousTupleAnalyzer : DiagnosticAnalyzer
         }
 
         if (declaration.Parent is not AssignmentExpressionSyntax assignment)
-        {
-            return;
-        }
-
-        if (assignment.Left != declaration)
         {
             return;
         }
@@ -77,11 +67,50 @@ public sealed class AnonymousTupleAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeTupleExpression(SyntaxNodeAnalysisContext context)
     {
+        var tuple = (context.Node as TupleExpressionSyntax)!;
+
+        if (HasSwapAssignment(tuple))
+        {
+            return;
+        }
+
         context.ReportDiagnostic(Diagnostic.Create(Rule, context.Node.GetLocation()));
     }
 
     private void AnalyzeTupleType(SyntaxNodeAnalysisContext context)
     {
         context.ReportDiagnostic(Diagnostic.Create(Rule, context.Node.GetLocation()));
+    }
+
+    private bool HasOnlyPlainIdentifiers(ExpressionSyntax? expression)
+    {
+        if (expression is not TupleExpressionSyntax tuple)
+        {
+            return false;
+        }
+
+        foreach (var argument in tuple.Arguments)
+        {
+            if (argument.NameColon is not null || argument.Expression is not IdentifierNameSyntax)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    ///     Recognises <c>(a, b) = (b, a)</c>, which uses tuple syntax for simultaneous assignment
+    ///     rather than to carry a data shape, so there is no entity to model.
+    /// </summary>
+    private bool HasSwapAssignment(TupleExpressionSyntax tuple)
+    {
+        if (tuple.Parent is not AssignmentExpressionSyntax assignment)
+        {
+            return false;
+        }
+
+        return HasOnlyPlainIdentifiers(assignment.Left) && HasOnlyPlainIdentifiers(assignment.Right);
     }
 }

@@ -11,8 +11,7 @@ using System.Threading.Tasks;
 namespace Automaticks.CSharp.CodeFixes.Naming;
 
 /// <summary>
-///     Renames the file so it matches the type reported by ATXCS031. The rule can also be
-///     satisfied by moving the type to another file, which the fix leaves to the developer.
+///     Renames the file so it matches the type reported by ATXCS031.
 /// </summary>
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(FileNameMismatchCodeFixProvider))]
 [Shared]

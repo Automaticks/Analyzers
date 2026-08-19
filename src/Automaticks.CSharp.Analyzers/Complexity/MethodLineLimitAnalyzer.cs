@@ -8,11 +8,7 @@ using System.Collections.Immutable;
 namespace Automaticks.CSharp.Complexity;
 
 /// <summary>
-///     Enforces a maximum line count per method-like member. Any method, operator, property or event
-///     accessor, or local function whose non-blank line count exceeds <see cref="MaxLines" /> is flagged.
-///     Blank and whitespace-only lines are excluded from the count.
-///     Expression-bodied members are always counted as a single line.
-///     Members without a body (abstract, extern, interface declarations) are ignored.
+///     Enforces a maximum line count per method-like member.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class MethodLineLimitAnalyzer : DiagnosticAnalyzer

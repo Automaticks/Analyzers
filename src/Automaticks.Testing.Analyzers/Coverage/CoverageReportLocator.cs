@@ -7,7 +7,6 @@ namespace Automaticks.Testing.Coverage;
 
 /// <summary>
 ///     Locates and parses the coverage report supplied to a compilation through AdditionalFiles.
-///     Analyzers must not touch the file system directly, so the report can only arrive this way.
 /// </summary>
 public static class CoverageReportLocator
 {

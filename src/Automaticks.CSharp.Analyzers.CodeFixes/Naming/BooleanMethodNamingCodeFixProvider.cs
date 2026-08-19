@@ -10,9 +10,7 @@ using System.Threading.Tasks;
 namespace Automaticks.CSharp.CodeFixes.Naming;
 
 /// <summary>
-///     Renames the boolean-returning method reported by ATXCS063 so it starts with <c>can</c>.
-///     The rule also accepts <c>has</c>; the fix offers the <c>can</c> form and the developer can
-///     pick a different name by hand.
+///     Renames the boolean-returning method reported by ATXCS063 so it starts with can.
 /// </summary>
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(BooleanMethodNamingCodeFixProvider))]
 [Shared]

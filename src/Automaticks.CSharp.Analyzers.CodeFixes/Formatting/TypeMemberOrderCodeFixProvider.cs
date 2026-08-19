@@ -14,7 +14,6 @@ namespace Automaticks.CSharp.CodeFixes.Formatting;
 
 /// <summary>
 ///     Reorders the members of a type into canonical order, settling both ATXCS042 and ATXCS064.
-///     Ranking goes through the analyzer's own calculator so the fix cannot disagree with the rule.
 /// </summary>
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(TypeMemberOrderCodeFixProvider))]
 [Shared]

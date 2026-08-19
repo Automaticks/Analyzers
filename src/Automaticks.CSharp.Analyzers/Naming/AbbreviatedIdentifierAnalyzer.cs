@@ -9,30 +9,20 @@ using System.Collections.Immutable;
 namespace Automaticks.CSharp.Naming;
 
 /// <summary>
-///     Flags identifiers (variables, parameters, method names, type names) that contain abbreviated
-///     segments — for example <c>ct</c>, <c>cts</c>, <c>sb</c>, <c>ctx</c>, or single-letter names.
-///     Spatial axis names (<c>x</c>, <c>y</c>, <c>z</c>) are exempt.
+///     Flags identifiers (variables, parameters, method names, type names) that contain abbreviated segments — for example ct, cts, sb, ctx, or single-let...
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class AbbreviatedIdentifierAnalyzer : DiagnosticAnalyzer
 {
-    private static readonly HashSet<string> AxisSegments;
-
     /// <summary>
     ///     The diagnostic rule reported when an identifier contains an abbreviated segment.
     /// </summary>
+    private static readonly ImmutableHashSet<string> AxisSegments;
     private static readonly DiagnosticDescriptor Rule;
-    private static readonly HashSet<char> Vowels;
+    private static readonly ImmutableHashSet<char> Vowels;
 
     static AbbreviatedIdentifierAnalyzer()
     {
-        var axisSegments = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            "x",
-            "y",
-            "z"
-        };
-        AxisSegments = axisSegments;
         var rule = new DiagnosticDescriptor(
             DiagnosticIds.CSharp.AbbreviatedIdentifier,
             "Identifier contains an abbreviated segment",
@@ -42,6 +32,13 @@ public sealed class AbbreviatedIdentifierAnalyzer : DiagnosticAnalyzer
             true,
             "Identifiers must use full, descriptive names — never abbreviations. Common banned abbreviations include: `ct`/`cts` (use `cancellationToken`), `sb` (use `stringBuilder`), `ctx` (use `context`), `vm` (use `viewModel`), `e` on event handlers (use the full event args name). Rename the flagged segment to its full English word or phrase.");
         Rule = rule;
+        var axisSegments = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "x",
+            "y",
+            "z"
+        };
+        AxisSegments = axisSegments.ToImmutableHashSet(StringComparer.OrdinalIgnoreCase);
         Vowels = ['a', 'e', 'i', 'o', 'u', 'y'];
     }
 

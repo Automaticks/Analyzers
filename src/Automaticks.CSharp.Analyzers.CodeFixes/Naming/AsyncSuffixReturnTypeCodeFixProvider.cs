@@ -12,8 +12,7 @@ using System.Threading.Tasks;
 namespace Automaticks.CSharp.CodeFixes.Naming;
 
 /// <summary>
-///     Strips the <c>Async</c> suffix from the method reported by ATXCS009. The rule can also be
-///     satisfied by changing the return type, which is a design decision the fix leaves alone.
+///     Strips the Async suffix from the method reported by ATXCS009.
 /// </summary>
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(AsyncSuffixReturnTypeCodeFixProvider))]
 [Shared]

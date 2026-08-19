@@ -15,7 +15,7 @@ namespace Automaticks.CSharp.LanguageFeatures;
 public sealed class RedundantInitSetterAnalyzer : DiagnosticAnalyzer
 {
     /// <summary>
-    ///     The diagnostic rule reported when a public init-only auto-property is set in the containing type's sole instance constructor from a constructor parameter.
+    ///     The diagnostic rule reported when a public init-only auto-property is set in the containing type's sole instance constructor from a constructor par...
     /// </summary>
     public static readonly DiagnosticDescriptor Rule;
 

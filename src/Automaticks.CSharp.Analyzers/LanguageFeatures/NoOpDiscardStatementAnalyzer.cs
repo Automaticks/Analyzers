@@ -7,10 +7,7 @@ using System.Collections.Immutable;
 namespace Automaticks.CSharp.LanguageFeatures;
 
 /// <summary>
-///     Flags a discard assignment whose right-hand side only reads <c>this</c>, a parameter, or a
-///     local. The statement computes nothing and exists to silence a diagnostic: <c>_ = this;</c>
-///     stops "make this member static" firing, and <c>_ = parameter;</c> hides an unused parameter
-///     or an empty catch block.
+///     Flags a discard assignment whose right-hand side only reads this, a parameter, or a local.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class NoOpDiscardStatementAnalyzer : DiagnosticAnalyzer

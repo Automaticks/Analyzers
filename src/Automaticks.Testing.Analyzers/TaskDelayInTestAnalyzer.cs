@@ -7,12 +7,7 @@ using System.Collections.Immutable;
 namespace Automaticks.Testing;
 
 /// <summary>
-///     Flags any invocation of <c>Task.Delay</c> without a <c>TimeProvider</c> argument.
-///     Using <c>Task.Delay</c> as a synchronisation primitive produces flaky results
-///     because wall-clock time is unreliable under CI load. Use awaitable synchronisation
-///     primitives (e.g. <c>SemaphoreSlim.WaitAsync</c>, <c>TaskCompletionSource</c>) instead.
-///     Calls that pass a <c>TimeProvider</c> are exempt because they can be
-///     driven deterministically in tests.
+///     Flags any invocation of Task.Delay without a TimeProvider argument.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class TaskDelayInTestAnalyzer : DiagnosticAnalyzer

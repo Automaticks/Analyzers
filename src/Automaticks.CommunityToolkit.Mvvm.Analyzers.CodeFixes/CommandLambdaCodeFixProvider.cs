@@ -14,9 +14,7 @@ using System.Threading.Tasks;
 namespace Automaticks.CommunityToolkit.Mvvm.CodeFixes;
 
 /// <summary>
-///     Extracts the command lambda reported by ATXMV001 into a named method and passes the method
-///     group instead. The fix is declined when the lambda captures a local or parameter, because
-///     the extracted method could not reach it.
+///     Extracts the command lambda reported by ATXMV001 into a named method and passes the method group instead.
 /// </summary>
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(CommandLambdaCodeFixProvider))]
 [Shared]

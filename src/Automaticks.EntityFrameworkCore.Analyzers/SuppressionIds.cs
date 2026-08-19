@@ -2,7 +2,6 @@ namespace Automaticks.EntityFrameworkCore;
 
 /// <summary>
 ///     Centralised registry of all suppression IDs emitted by the EntityFrameworkCore Roslyn analyzers.
-///     Use these constants when referencing a suppression from documentation or tests.
 /// </summary>
 public static class SuppressionIds
 {

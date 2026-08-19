@@ -8,20 +8,7 @@ using System.Collections.Immutable;
 namespace Automaticks.CSharp.LanguageFeatures;
 
 /// <summary>
-///     Enforces two rules around <c>out</c> parameters:
-///     <list type="bullet">
-///         <item>
-///             <description>
-///                 <b>ATXCS023</b> — a method may not define more than one <c>out</c> parameter.
-///             </description>
-///         </item>
-///         <item>
-///             <description>
-///                 <b>ATXCS024</b> — an <c>out</c> parameter must be the last parameter of its method.
-///             </description>
-///         </item>
-///     </list>
-///     External overrides and external interface implementations are exempt.
+///     Enforces two rules around out parameters: ATXCS023 — a method may not define more than one out parameter.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class OutParameterAnalyzer : DiagnosticAnalyzer

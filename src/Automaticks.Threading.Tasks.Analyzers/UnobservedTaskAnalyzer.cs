@@ -7,10 +7,7 @@ using System.Collections.Immutable;
 namespace Automaticks.Threading.Tasks;
 
 /// <summary>
-///     Flags invocations of task-returning methods whose result is discarded without being
-///     awaited, returned, assigned to a variable, or passed as an argument. Discarding a
-///     <see cref="System.Threading.Tasks.Task" /> or
-///     <see cref="System.Threading.Tasks.ValueTask" /> silently swallows exceptions.
+///     Flags invocations of task-returning methods whose result is discarded without being awaited, returned, assigned to a variable, or passed as an argu...
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class UnobservedTaskAnalyzer : DiagnosticAnalyzer

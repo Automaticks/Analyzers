@@ -8,10 +8,7 @@ using System.Collections.Immutable;
 namespace Automaticks.Extensions.Options;
 
 /// <summary>
-///     Flags any call to <c>BindConfiguration</c> where the receiver type is
-///     <c>Microsoft.Extensions.Options.OptionsBuilder&lt;T&gt;</c>.
-///     Use <c>Configure&lt;T&gt;(configuration.GetRequiredSection(...))</c> instead so that a missing
-///     configuration section is detected at startup rather than silently using defaults.
+///     Flags any call to BindConfiguration where the receiver type is Microsoft.Extensions.Options.OptionsBuilder&lt;T&gt;.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class BindConfigurationAnalyzer : DiagnosticAnalyzer

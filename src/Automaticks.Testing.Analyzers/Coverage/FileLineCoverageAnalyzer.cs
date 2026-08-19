@@ -6,8 +6,7 @@ using System.Collections.Immutable;
 namespace Automaticks.Testing.Coverage;
 
 /// <summary>
-///     Reports source files whose line coverage in the supplied report falls below the configured
-///     minimum, read from <c>.editorconfig</c> key <c>automaticks.minimum_line_coverage</c>.
+///     Reports source files whose line coverage in the supplied report falls below the configured minimum, read from .editorconfig key automaticks.minimum...
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class FileLineCoverageAnalyzer : DiagnosticAnalyzer

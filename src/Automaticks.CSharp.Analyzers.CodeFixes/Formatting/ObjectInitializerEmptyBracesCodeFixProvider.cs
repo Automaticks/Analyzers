@@ -12,8 +12,6 @@ namespace Automaticks.CSharp.CodeFixes.Formatting;
 
 /// <summary>
 ///     Removes the empty initializer braces reported by ATXCS060.
-///     Only explicit object creation is fixed; dropping the braces from an array creation such as
-///     <c>new int[] { }</c> would leave code that does not compile.
 /// </summary>
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(ObjectInitializerEmptyBracesCodeFixProvider))]
 [Shared]

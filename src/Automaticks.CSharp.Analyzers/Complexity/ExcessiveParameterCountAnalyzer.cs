@@ -227,9 +227,7 @@ public sealed class ExcessiveParameterCountAnalyzer : DiagnosticAnalyzer
     }
 
     /// <summary>
-    ///     Returns <see langword="true" /> when <paramref name="method" /> is the implicit
-    ///     implementation of a method declared on an external (metadata-only) interface.
-    ///     Such methods cannot be changed by the developer, so they are exempt from the rule.
+    ///     Returns when is the implicit implementation of a method declared on an external (metadata-only) interface.
     /// </summary>
     private bool HasImplicitExternalInterfaceImplementation(IMethodSymbol method)
     {
@@ -261,9 +259,7 @@ public sealed class ExcessiveParameterCountAnalyzer : DiagnosticAnalyzer
     }
 
     /// <summary>
-    ///     Returns <see langword="true" /> when <paramref name="property" /> is the implicit
-    ///     implementation of an indexer declared on an external (metadata-only) interface.
-    ///     Such indexers cannot be changed by the developer, so they are exempt from the rule.
+    ///     Returns when is the implicit implementation of an indexer declared on an external (metadata-only) interface.
     /// </summary>
     private bool HasImplicitExternalInterfaceIndexerImplementation(IPropertySymbol property)
     {

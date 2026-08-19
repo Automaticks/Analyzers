@@ -12,9 +12,7 @@ using System.Threading.Tasks;
 namespace Automaticks.CSharp.CodeFixes.Documentation;
 
 /// <summary>
-///     Inserts an empty <c>&lt;summary&gt;</c> documentation block for the member reported by
-///     ATXCS051. The block is deliberately left blank so the fix supplies structure without
-///     claiming the member has been described.
+///     Inserts an empty &lt;summary&gt; documentation block for the member reported by ATXCS051.
 /// </summary>
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(MissingSummaryXmlDocCodeFixProvider))]
 [Shared]

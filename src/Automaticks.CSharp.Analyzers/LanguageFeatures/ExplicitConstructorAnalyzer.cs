@@ -7,9 +7,7 @@ using System.Collections.Immutable;
 namespace Automaticks.CSharp.LanguageFeatures;
 
 /// <summary>
-///     Flags any type declaration that uses a primary constructor — <c>class Foo(int x)</c>,
-///     <c>struct Foo(int x)</c>, <c>record Foo(int x)</c>, or <c>record struct Foo(int x)</c>.
-///     All types must declare an explicit constructor body instead.
+///     Flags any type declaration that uses a primary constructor — class Foo(int x), struct Foo(int x), record Foo(int x), or record struct Foo(int x).
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class ExplicitConstructorAnalyzer : DiagnosticAnalyzer

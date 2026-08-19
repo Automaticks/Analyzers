@@ -7,9 +7,7 @@ using System.Collections.Immutable;
 namespace Automaticks.CSharp.Naming;
 
 /// <summary>
-///     Flags static methods declared inside non-static classes. Static methods that do not
-///     depend on instance state must be moved to a dedicated static helper or extension class.
-///     Extension methods (first parameter has <c>this</c> modifier) are exempt.
+///     Flags static methods declared inside non-static classes.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class StaticMethodInNonStaticClassAnalyzer : DiagnosticAnalyzer

@@ -7,9 +7,7 @@ using System.Collections.Immutable;
 namespace Automaticks.CSharp.Documentation;
 
 /// <summary>
-///     Flags public, protected, and protected-internal methods with a non-<c>void</c>
-///     return type that are missing a <c>&lt;returns&gt;</c> XML documentation element.
-///     Override members and members using <c>&lt;inheritdoc/&gt;</c> are exempt.
+///     Flags public, protected, and protected-internal methods with a non-void return type that are missing a &lt;returns&gt; XML documentation element.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class MissingReturnsXmlDocAnalyzer : DiagnosticAnalyzer

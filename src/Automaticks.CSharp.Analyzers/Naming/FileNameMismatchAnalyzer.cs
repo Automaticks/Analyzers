@@ -8,11 +8,7 @@ using System.IO;
 namespace Automaticks.CSharp.Naming;
 
 /// <summary>
-///     Flags any top-level type whose name does not exactly match the base name of the file it is
-///     declared in (case-sensitive comparison; all extensions are stripped before comparing, so
-///     <c>DialogView.axaml.cs</c> compares as <c>DialogView</c>).
-///     Nested types, generated code, and partial types where at least one declaration resides in
-///     a correctly-named file are all exempt.
+///     Flags any top-level type whose name does not exactly match the base name of the file it is declared in (case-sensitive comparison; all extensions a...
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class FileNameMismatchAnalyzer : DiagnosticAnalyzer

@@ -6,24 +6,19 @@ using System.Collections.Immutable;
 namespace Automaticks.CSharp.LanguageFeatures;
 
 /// <summary>
-///     Flags public properties declared on types whose name ends with <c>Provider</c>,
-///     <c>Factory</c>, <c>Builder</c>, or <c>Client</c>. These service types must expose
-///     their API through methods only. Properties that originate outside the compilation —
-///     overrides of external base members and external interface implementations — are exempt.
+///     Flags public properties declared on types whose name ends with Provider, Factory, Builder, or Client.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class ProviderFactoryPropertyAnalyzer : DiagnosticAnalyzer
 {
-    private static readonly string[] ForbiddenSuffixes;
-
     /// <summary>
     ///     The diagnostic rule reported when a provider/factory/builder/client/session type exposes a property.
     /// </summary>
+    private static readonly ImmutableArray<string> ForbiddenSuffixes;
     private static readonly DiagnosticDescriptor Rule;
 
     static ProviderFactoryPropertyAnalyzer()
     {
-        ForbiddenSuffixes = ["Provider", "Factory", "Builder", "Client", "Session"];
         var rule = new DiagnosticDescriptor(
             DiagnosticIds.CSharp.ProviderFactoryProperty,
             "Provider/Factory/Builder/Client/Session types must not expose properties",
@@ -33,6 +28,7 @@ public sealed class ProviderFactoryPropertyAnalyzer : DiagnosticAnalyzer
             true,
             "Convert the property to a method. Types whose name ends with Provider, Factory, Builder, Client, or Session are service types and must only expose methods, not properties. Example: rename `public Foo CurrentFoo { get; }` to `public Foo GetCurrentFoo()` or `public Foo CreateFoo()`. Exempt: properties that override an external base member or implement an external interface, since their shape is fixed by an assembly outside this compilation.");
         Rule = rule;
+        ForbiddenSuffixes = ["Provider", "Factory", "Builder", "Client", "Session"];
     }
 
     /// <inheritdoc />

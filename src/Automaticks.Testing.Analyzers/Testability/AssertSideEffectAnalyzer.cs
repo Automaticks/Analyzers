@@ -7,9 +7,7 @@ using System.Collections.Immutable;
 namespace Automaticks.Testing.Testability;
 
 /// <summary>
-///     Flags a <c>Debug.Assert</c> whose condition mutates state. The call is compiled out of
-///     release builds, so the mutation silently disappears and release behaviour diverges from
-///     the tested debug behaviour.
+///     Flags a Debug.Assert whose condition mutates state.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class AssertSideEffectAnalyzer : DiagnosticAnalyzer

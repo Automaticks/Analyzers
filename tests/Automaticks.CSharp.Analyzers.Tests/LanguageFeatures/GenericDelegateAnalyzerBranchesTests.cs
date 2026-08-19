@@ -87,6 +87,28 @@ public class GenericDelegateAnalyzerBranchesTests
     }
 
     /// <summary>
+    ///     Tests that Analyze_ForbiddenTypeOnlyInDocumentationCref_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ForbiddenTypeOnlyInDocumentationCref_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System;
+                              namespace MyApp {
+                                  /// <summary>Used instead of <see cref="Action" /> by house style.</summary>
+                                  public delegate void EventCallback();
+                              }
+                              """;
+
+        var analyzer = new GenericDelegateAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS020")).IsFalse();
+    }
+
+    /// <summary>
     ///     Tests that Analyze_FuncInsideExpressionTypeArgument_ReportsNoDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>

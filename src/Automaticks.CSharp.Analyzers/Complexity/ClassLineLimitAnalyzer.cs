@@ -10,21 +10,7 @@ using System.Collections.Immutable;
 namespace Automaticks.CSharp.Complexity;
 
 /// <summary>
-///     Enforces a maximum lines-of-code (LOC) limit per class. A class whose LOC count exceeds
-///     <see cref="MaxLines" /> is flagged. LOC is measured as the number of non-blank,
-///     non-comment lines within the class declaration span (from the class keyword through the
-///     closing brace, including nested types). Leading/trailing trivia outside the class
-///     declaration (e.g. XML doc comments, attributes on prior lines) are excluded.
-///     <para>
-///         <b>What is excluded from the count:</b>
-///         blank/whitespace-only lines; single-line comment lines (<c>//</c> and <c>///</c>);
-///         multi-line block comment lines (<c>/* … */</c>).
-///     </para>
-///     <para>
-///         Partial classes have their LOC aggregated across all parts in the compilation.
-///         A single diagnostic is reported per class symbol. Generated files (those containing
-///         an <c>&lt;auto-generated&gt;</c> header) are skipped automatically.
-///     </para>
+///     Enforces a maximum lines-of-code (LOC) limit per class.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class ClassLineLimitAnalyzer : DiagnosticAnalyzer

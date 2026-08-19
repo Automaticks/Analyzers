@@ -10,10 +10,7 @@ using System.Collections.Immutable;
 namespace Automaticks.Threading.Tasks;
 
 /// <summary>
-///     Flags a method or local function that declares a <c>CancellationToken</c> parameter its body
-///     never reads. <c>ATXTA008</c> only checks the declared type of the last parameter, so adding a
-///     token satisfies that rule even when the token is then ignored and cancellation silently
-///     stops working.
+///     Flags a method or local function that declares a CancellationToken parameter its body never reads.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class UnusedCancellationTokenAnalyzer : DiagnosticAnalyzer

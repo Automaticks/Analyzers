@@ -8,7 +8,7 @@ namespace Automaticks.CSharp.Naming;
 
 /// <summary>
 ///     Flags <c>bool</c> and <c>bool?</c> fields and properties whose names do not begin with
-///     an allowed prefix: <c>is</c> or <c>allow</c> (case-insensitive).
+///     an allowed prefix: <c>is</c>, <c>allow</c>, or <c>has</c> (case-insensitive).
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class BooleanMemberNamingAnalyzer : DiagnosticAnalyzer
@@ -17,20 +17,20 @@ public sealed class BooleanMemberNamingAnalyzer : DiagnosticAnalyzer
     ///     The diagnostic rule reported when a boolean field or property does not start with an allowed prefix.
     /// </summary>
     public static readonly DiagnosticDescriptor Rule;
-    private static readonly string[] AllowedPrefixes;
+    private static readonly ImmutableArray<string> AllowedPrefixes;
 
     static BooleanMemberNamingAnalyzer()
     {
         var rule = new DiagnosticDescriptor(
             DiagnosticIds.CSharp.BooleanMemberNaming,
             "Boolean fields and properties must use an allowed prefix",
-            "'{0}' is a boolean {1} but its name does not start with an allowed prefix ('is' or 'allow', case-insensitive). Rename it to start with one of those prefixes (e.g. '{0}' \u2192 'is{0}' or 'allow{0}'). This convention makes boolean intent immediately clear at every call site and is required for codebase consistency. A code fix is available (dotnet format analyzers --diagnostics ATXCS062).",
+            "'{0}' is a boolean {1} but its name does not start with an allowed prefix ('is', 'allow', or 'has', case-insensitive). Rename it to start with one of those prefixes, replacing any existing prefix rather than adding to it. This convention makes boolean intent immediately clear at every call site and is required for codebase consistency. A code fix is available (dotnet format analyzers --diagnostics ATXCS062).",
             "CSharp",
             DiagnosticSeverity.Error,
             true,
-            "Rename the field or property so its name begins with 'is' or 'allow' (any casing). Examples: 'enabled' \u2192 'isEnabled', 'AllowRetry' is already valid. Overrides and interface implementations where renaming would break an external contract are exempt.");
+            "Rename the field or property so its name begins with 'is', 'allow', or 'has' (any casing). Examples: 'enabled' \u2192 'isEnabled', 'canRetry' \u2192 'isRetry', 'AllowRetry' is already valid. Overrides and interface implementations where renaming would break an external contract are exempt.");
         Rule = rule;
-        AllowedPrefixes = ["is", "allow"];
+        AllowedPrefixes = ["is", "allow", "has"];
     }
 
     /// <inheritdoc />

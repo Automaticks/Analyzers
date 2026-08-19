@@ -7,14 +7,7 @@ using System.Collections.Immutable;
 namespace Automaticks.CSharp.Complexity;
 
 /// <summary>
-///     Flags methods whose cognitive complexity exceeds <see cref="MaxComplexity" />.
-///     Cognitive complexity follows Sonar-style rules: structural increments for control-flow
-///     constructs (<c>if</c>, <c>else if</c>, <c>else</c>, <c>switch</c>, loops, <c>catch</c>,
-///     and conditional expressions), nesting penalties that add the current depth to each
-///     structural increment, and per-sequence increments for <c>&amp;&amp;</c> / <c>||</c>
-///     logical operators. Local functions and lambdas increase the nesting level for their
-///     inner constructs but contribute their score to the enclosing method rather than being
-///     evaluated as independent units.
+///     Flags methods whose cognitive complexity exceeds .
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class CognitiveComplexityAnalyzer : DiagnosticAnalyzer
@@ -86,19 +79,6 @@ public sealed class CognitiveComplexityAnalyzer : DiagnosticAnalyzer
 
     /// <summary>
     ///     Walks a method body and computes cognitive complexity using Sonar-style rules.
-    ///     <para>
-    ///         Each control-flow construct receives a structural increment of 1 plus the
-    ///         current nesting depth (<c>if</c>, loops, <c>switch</c>, <c>?:</c>). Alternatives
-    ///         (<c>else if</c>, <c>else</c>) and <c>catch</c> clauses receive a flat +1 with no
-    ///         nesting penalty. Logical-operator sequences (<c>&amp;&amp;</c> / <c>||</c>) are
-    ///         counted at sequence boundaries: each transition between different operator kinds
-    ///         or each outermost same-kind chain root contributes +1.
-    ///     </para>
-    ///     <para>
-    ///         Local functions and lambdas increase <c>_nestingLevel</c> for their contents so
-    ///         that nested constructs accrue the correct nesting penalty, but they are not
-    ///         analysed as independent units — their score rolls into the enclosing method total.
-    ///     </para>
     /// </summary>
     private sealed class CognitiveComplexityWalker : CSharpSyntaxWalker
     {

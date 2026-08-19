@@ -6,8 +6,6 @@ namespace Automaticks.Testing.Coverage;
 
 /// <summary>
 ///     Reports public members that the supplied coverage report shows were never executed.
-///     The report arrives as an additional file, so the rule stays silent until a test run has
-///     produced one.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class UncoveredPublicMemberAnalyzer : DiagnosticAnalyzer
