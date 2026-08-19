@@ -74,6 +74,7 @@ dotnet add package Automaticks.CSharp.Analyzers
 | `ATXCS072` | Namespace-qualified type reference is forbidden | CSharp | Error | Analyzer, CodeFix |
 | `ATXCS073` | 'global::' alias qualifier is forbidden | CSharp | Error | Analyzer |
 | `ATXCS074` | Alias directive is forbidden | CSharp | Error | Analyzer |
+| `ATXCS075` | Expression-bodied methods are forbidden | CSharp | Error | Analyzer, CodeFix |
 
 ## Code fixes
 
@@ -115,6 +116,7 @@ dotnet format analyzers --diagnostics ATXCS048 --severity error
 | `ATXCS064` | Sort the type members into canonical order |
 | `ATXCS068` | Remove the no-op discard statement |
 | `ATXCS072` | Simplify to the type name, adding a `using` if needed |
+| `ATXCS075` | Convert the expression body to a block body |
 
 Review these before committing, because they remove or invent content rather than rewrite it:
 `ATXCS038` drops `<remarks>` without merging its prose into `<summary>`, `ATXCS041` deletes the

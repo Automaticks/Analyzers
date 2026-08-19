@@ -330,7 +330,9 @@ public class EmptyLineBetweenFieldsAnalyzerTests
     /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
     public async Task Analyze_DocCommentOnSecondFieldNoBlankLine_ReportsNoDiagnostic(CancellationToken cancellationToken)
-        => await AssertNoDiagnosticForDocCommentOnSecondFieldAsync(cancellationToken);
+    {
+        await AssertNoDiagnosticForDocCommentOnSecondFieldAsync(cancellationToken);
+    }
 
     /// <summary>
     ///     Tests that Analyze_EmptyClass_ReportsNoDiagnostic.
@@ -454,7 +456,9 @@ public class EmptyLineBetweenFieldsAnalyzerTests
     /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
     public async Task Analyze_NoBlankLineAndSecondFieldHasExtensibleMarkupLanguageDoc_ReportsNoDiagnostic(CancellationToken cancellationToken)
-        => await AssertNoDiagnosticForDocCommentOnSecondFieldAsync(cancellationToken);
+    {
+        await AssertNoDiagnosticForDocCommentOnSecondFieldAsync(cancellationToken);
+    }
 
     /// <summary>
     ///     Tests that Analyze_SingleField_ReportsNoDiagnostic.

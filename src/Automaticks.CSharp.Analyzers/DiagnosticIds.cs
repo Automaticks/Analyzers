@@ -101,6 +101,11 @@ public static class DiagnosticIds
         public const string ExplicitConstructor = "ATXCS037";
 
         /// <summary>
+        ///     Diagnostic ID for <c>ATXCS075</c>: expression-bodied methods and local functions are forbidden.
+        /// </summary>
+        public const string ExpressionBodiedMethod = "ATXCS075";
+
+        /// <summary>
         ///     Diagnostic ID for <c>ATXCS031</c>: type name does not match the file name.
         /// </summary>
         public const string FileNameMismatch = "ATXCS031";
