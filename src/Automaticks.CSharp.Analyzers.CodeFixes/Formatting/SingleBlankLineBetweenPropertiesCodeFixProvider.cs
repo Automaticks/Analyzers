@@ -33,12 +33,7 @@ public sealed class SingleBlankLineBetweenPropertiesCodeFixProvider : CodeFixPro
     /// <inheritdoc />
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
-        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken);
-        if (root is null)
-        {
-            return;
-        }
-
+        var root = (await context.Document.GetSyntaxRootAsync(context.CancellationToken))!;
         foreach (var diagnostic in context.Diagnostics)
         {
             var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);

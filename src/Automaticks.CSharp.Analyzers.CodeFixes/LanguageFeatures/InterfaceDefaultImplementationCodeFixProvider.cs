@@ -1,4 +1,4 @@
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
@@ -33,12 +33,7 @@ public sealed class InterfaceDefaultImplementationCodeFixProvider : CodeFixProvi
     /// <inheritdoc />
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
-        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken);
-        if (root is null)
-        {
-            return;
-        }
-
+        var root = (await context.Document.GetSyntaxRootAsync(context.CancellationToken))!;
         foreach (var diagnostic in context.Diagnostics)
         {
             var token = root.FindToken(diagnostic.Location.SourceSpan.Start);
@@ -92,12 +87,7 @@ public sealed class InterfaceDefaultImplementationCodeFixProvider : CodeFixProvi
         MemberDeclarationSyntax member,
         CancellationToken cancellationToken)
     {
-        var root = await document.GetSyntaxRootAsync(cancellationToken);
-        if (root is null)
-        {
-            return document;
-        }
-
+        var root = (await document.GetSyntaxRootAsync(cancellationToken))!;
         MemberDeclarationSyntax replacement;
         if (member is MethodDeclarationSyntax method)
         {

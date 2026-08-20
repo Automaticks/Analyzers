@@ -1,4 +1,4 @@
-using Automaticks.CSharp.Formatting;
+﻿using Automaticks.CSharp.Formatting;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
@@ -37,12 +37,7 @@ public sealed class TypeMemberOrderCodeFixProvider : CodeFixProvider
     /// <inheritdoc />
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
-        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken);
-        if (root is null)
-        {
-            return;
-        }
-
+        var root = (await context.Document.GetSyntaxRootAsync(context.CancellationToken))!;
         foreach (var diagnostic in context.Diagnostics)
         {
             var token = root.FindToken(diagnostic.Location.SourceSpan.Start);
@@ -92,7 +87,7 @@ public sealed class TypeMemberOrderCodeFixProvider : CodeFixProvider
         TypeDeclarationSyntax typeDeclaration,
         CancellationToken cancellationToken)
     {
-        var root = await document.GetSyntaxRootAsync(cancellationToken);
+        var root = (await document.GetSyntaxRootAsync(cancellationToken))!;
         var semanticModel = await document.GetSemanticModelAsync(cancellationToken);
         if (root is null || semanticModel is null)
         {

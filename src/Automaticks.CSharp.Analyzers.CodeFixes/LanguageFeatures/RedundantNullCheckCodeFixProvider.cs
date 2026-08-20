@@ -1,4 +1,4 @@
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
@@ -32,12 +32,7 @@ public sealed class RedundantNullCheckCodeFixProvider : CodeFixProvider
     /// <inheritdoc />
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
-        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken);
-        if (root is null)
-        {
-            return;
-        }
-
+        var root = (await context.Document.GetSyntaxRootAsync(context.CancellationToken))!;
         foreach (var diagnostic in context.Diagnostics)
         {
             var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
@@ -54,12 +49,7 @@ public sealed class RedundantNullCheckCodeFixProvider : CodeFixProvider
         SyntaxNode node,
         CancellationToken cancellationToken)
     {
-        var root = await document.GetSyntaxRootAsync(cancellationToken);
-        if (root is null)
-        {
-            return document;
-        }
-
+        var root = (await document.GetSyntaxRootAsync(cancellationToken))!;
         if (node is BinaryExpressionSyntax coalesce && coalesce.IsKind(SyntaxKind.CoalesceExpression))
         {
             var replacement = coalesce.Left.WithTriviaFrom(coalesce);

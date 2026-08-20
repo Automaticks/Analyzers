@@ -33,7 +33,7 @@ public sealed class UnsortedUsingDirectivesCodeFixProvider : CodeFixProvider
     /// <inheritdoc />
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
-        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken);
+        var root = (await context.Document.GetSyntaxRootAsync(context.CancellationToken))!;
         if (root is not CompilationUnitSyntax compilationUnit)
         {
             return;
@@ -91,7 +91,7 @@ public sealed class UnsortedUsingDirectivesCodeFixProvider : CodeFixProvider
 
     private async Task<Document> SortDirectivesAsync(Document document, CancellationToken cancellationToken)
     {
-        var root = await document.GetSyntaxRootAsync(cancellationToken);
+        var root = (await document.GetSyntaxRootAsync(cancellationToken))!;
         if (root is not CompilationUnitSyntax compilationUnit)
         {
             return document;
