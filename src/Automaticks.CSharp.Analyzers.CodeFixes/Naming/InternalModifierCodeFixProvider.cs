@@ -71,12 +71,14 @@ public sealed class InternalModifierCodeFixProvider : CodeFixProvider
             return declaration.Modifiers[0];
         }
 
-        foreach (var token in declaration.ChildTokens())
+        var children = declaration.ChildNodesAndTokens();
+        var index = 0;
+        while (!children[index].IsToken)
         {
-            return token;
+            index++;
         }
 
-        return declaration.GetFirstToken();
+        return children[index].AsToken();
     }
 
     private async Task<Document> MakePublicAsync(

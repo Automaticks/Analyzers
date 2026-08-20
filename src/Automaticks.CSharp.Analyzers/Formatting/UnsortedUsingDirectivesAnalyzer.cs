@@ -55,7 +55,7 @@ public sealed class UnsortedUsingDirectivesAnalyzer : DiagnosticAnalyzer
                 continue;
             }
 
-            var currentName = usingDirective.Name?.ToString() ?? string.Empty;
+            var currentName = usingDirective.Name!.ToString();
 
             if (previousName is not null &&
                 string.Compare(currentName, previousName, StringComparison.OrdinalIgnoreCase) < 0)
