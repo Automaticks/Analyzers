@@ -60,19 +60,9 @@ public sealed class CyclomaticComplexityAnalyzer : DiagnosticAnalyzer
         }
 
         var keyword = accessor.Keyword.Text;
-        string memberName;
-        if (accessor.Parent?.Parent is PropertyDeclarationSyntax property)
-        {
-            memberName = keyword + " accessor of '" + property.Identifier.Text + "'";
-        }
-        else if (accessor.Parent?.Parent is IndexerDeclarationSyntax)
-        {
-            memberName = keyword + " accessor of indexer";
-        }
-        else
-        {
-            memberName = keyword + " accessor";
-        }
+        var memberName = accessor.Parent!.Parent is PropertyDeclarationSyntax property
+            ? keyword + " accessor of '" + property.Identifier.Text + "'"
+            : keyword + " accessor of indexer";
 
         AnalyzeMember(context, bodyNode, memberName, accessor.Keyword.GetLocation());
     }
