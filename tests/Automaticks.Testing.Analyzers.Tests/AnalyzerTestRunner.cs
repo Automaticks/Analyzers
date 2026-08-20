@@ -98,15 +98,16 @@ public static class AnalyzerTestRunner
     }
 
     private static async Task<ImmutableArray<Diagnostic>> AnalyzeTreesAsync(
-        DiagnosticAnalyzer analyzer,
-        IEnumerable<SyntaxTree> syntaxTrees,
+        DiagnosticAnalyzer analyzer,        IEnumerable<SyntaxTree> syntaxTrees,
         AnalysisOptions options,
         CancellationToken cancellationToken)
     {
         var references = options.AdditionalReferences != null
             ? GetPlatformReferences().AddRange(options.AdditionalReferences)
             : GetPlatformReferences();
-        var compilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
+        var baseCompilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
+        var compilationOptions = baseCompilationOptions
+            .WithSpecificDiagnosticOptions(BuildEnabledDiagnostics(analyzer));
         var compilation = CSharpCompilation.Create(
             "TestAssembly",
             syntaxTrees,
@@ -124,6 +125,26 @@ public static class AnalyzerTestRunner
             ImmutableArray.Create(analyzer),
             analyzerOptions);
         return await compilationWithAnalyzers.GetAnalyzerDiagnosticsAsync(cancellationToken);
+    }
+
+    private static ImmutableArray<KeyValuePair<string, ReportDiagnostic>> BuildEnabledDiagnostics(
+        DiagnosticAnalyzer analyzer)
+    {
+        var builder = ImmutableArray.CreateBuilder<KeyValuePair<string, ReportDiagnostic>>();
+        foreach (var descriptor in analyzer.SupportedDiagnostics)
+        {
+            var report = descriptor.DefaultSeverity switch
+            {
+                DiagnosticSeverity.Error => ReportDiagnostic.Error,
+                DiagnosticSeverity.Warning => ReportDiagnostic.Warn,
+                DiagnosticSeverity.Info => ReportDiagnostic.Info,
+                _ => ReportDiagnostic.Hidden,
+            };
+            var entry = new KeyValuePair<string, ReportDiagnostic>(descriptor.Id, report);
+            builder.Add(entry);
+        }
+
+        return builder.ToImmutable();
     }
 
     private static ImmutableArray<MetadataReference> GetPlatformReferences()

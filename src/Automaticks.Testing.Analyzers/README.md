@@ -28,7 +28,7 @@ dotnet add package Automaticks.Testing.Analyzers
 | `ATXTST012` | Public member must be covered by a test | Testing | Warning | Analyzer |
 | `ATXTST013` | File line coverage must meet the configured minimum | Testing | Warning | Analyzer |
 | `ATXTST014` | TimeProvider.System is not allowed in tests | Testing | Warning | Analyzer |
-| `ATXTST015` | Method branch coverage must meet the configured minimum | Testing | Warning | Analyzer |
+| `ATXTST015` | Method branch coverage must meet the configured minimum (opt-in) | Testing | Warning (disabled by default) | Analyzer |
 | `ATXTST016` | Supplied coverage report must be usable | Testing | Warning | Analyzer |
 
 ## Coverage rules
@@ -55,6 +55,16 @@ Set the `ATXTST013` and `ATXTST015` thresholds in `.editorconfig`:
 [*.cs]
 automaticks.minimum_line_coverage = 80
 automaticks.minimum_branch_coverage = 80
+```
+
+`ATXTST015` is **disabled by default**. A branch-coverage bar is far more project-specific than a
+line-coverage one — most mature codebases sit well below 80% branch coverage even when line coverage
+is healthy — so enabling it for everyone on upgrade would break far more builds than it helps. Turn
+it on deliberately once your suite is ready:
+
+```ini
+[*.cs]
+dotnet_diagnostic.ATXTST015.severity = warning
 ```
 
 Because the report comes from an earlier run, it can be stale relative to edited source. `ATXTST012`

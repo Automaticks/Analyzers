@@ -22,8 +22,8 @@ public sealed class MethodBranchCoverageAnalyzer : DiagnosticAnalyzer
             "Method '{0}' has {1}% branch coverage, which is below the required minimum of {2}%. Add tests that exercise the missing branches.",
             "Testing",
             DiagnosticSeverity.Warning,
-            true,
-            "The coverage report shows this method takes fewer of its branches than the configured minimum. Set the threshold with `automaticks.minimum_branch_coverage` in `.editorconfig`. The rule stays silent when no coverage report is supplied, so a clean clone still builds before any test run has happened.");
+            false,
+            "The coverage report shows this method takes fewer of its branches than the configured minimum. Set the threshold with `automaticks.minimum_branch_coverage` in `.editorconfig`. This rule is opt-in: a branch-coverage bar is far more project-specific than a line-coverage one, so enable it with `dotnet_diagnostic.ATXTST015.severity` once your suite is ready for it. The rule stays silent when no coverage report is supplied, so a clean clone still builds before any test run has happened.");
         Rule = rule;
     }
 
