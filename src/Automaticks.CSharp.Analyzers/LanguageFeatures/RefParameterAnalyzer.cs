@@ -87,17 +87,6 @@ public sealed class RefParameterAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        if (method.ExplicitInterfaceImplementations.Length > 0)
-        {
-            foreach (var ifaceMethod in method.ExplicitInterfaceImplementations)
-            {
-                if (ifaceMethod.DeclaringSyntaxReferences.IsEmpty)
-                {
-                    return;
-                }
-            }
-        }
-
         if (HasImplicitExternalInterfaceImplementation(method))
         {
             return;
