@@ -118,7 +118,7 @@ public sealed class ObjectInitializerCodeStyleAnalyzer : DiagnosticAnalyzer
         var openBraceLine = GetLine(initializer.OpenBraceToken);
         var tokenBeforeOpen = initializer.OpenBraceToken.GetPreviousToken();
 
-        if (!tokenBeforeOpen.IsKind(SyntaxKind.None) && GetLine(tokenBeforeOpen) == openBraceLine)
+        if (GetLine(tokenBeforeOpen) == openBraceLine)
         {
             context.ReportDiagnostic(Diagnostic.Create(FormatRule, initializer.OpenBraceToken.GetLocation()));
         }
