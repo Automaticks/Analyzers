@@ -49,11 +49,7 @@ public sealed class RemarksXmlDocAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeDocComment(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not DocumentationCommentTriviaSyntax docComment)
-        {
-            return;
-        }
-
+        var docComment = (context.Node as DocumentationCommentTriviaSyntax)!;
         foreach (var node in docComment.Content)
         {
             if (node is XmlElementSyntax element &&

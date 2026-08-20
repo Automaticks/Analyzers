@@ -10,6 +10,33 @@ public class MissingBlankLineBeforeXmlDocAnalyzerTests
 {
 
     /// <summary>
+    ///     Tests that Analyze_CommentLineBeforeDocCommentNoBlankLine_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_CommentLineBeforeDocCommentNoBlankLine_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Counter {
+                                      private int _a;
+                                      // a plain comment
+                                      /// <summary>
+                                      ///     Field b.
+                                      /// </summary>
+                                      private int _b;
+                                  }
+                              }
+                              """;
+
+        var analyzer = new MissingBlankLineBeforeXmlDocAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS054")).IsTrue();
+    }
+
+    /// <summary>
     ///     Tests that Analyze_ConstructorWithExtensibleMarkupLanguageDocNoBlankLineAfterPreviousMember_ReportsDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -113,6 +140,29 @@ public class MissingBlankLineBeforeXmlDocAnalyzerTests
         var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
         await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS054")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_FileScopedNamespaceMemberMissingBlankLine_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_FileScopedNamespaceMemberMissingBlankLine_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp;
+                              public class A { }
+                              /// <summary>
+                              ///     Type B.
+                              /// </summary>
+                              public class B { }
+                              """;
+
+        var analyzer = new MissingBlankLineBeforeXmlDocAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS054")).IsTrue();
     }
 
     /// <summary>
@@ -232,6 +282,32 @@ public class MissingBlankLineBeforeXmlDocAnalyzerTests
                                       ///     A nested class.
                                       /// </summary>
                                       public class Inner { }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new MissingBlankLineBeforeXmlDocAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS054")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_PreviousMemberTrailingCommentNoBlankLine_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_PreviousMemberTrailingCommentNoBlankLine_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Counter {
+                                      private int _a; // trailing note
+                                      /// <summary>
+                                      ///     Field b.
+                                      /// </summary>
+                                      private int _b;
                                   }
                               }
                               """;
