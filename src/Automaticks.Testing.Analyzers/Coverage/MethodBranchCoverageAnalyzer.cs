@@ -40,7 +40,8 @@ public sealed class MethodBranchCoverageAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeSymbol(SymbolAnalysisContext context, CoverageReport report)
     {
-        if (context.Symbol is not IMethodSymbol method || !HasReportableMethod(method))
+        var method = (context.Symbol as IMethodSymbol)!;
+        if (!HasReportableMethod(method))
         {
             return;
         }

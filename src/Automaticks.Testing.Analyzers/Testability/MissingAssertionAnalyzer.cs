@@ -41,11 +41,7 @@ public sealed class MissingAssertionAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeMethod(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not MethodDeclarationSyntax method)
-        {
-            return;
-        }
-
+        var method = (context.Node as MethodDeclarationSyntax)!;
         SyntaxNode? body = method.Body;
         body ??= method.ExpressionBody;
         if (body is null)

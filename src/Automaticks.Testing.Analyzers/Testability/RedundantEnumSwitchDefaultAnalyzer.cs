@@ -42,11 +42,7 @@ public sealed class RedundantEnumSwitchDefaultAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeSwitchExpression(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not SwitchExpressionSyntax switchExpression)
-        {
-            return;
-        }
-
+        var switchExpression = (context.Node as SwitchExpressionSyntax)!;
         var enumType = GetEnumType(context, switchExpression.GoverningExpression);
         if (enumType is null)
         {
@@ -81,11 +77,7 @@ public sealed class RedundantEnumSwitchDefaultAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeSwitchStatement(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not SwitchStatementSyntax switchStatement)
-        {
-            return;
-        }
-
+        var switchStatement = (context.Node as SwitchStatementSyntax)!;
         var enumType = GetEnumType(context, switchStatement.Expression);
         if (enumType is null)
         {
@@ -129,15 +121,13 @@ public sealed class RedundantEnumSwitchDefaultAnalyzer : DiagnosticAnalyzer
 
     private IFieldSymbol? GetLabelFieldSymbol(SyntaxNodeAnalysisContext context, SwitchLabelSyntax label)
     {
-        switch (label)
+        if (label is CaseSwitchLabelSyntax caseLabel)
         {
-            case CaseSwitchLabelSyntax caseLabel:
-                return context.SemanticModel.GetSymbolInfo(caseLabel.Value, context.CancellationToken).Symbol as IFieldSymbol;
-            case CasePatternSwitchLabelSyntax patternLabel:
-                return GetPatternFieldSymbol(context, patternLabel.Pattern);
-            default:
-                return null;
+            return context.SemanticModel.GetSymbolInfo(caseLabel.Value, context.CancellationToken).Symbol as IFieldSymbol;
         }
+
+        var patternLabel = (label as CasePatternSwitchLabelSyntax)!;
+        return GetPatternFieldSymbol(context, patternLabel.Pattern);
     }
 
     private IFieldSymbol? GetPatternFieldSymbol(SyntaxNodeAnalysisContext context, PatternSyntax pattern)

@@ -69,6 +69,56 @@ public class AssertSideEffectAnalyzerTests
     }
 
     /// <summary>
+    ///     Tests that Analyze_AssertWithNonMutatingPostfixOperator_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_AssertWithNonMutatingPostfixOperator_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System.Diagnostics;
+                              namespace MyApp {
+                                  public class Foo {
+                                      public void Bar(int? value) {
+                                          Debug.Assert(value!.Value > 0);
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new AssertSideEffectAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTST009")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_AssertWithNonMutatingPrefixOperator_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_AssertWithNonMutatingPrefixOperator_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System.Diagnostics;
+                              namespace MyApp {
+                                  public class Foo {
+                                      public void Bar(bool flag) {
+                                          Debug.Assert(!flag);
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new AssertSideEffectAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTST009")).IsFalse();
+    }
+
+    /// <summary>
     ///     Tests that Analyze_AssertWithOutArgument_ReportsDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>

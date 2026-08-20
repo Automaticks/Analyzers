@@ -40,11 +40,7 @@ public sealed class TaskDelayInTestAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeInvocation(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not InvocationExpressionSyntax invocation)
-        {
-            return;
-        }
-
+        var invocation = (context.Node as InvocationExpressionSyntax)!;
         if (context.SemanticModel.GetSymbolInfo(invocation).Symbol is not IMethodSymbol method)
         {
             return;
@@ -71,22 +67,12 @@ public sealed class TaskDelayInTestAnalyzer : DiagnosticAnalyzer
         }
 
         var taskType = compilation.GetTypeByMetadataName("System.Threading.Tasks.Task");
-        if (taskType is null)
-        {
-            return false;
-        }
-
         return SymbolEqualityComparer.Default.Equals(method.ContainingType, taskType);
     }
 
     private bool HasTimeProviderParameter(IMethodSymbol method, Compilation compilation)
     {
         var timeProviderType = compilation.GetTypeByMetadataName("System.TimeProvider");
-        if (timeProviderType is null)
-        {
-            return false;
-        }
-
         foreach (var parameter in method.Parameters)
         {
             if (SymbolEqualityComparer.Default.Equals(parameter.Type, timeProviderType))

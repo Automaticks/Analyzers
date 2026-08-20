@@ -90,21 +90,28 @@ public sealed class ExcessiveDecisionConditionsAnalyzer : DiagnosticAnalyzer
 
     private ExpressionSyntax? GetDecisionCondition(SyntaxNodeAnalysisContext context)
     {
-        switch (context.Node)
+        if (context.Node is IfStatementSyntax ifStatement)
         {
-            case IfStatementSyntax ifStatement:
-                return ifStatement.Condition;
-            case WhileStatementSyntax whileStatement:
-                return whileStatement.Condition;
-            case DoStatementSyntax doStatement:
-                return doStatement.Condition;
-            case ConditionalExpressionSyntax conditional:
-                return conditional.Condition;
-            case ReturnStatementSyntax returnStatement:
-                return GetBooleanReturnExpression(context, returnStatement);
-            default:
-                return null;
+            return ifStatement.Condition;
         }
+
+        if (context.Node is WhileStatementSyntax whileStatement)
+        {
+            return whileStatement.Condition;
+        }
+
+        if (context.Node is DoStatementSyntax doStatement)
+        {
+            return doStatement.Condition;
+        }
+
+        if (context.Node is ConditionalExpressionSyntax conditional)
+        {
+            return conditional.Condition;
+        }
+
+        var returnStatement = (context.Node as ReturnStatementSyntax)!;
+        return GetBooleanReturnExpression(context, returnStatement);
     }
 
     private bool IsLogicalConnective(BinaryExpressionSyntax binary)
