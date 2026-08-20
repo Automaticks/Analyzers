@@ -80,11 +80,6 @@ public sealed class SingleBlankLineBetweenPropertiesAnalyzer : DiagnosticAnalyze
         {
             if (trivia.IsKind(SyntaxKind.EndOfLineTrivia))
             {
-                if (sawNewline)
-                {
-                    return true;
-                }
-
                 sawNewline = true;
             }
             else if (!trivia.IsKind(SyntaxKind.WhitespaceTrivia))

@@ -88,11 +88,6 @@ public sealed class EmptyLineBetweenFieldsAnalyzer : DiagnosticAnalyzer
         {
             if (trivia.IsKind(SyntaxKind.EndOfLineTrivia))
             {
-                if (sawNewline)
-                {
-                    return trivia.GetLocation();
-                }
-
                 sawNewline = true;
             }
             else if (!trivia.IsKind(SyntaxKind.WhitespaceTrivia))

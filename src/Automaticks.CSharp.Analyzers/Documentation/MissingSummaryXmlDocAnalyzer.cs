@@ -125,12 +125,8 @@ public sealed class MissingSummaryXmlDocAnalyzer : DiagnosticAnalyzer
             return eventDecl.Identifier.ValueText;
         }
 
-        if (node is EnumMemberDeclarationSyntax enumMember)
-        {
-            return enumMember.Identifier.ValueText;
-        }
-
-        return "member";
+        var enumMember = (node as EnumMemberDeclarationSyntax)!;
+        return enumMember.Identifier.ValueText;
     }
 
     private SyntaxTokenList GetModifiers(SyntaxNode node)
@@ -210,12 +206,8 @@ public sealed class MissingSummaryXmlDocAnalyzer : DiagnosticAnalyzer
             return eventDecl.Identifier.GetLocation();
         }
 
-        if (node is EnumMemberDeclarationSyntax enumMember)
-        {
-            return enumMember.Identifier.GetLocation();
-        }
-
-        return node.GetLocation();
+        var enumMember = (node as EnumMemberDeclarationSyntax)!;
+        return enumMember.Identifier.GetLocation();
     }
 
     private bool HasDocumentationRequirement(SyntaxNode node)
