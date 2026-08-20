@@ -13,14 +13,9 @@ public class AutoPropertySingleLineCodeFixProviderTests
 {
     private const string AttributedMultiLineSource = "using System;\nnamespace MyApp {\n    public class Foo {\n        [Obsolete(\"x\")]\n        public string Name\n        {\n            get;\n            set;\n        }\n    }\n}\n";
     private const string MultiLineSource = "namespace MyApp {\n    public class Foo {\n        public string Name\n        {\n            get;\n            set;\n        }\n    }\n}\n";
+    private const string NoModifierMultiLineSource = "namespace MyApp {\n    public class Foo {\n        string Name\n        {\n            get;\n            set;\n        }\n    }\n}\n";
     private const string SingleLineSource = "namespace MyApp {\n    public class Foo {\n        public string Name { get; set; }\n    }\n}\n";
     private const string TwoMultiLineSource = "namespace MyApp {\n    public class Foo {\n        public string Name\n        {\n            get;\n            set;\n        }\n\n        public int Count\n        {\n            get;\n            init;\n        }\n    }\n}\n";
-
-    /// <summary>
-    ///     Tests that repeated application collapses every multi-line auto-property.
-    /// </summary>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
     public async Task ApplyAllFixes_SeveralMultiLineProperties_CollapsesEveryOne(CancellationToken cancellationToken)
     {
@@ -81,6 +76,11 @@ public class AutoPropertySingleLineCodeFixProviderTests
     }
 
     /// <summary>
+    ///     Tests that repeated application collapses every multi-line auto-property.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    /// <summary>
     ///     Tests that the collapsed property keeps its indentation and no longer reports.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -107,6 +107,27 @@ public class AutoPropertySingleLineCodeFixProviderTests
 
         await Assert.That(remaining).IsEqualTo(0);
         await Assert.That(fixedSource).Contains("        public string Name");
+    }
+
+    /// <summary>
+    ///     Tests that a property without modifiers is collapsed from its first token.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task ApplyFix_PropertyWithoutModifiers_CollapsesToSingleLine(CancellationToken cancellationToken)
+    {
+        var analyzer = new AutoPropertySingleLineAnalyzer();
+        var provider = new AutoPropertySingleLineCodeFixProvider();
+        var request = new CodeFixRequest
+        {
+            Analyzer = analyzer,
+            Provider = provider,
+            Source = NoModifierMultiLineSource
+        };
+        var fixedSource = await CodeFixTestRunner.ApplyFixAsync(request, cancellationToken);
+
+        await Assert.That(fixedSource).Contains("string Name { get; set; }");
     }
 
     /// <summary>
