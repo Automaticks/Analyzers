@@ -55,6 +55,29 @@ public class AsyncSuffixReturnTypeAnalyzerReturnShapesTests
     }
 
     /// <summary>
+    ///     Tests that a real async enumerable is accepted as an awaitable return type.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_FrameworkAsyncEnumerable_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System.Collections.Generic;
+                              namespace MyApp {
+                                  public class Shape {
+                                      public IAsyncEnumerable<int> DrawAsync() { return null!; }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new AsyncSuffixReturnTypeAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, DiagnosticIds.CSharp.AsyncSuffixReturnType)).IsFalse();
+    }
+
+    /// <summary>
     ///     Tests that a look-alike with the wrong arity is not read as a task.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
