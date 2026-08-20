@@ -2,7 +2,6 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
-using System;
 using System.Collections.Immutable;
 
 namespace Automaticks.CSharp.Formatting;
@@ -61,30 +60,25 @@ public sealed class InlineNewExpressionAnalyzer : DiagnosticAnalyzer
 
     private ExpressionSyntax GetEffectiveExpression(ExpressionSyntax node)
     {
-        SyntaxNode current = node;
+        var current = node;
 
         while (true)
         {
             var parent = current.Parent;
 
-            if (parent is ParenthesizedExpressionSyntax)
+            if (parent is ParenthesizedExpressionSyntax parenthesized)
             {
-                current = parent;
+                current = parenthesized;
                 continue;
             }
 
             if (parent is PostfixUnaryExpressionSyntax postfix && postfix.IsKind(SyntaxKind.SuppressNullableWarningExpression))
             {
-                current = parent;
+                current = postfix;
                 continue;
             }
 
-            if (current is ExpressionSyntax effectiveExpression)
-            {
-                return effectiveExpression;
-            }
-
-            throw new InvalidOperationException($"Expected an expression but found '{current.GetType().Name}'.");
+            return current;
         }
     }
 
@@ -96,8 +90,7 @@ public sealed class InlineNewExpressionAnalyzer : DiagnosticAnalyzer
             ImplicitObjectCreationExpressionSyntax impl => impl.NewKeyword,
             ArrayCreationExpressionSyntax arr => arr.NewKeyword,
             ImplicitArrayCreationExpressionSyntax implArr => implArr.NewKeyword,
-            AnonymousObjectCreationExpressionSyntax anon => anon.NewKeyword,
-            _ => throw new InvalidOperationException($"Unexpected creation expression type: {node.GetType().Name}")
+            _ => (node as AnonymousObjectCreationExpressionSyntax)!.NewKeyword
         };
     }
 

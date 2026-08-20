@@ -69,7 +69,7 @@ public sealed class MethodLineLimitAnalyzer : DiagnosticAnalyzer
         }
 
         var block = GetBodyBlock(context.Node);
-        if (block is not null && CanSkipLineLimit(block))
+        if (CanSkipLineLimit(block!))
         {
             return;
         }
@@ -122,8 +122,7 @@ public sealed class MethodLineLimitAnalyzer : DiagnosticAnalyzer
             AccessorDeclarationSyntax accessorDeclaration => accessorDeclaration.Body,
             LocalFunctionStatementSyntax localFunctionStatement => localFunctionStatement.Body,
             OperatorDeclarationSyntax operatorDeclaration => operatorDeclaration.Body,
-            ConversionOperatorDeclarationSyntax conversionOperatorDeclaration => conversionOperatorDeclaration.Body,
-            _ => null
+            _ => (node as ConversionOperatorDeclarationSyntax)!.Body
         };
     }
 
