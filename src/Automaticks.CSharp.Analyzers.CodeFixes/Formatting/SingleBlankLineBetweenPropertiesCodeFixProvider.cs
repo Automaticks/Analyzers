@@ -37,12 +37,7 @@ public sealed class SingleBlankLineBetweenPropertiesCodeFixProvider : CodeFixPro
         foreach (var diagnostic in context.Diagnostics)
         {
             var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
-            var member = node.FirstAncestorOrSelf<MemberDeclarationSyntax>();
-            if (member is null)
-            {
-                continue;
-            }
-
+            var member = node.FirstAncestorOrSelf<MemberDeclarationSyntax>()!;
             var action = CodeAction.Create(
                 Title,
                 cancellationToken => InsertBlankLineAsync(context.Document, member, cancellationToken),

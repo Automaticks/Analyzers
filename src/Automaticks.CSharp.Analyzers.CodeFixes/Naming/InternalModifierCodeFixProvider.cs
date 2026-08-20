@@ -35,12 +35,7 @@ public sealed class InternalModifierCodeFixProvider : CodeFixProvider
         foreach (var diagnostic in context.Diagnostics)
         {
             var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
-            var declaration = node.FirstAncestorOrSelf<MemberDeclarationSyntax>();
-            if (declaration is null)
-            {
-                continue;
-            }
-
+            var declaration = node.FirstAncestorOrSelf<MemberDeclarationSyntax>()!;
             var action = CodeAction.Create(
                 Title,
                 cancellationToken => MakePublicAsync(context.Document, declaration, cancellationToken),

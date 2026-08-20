@@ -57,18 +57,8 @@ public sealed class AsyncMethodNamingCodeFixProvider : CodeFixProvider
         CancellationToken cancellationToken)
     {
         var solution = document.Project.Solution;
-        var semanticModel = await document.GetSemanticModelAsync(cancellationToken);
-        if (semanticModel is null)
-        {
-            return solution;
-        }
-
-        var symbol = semanticModel.GetDeclaredSymbol(method, cancellationToken);
-        if (symbol is null)
-        {
-            return solution;
-        }
-
+        var semanticModel = (await document.GetSemanticModelAsync(cancellationToken))!;
+        var symbol = semanticModel.GetDeclaredSymbol(method, cancellationToken)!;
         var newName = symbol.Name + AsyncSuffix;
         var options = new SymbolRenameOptions();
         return await Renamer.RenameSymbolAsync(solution, symbol, options, newName, cancellationToken);

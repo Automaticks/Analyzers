@@ -62,12 +62,7 @@ public sealed class RedundantNullCheckCodeFixProvider : CodeFixProvider
             return document;
         }
 
-        var newRoot = root.RemoveNode(statement, SyntaxRemoveOptions.KeepNoTrivia);
-        if (newRoot is null)
-        {
-            return document;
-        }
-
+        var newRoot = root.RemoveNode(statement, SyntaxRemoveOptions.KeepNoTrivia)!;
         return document.WithSyntaxRoot(newRoot);
     }
 }

@@ -37,7 +37,7 @@ public sealed class InterfaceDefaultImplementationCodeFixProvider : CodeFixProvi
         foreach (var diagnostic in context.Diagnostics)
         {
             var token = root.FindToken(diagnostic.Location.SourceSpan.Start);
-            var member = token.Parent?.FirstAncestorOrSelf<MemberDeclarationSyntax>();
+            var member = token.Parent!.FirstAncestorOrSelf<MemberDeclarationSyntax>();
             if (member is not MethodDeclarationSyntax && member is not PropertyDeclarationSyntax)
             {
                 continue;
@@ -96,13 +96,9 @@ public sealed class InterfaceDefaultImplementationCodeFixProvider : CodeFixProvi
                 .WithExpressionBody(null)
                 .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken));
         }
-        else if (member is PropertyDeclarationSyntax property)
-        {
-            replacement = BuildContractProperty(property);
-        }
         else
         {
-            return document;
+            replacement = BuildContractProperty((member as PropertyDeclarationSyntax)!);
         }
 
         var newRoot = root.ReplaceNode(member, replacement.WithTriviaFrom(member));

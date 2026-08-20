@@ -54,12 +54,7 @@ public sealed class UnusedUsingDirectiveCodeFixProvider : CodeFixProvider
         CancellationToken cancellationToken)
     {
         var root = (await document.GetSyntaxRootAsync(cancellationToken))!;
-        var newRoot = root.RemoveNode(usingDirective, SyntaxRemoveOptions.KeepNoTrivia);
-        if (newRoot is null)
-        {
-            return document;
-        }
-
+        var newRoot = root.RemoveNode(usingDirective, SyntaxRemoveOptions.KeepNoTrivia)!;
         return document.WithSyntaxRoot(newRoot);
     }
 }
