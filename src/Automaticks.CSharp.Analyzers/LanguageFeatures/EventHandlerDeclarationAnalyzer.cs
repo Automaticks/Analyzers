@@ -66,10 +66,7 @@ public sealed class EventHandlerDeclarationAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeType(SymbolAnalysisContext context)
     {
-        if (context.Symbol is not INamedTypeSymbol type)
-        {
-            return;
-        }
+        var type = (context.Symbol as INamedTypeSymbol)!;
 
         foreach (var member in type.GetMembers())
         {
@@ -79,12 +76,7 @@ public sealed class EventHandlerDeclarationAnalyzer : DiagnosticAnalyzer
 
     private Location GetReportLocation(ImmutableArray<Location> locations)
     {
-        if (locations.Length > 0)
-        {
-            return locations[0];
-        }
-
-        return Location.None;
+        return locations[0];
     }
 
     private bool HasAddOrRemoveHandlerCall(ExpressionSyntax expression)

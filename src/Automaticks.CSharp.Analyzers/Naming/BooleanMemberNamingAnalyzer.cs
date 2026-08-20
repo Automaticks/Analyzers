@@ -57,12 +57,7 @@ public sealed class BooleanMemberNamingAnalyzer : DiagnosticAnalyzer
                 continue;
             }
 
-            var symbol = context.SemanticModel.GetDeclaredSymbol(variable) as IFieldSymbol;
-            if (symbol is null)
-            {
-                continue;
-            }
-
+            var symbol = (context.SemanticModel.GetDeclaredSymbol(variable) as IFieldSymbol)!;
             if (!HasBooleanType(symbol.Type))
             {
                 continue;
@@ -82,12 +77,7 @@ public sealed class BooleanMemberNamingAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        var symbol = context.SemanticModel.GetDeclaredSymbol(propDecl) as IPropertySymbol;
-        if (symbol is null)
-        {
-            return;
-        }
-
+        var symbol = (context.SemanticModel.GetDeclaredSymbol(propDecl) as IPropertySymbol)!;
         if (!HasBooleanType(symbol.Type))
         {
             return;

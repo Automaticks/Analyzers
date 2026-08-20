@@ -112,11 +112,7 @@ public sealed class FileNameMismatchAnalyzer : DiagnosticAnalyzer
             return false;
         }
 
-        var symbol = context.SemanticModel.GetDeclaredSymbol(context.Node);
-        if (symbol is null)
-        {
-            return false;
-        }
+        var symbol = context.SemanticModel.GetDeclaredSymbol(context.Node)!;
 
         foreach (var syntaxRef in symbol.DeclaringSyntaxReferences)
         {

@@ -51,11 +51,7 @@ public sealed class AsyncMethodNamingAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        var symbol = context.SemanticModel.GetDeclaredSymbol(method);
-        if (symbol is null)
-        {
-            return;
-        }
+        var symbol = context.SemanticModel.GetDeclaredSymbol(method)!;
 
         if (!HasAsyncReturnType(symbol, context.SemanticModel.Compilation))
         {

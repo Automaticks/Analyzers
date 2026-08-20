@@ -45,7 +45,8 @@ public sealed class RedundantNullCheckAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeCoalesce(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not BinaryExpressionSyntax coalesceNode || coalesceNode.Right is not ThrowExpressionSyntax throwExpr)
+        var coalesceNode = (context.Node as BinaryExpressionSyntax)!;
+        if (coalesceNode.Right is not ThrowExpressionSyntax throwExpr)
         {
             return;
         }
@@ -65,7 +66,8 @@ public sealed class RedundantNullCheckAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeIfStatement(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not IfStatementSyntax ifStatement || ifStatement.Else is not null)
+        var ifStatement = (context.Node as IfStatementSyntax)!;
+        if (ifStatement.Else is not null)
         {
             return;
         }
@@ -97,7 +99,8 @@ public sealed class RedundantNullCheckAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeInvocation(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not InvocationExpressionSyntax invocationNode || invocationNode.Expression is not MemberAccessExpressionSyntax memberAccess)
+        var invocationNode = (context.Node as InvocationExpressionSyntax)!;
+        if (invocationNode.Expression is not MemberAccessExpressionSyntax memberAccess)
         {
             return;
         }

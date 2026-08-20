@@ -57,11 +57,7 @@ public sealed class BooleanMethodNamingAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        var symbol = context.SemanticModel.GetDeclaredSymbol(localFunc) as IMethodSymbol;
-        if (symbol is null)
-        {
-            return;
-        }
+        var symbol = (context.SemanticModel.GetDeclaredSymbol(localFunc) as IMethodSymbol)!;
 
         if (!HasBooleanType(symbol.ReturnType))
         {
@@ -81,11 +77,7 @@ public sealed class BooleanMethodNamingAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        var symbol = context.SemanticModel.GetDeclaredSymbol(method);
-        if (symbol is null)
-        {
-            return;
-        }
+        var symbol = context.SemanticModel.GetDeclaredSymbol(method)!;
 
         if (!HasBooleanType(symbol.ReturnType))
         {

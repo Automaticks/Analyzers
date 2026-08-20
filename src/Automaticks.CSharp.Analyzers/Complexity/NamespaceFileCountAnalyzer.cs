@@ -50,10 +50,7 @@ public sealed class NamespaceFileCountAnalyzer : DiagnosticAnalyzer
         SyntaxNodeAnalysisContext nodeContext,
         ConcurrentDictionary<string, ConcurrentDictionary<string, Location>> filesByNamespace)
     {
-        if (nodeContext.Node is not BaseNamespaceDeclarationSyntax namespaceDecl)
-        {
-            return;
-        }
+        var namespaceDecl = (nodeContext.Node as BaseNamespaceDeclarationSyntax)!;
 
         if (HasNestedNamespace(namespaceDecl))
         {
@@ -66,10 +63,7 @@ public sealed class NamespaceFileCountAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        if (nodeContext.SemanticModel.GetDeclaredSymbol(namespaceDecl) is not { } symbol)
-        {
-            return;
-        }
+        var symbol = nodeContext.SemanticModel.GetDeclaredSymbol(namespaceDecl)!;
 
         var namespaceName = symbol.ToDisplayString();
         var location = namespaceDecl.Name.GetLocation();
