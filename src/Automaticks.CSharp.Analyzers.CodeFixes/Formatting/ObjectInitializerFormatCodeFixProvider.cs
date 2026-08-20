@@ -38,12 +38,7 @@ public sealed class ObjectInitializerFormatCodeFixProvider : CodeFixProvider
         foreach (var diagnostic in context.Diagnostics)
         {
             var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
-            var initializer = node.FirstAncestorOrSelf<InitializerExpressionSyntax>();
-            if (initializer is null || initializer.Expressions.Count == 0)
-            {
-                continue;
-            }
-
+            var initializer = node.FirstAncestorOrSelf<InitializerExpressionSyntax>()!;
             var action = CodeAction.Create(
                 Title,
                 cancellationToken => ReformatAsync(context.Document, initializer, cancellationToken),

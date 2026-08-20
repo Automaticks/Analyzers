@@ -143,7 +143,7 @@ public sealed class EventHandlerDeclarationAnalyzer : DiagnosticAnalyzer
         var eventHandlerType = compilation.GetTypeByMetadataName("System.EventHandler");
         var eventHandlerOfTType = compilation.GetTypeByMetadataName("System.EventHandler`1");
 
-        var isPlainEventHandler = eventHandlerType is not null && SymbolEqualityComparer.Default.Equals(type, eventHandlerType);
+        var isPlainEventHandler = SymbolEqualityComparer.Default.Equals(type, eventHandlerType);
         var isGenericEventHandler = type is INamedTypeSymbol { IsGenericType: true } namedType && eventHandlerOfTType is not null
                                                                           && SymbolEqualityComparer.Default.Equals(
                                                                               namedType.ConstructUnboundGenericType(),
