@@ -49,11 +49,6 @@ public sealed class EmptyLineBetweenFieldsCodeFixProvider : CodeFixProvider
         CancellationToken cancellationToken)
     {
         var text = await document.GetTextAsync(cancellationToken);
-        if (position >= text.Length && text.Length > 0)
-        {
-            position = text.Length - 1;
-        }
-
         var line = text.Lines.GetLineFromPosition(position);
         var span = TextSpan.FromBounds(line.Start, line.EndIncludingLineBreak);
         var newText = text.Replace(span, string.Empty);

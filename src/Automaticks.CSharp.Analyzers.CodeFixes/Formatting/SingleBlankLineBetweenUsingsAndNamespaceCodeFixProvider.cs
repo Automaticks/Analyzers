@@ -64,11 +64,6 @@ public sealed class SingleBlankLineBetweenUsingsAndNamespaceCodeFixProvider : Co
         CancellationToken cancellationToken)
     {
         var text = await document.GetTextAsync(cancellationToken);
-        if (position >= text.Length && text.Length > 0)
-        {
-            position = text.Length - 1;
-        }
-
         var line = text.Lines.GetLineFromPosition(position);
         var insertionPoint = new TextSpan(line.Start, 0);
         var newText = text.Replace(insertionPoint, GetLineBreak(text));
