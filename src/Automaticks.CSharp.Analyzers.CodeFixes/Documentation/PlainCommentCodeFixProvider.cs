@@ -31,12 +31,7 @@ public sealed class PlainCommentCodeFixProvider : CodeFixProvider
     /// <inheritdoc />
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
-        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken);
-        if (root is null)
-        {
-            return;
-        }
-
+        var root = (await context.Document.GetSyntaxRootAsync(context.CancellationToken))!;
         foreach (var diagnostic in context.Diagnostics)
         {
             var start = diagnostic.Location.SourceSpan.Start;
@@ -87,12 +82,7 @@ public sealed class PlainCommentCodeFixProvider : CodeFixProvider
         int triviaStart,
         CancellationToken cancellationToken)
     {
-        var root = await document.GetSyntaxRootAsync(cancellationToken);
-        if (root is null)
-        {
-            return document;
-        }
-
+        var root = (await document.GetSyntaxRootAsync(cancellationToken))!;
         var trivia = root.FindTrivia(triviaStart);
         var token = trivia.Token;
         var leadingIndex = token.LeadingTrivia.IndexOf(trivia);
@@ -104,11 +94,6 @@ public sealed class PlainCommentCodeFixProvider : CodeFixProvider
         }
 
         var trailingIndex = token.TrailingTrivia.IndexOf(trivia);
-        if (trailingIndex < 0)
-        {
-            return document;
-        }
-
         var keptTrailing = BuildTriviaWithoutLine(token.TrailingTrivia, trailingIndex);
         var withTrailing = token.WithTrailingTrivia(keptTrailing);
         return document.WithSyntaxRoot(root.ReplaceToken(token, withTrailing));

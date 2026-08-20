@@ -30,12 +30,7 @@ public sealed class RemarksXmlDocCodeFixProvider : CodeFixProvider
     /// <inheritdoc />
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
-        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken);
-        if (root is null)
-        {
-            return;
-        }
-
+        var root = (await context.Document.GetSyntaxRootAsync(context.CancellationToken))!;
         foreach (var diagnostic in context.Diagnostics)
         {
             var node = root.FindNode(diagnostic.Location.SourceSpan, findInsideTrivia: true, getInnermostNodeForTie: true);
@@ -69,12 +64,7 @@ public sealed class RemarksXmlDocCodeFixProvider : CodeFixProvider
         XmlNodeSyntax element,
         CancellationToken cancellationToken)
     {
-        var root = await document.GetSyntaxRootAsync(cancellationToken);
-        if (root is null)
-        {
-            return document;
-        }
-
+        var root = (await document.GetSyntaxRootAsync(cancellationToken))!;
         if (element.Parent is not DocumentationCommentTriviaSyntax docComment)
         {
             return document;
@@ -82,7 +72,7 @@ public sealed class RemarksXmlDocCodeFixProvider : CodeFixProvider
 
         var index = docComment.Content.IndexOf(element);
         var trimmed = docComment.Content.RemoveAt(index);
-        if (index > 0 && trimmed.Count >= index && trimmed[index - 1] is XmlTextSyntax)
+        if (index > 0 && trimmed[index - 1] is XmlTextSyntax)
         {
             trimmed = trimmed.RemoveAt(index - 1);
         }
