@@ -128,12 +128,7 @@ public sealed class InterfaceDefaultImplementationAnalyzer : DiagnosticAnalyzer
             return true;
         }
 
-        if (indexer.AccessorList == null)
-        {
-            return false;
-        }
-
-        foreach (var accessor in indexer.AccessorList.Accessors)
+        foreach (var accessor in indexer.AccessorList!.Accessors)
         {
             if (accessor.Body != null || accessor.ExpressionBody != null)
             {
@@ -160,12 +155,7 @@ public sealed class InterfaceDefaultImplementationAnalyzer : DiagnosticAnalyzer
             return true;
         }
 
-        if (property.AccessorList == null)
-        {
-            return false;
-        }
-
-        foreach (var accessor in property.AccessorList.Accessors)
+        foreach (var accessor in property.AccessorList!.Accessors)
         {
             if (accessor.Body != null || accessor.ExpressionBody != null)
             {
