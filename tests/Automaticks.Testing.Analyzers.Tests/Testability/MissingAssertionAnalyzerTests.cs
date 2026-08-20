@@ -107,6 +107,34 @@ public class MissingAssertionAnalyzerTests
     }
 
     /// <summary>
+    ///     Tests that Analyze_TestMethodWithNonAssertInvocation_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_TestMethodWithNonAssertInvocation_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace TUnit.Core { public class TestAttribute : System.Attribute {} }
+                              namespace MyApp {
+                                  public class FooTests {
+                                      [TUnit.Core.Test]
+                                      public void Method_Scenario_Result() { Helper(); }
+                                      private void Helper() {}
+                                  }
+                              }
+                              """;
+
+        var analyzer = new MissingAssertionAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasIdWithMessageSubstring(
+            diagnostics,
+            "ATXTST011",
+            "'Method_Scenario_Result'")).IsTrue();
+    }
+
+    /// <summary>
     ///     Tests that Analyze_TestMethodWithoutAssertion_ReportsDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -156,5 +184,36 @@ public class MissingAssertionAnalyzerTests
         var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
         await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTST011")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_TestMethodWithUnrelatedAttributeBeforeTestAttribute_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_TestMethodWithUnrelatedAttributeBeforeTestAttribute_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace TUnit.Core {
+                                  public class TestAttribute : System.Attribute {}
+                                  public class CategoryAttribute : System.Attribute {}
+                              }
+                              namespace MyApp {
+                                  public class FooTests {
+                                      [TUnit.Core.Category]
+                                      [TUnit.Core.Test]
+                                      public void Method_Scenario_Result() { var x = 1 + 1; }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new MissingAssertionAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasIdWithMessageSubstring(
+            diagnostics,
+            "ATXTST011",
+            "'Method_Scenario_Result'")).IsTrue();
     }
 }

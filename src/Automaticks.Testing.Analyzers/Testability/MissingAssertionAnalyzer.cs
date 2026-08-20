@@ -90,15 +90,10 @@ public sealed class MissingAssertionAnalyzer : DiagnosticAnalyzer
 
     private bool HasTestAttribute(SyntaxNodeAnalysisContext context, MethodDeclarationSyntax method)
     {
-        var symbol = context.SemanticModel.GetDeclaredSymbol(method, context.CancellationToken);
-        if (symbol is null)
-        {
-            return false;
-        }
-
+        var symbol = context.SemanticModel.GetDeclaredSymbol(method, context.CancellationToken)!;
         foreach (var attribute in symbol.GetAttributes())
         {
-            if (attribute.AttributeClass?.Name == "TestAttribute")
+            if (attribute.AttributeClass!.Name == "TestAttribute")
             {
                 return true;
             }

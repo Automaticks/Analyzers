@@ -1,4 +1,4 @@
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using System;
 using System.Collections.Generic;
@@ -144,7 +144,7 @@ public sealed class TestClassNameAnalyzer : DiagnosticAnalyzer
 
             foreach (var attribute in method.GetAttributes())
             {
-                if (attribute.AttributeClass?.Name == "TestAttribute")
+                if (attribute.AttributeClass!.Name == "TestAttribute")
                 {
                     return true;
                 }

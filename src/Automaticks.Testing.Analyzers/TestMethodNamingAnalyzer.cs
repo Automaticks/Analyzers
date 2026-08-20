@@ -1,4 +1,4 @@
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using System.Collections.Immutable;
 using System.Text.RegularExpressions;
@@ -58,7 +58,7 @@ public sealed class TestMethodNamingAnalyzer : DiagnosticAnalyzer
     {
         foreach (var attribute in method.GetAttributes())
         {
-            if (attribute.AttributeClass?.Name is "TestAttribute" or "ArgumentsAttribute")
+            if (attribute.AttributeClass!.Name is "TestAttribute" or "ArgumentsAttribute")
             {
                 return true;
             }

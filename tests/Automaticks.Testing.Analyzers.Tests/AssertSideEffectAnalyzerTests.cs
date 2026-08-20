@@ -248,4 +248,26 @@ public class AssertSideEffectAnalyzerTests
 
         await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTST009")).IsFalse();
     }
+
+    /// <summary>
+    ///     Tests that Analyze_UnresolvedInvocationWithArgument_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_UnresolvedInvocationWithArgument_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo {
+                                      public void Bar() { Undefined(true); }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new AssertSideEffectAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTST009")).IsFalse();
+    }
 }
