@@ -77,7 +77,7 @@ public sealed class FolderFileCountAnalyzer : DiagnosticAnalyzer
         files.TryAdd(filePath, location);
     }
 
-    private PrimaryFileLocation? FindPrimaryFile(ConcurrentDictionary<string, Location> files)
+    private PrimaryFileLocation FindPrimaryFile(ConcurrentDictionary<string, Location> files)
     {
         string? primaryPath = null;
         Location? primaryLocation = null;
@@ -101,12 +101,7 @@ public sealed class FolderFileCountAnalyzer : DiagnosticAnalyzer
             }
         }
 
-        if (primaryLocation is null)
-        {
-            return null;
-        }
-
-        return new PrimaryFileLocation(primaryLocation, additionalLocations);
+        return new PrimaryFileLocation(primaryLocation!, additionalLocations);
     }
 
     private void RegisterCompilationActions(CompilationStartAnalysisContext compilationContext)
@@ -129,11 +124,6 @@ public sealed class FolderFileCountAnalyzer : DiagnosticAnalyzer
             }
 
             var primaryFile = FindPrimaryFile(folderEntry.Value);
-            if (primaryFile is null)
-            {
-                continue;
-            }
-
             endContext.ReportDiagnostic(Diagnostic.Create(
                 Rule,
                 primaryFile.Location,

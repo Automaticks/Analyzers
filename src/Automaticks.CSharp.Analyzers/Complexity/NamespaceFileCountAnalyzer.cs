@@ -76,7 +76,7 @@ public sealed class NamespaceFileCountAnalyzer : DiagnosticAnalyzer
         return new ConcurrentDictionary<string, Location>();
     }
 
-    private Location? FindPrimaryLocation(ConcurrentDictionary<string, Location> files, List<Location> additionalLocations)
+    private Location FindPrimaryLocation(ConcurrentDictionary<string, Location> files, List<Location> additionalLocations)
     {
         string? primaryPath = null;
         Location? primaryLocation = null;
@@ -99,7 +99,7 @@ public sealed class NamespaceFileCountAnalyzer : DiagnosticAnalyzer
             }
         }
 
-        return primaryLocation;
+        return primaryLocation!;
     }
 
     private bool HasEarlierPath(string candidatePath, string currentPath)
@@ -145,12 +145,6 @@ public sealed class NamespaceFileCountAnalyzer : DiagnosticAnalyzer
 
             var additionalLocations = new List<Location>();
             var primaryLocation = FindPrimaryLocation(namespaceEntry.Value, additionalLocations);
-
-            if (primaryLocation is null)
-            {
-                continue;
-            }
-
             endContext.ReportDiagnostic(Diagnostic.Create(
                 Rule,
                 primaryLocation,
