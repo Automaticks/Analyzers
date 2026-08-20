@@ -64,10 +64,10 @@ public sealed class UnobservedTaskAnalyzer : DiagnosticAnalyzer
     private bool HasDiscardedResult(InvocationExpressionSyntax invocation)
     {
         var parent = invocation.Parent;
-        return parent is ExpressionStatementSyntax
-               || (parent is AssignmentExpressionSyntax assignment
-                   && assignment.Right == invocation
-                   && assignment is { Left: IdentifierNameSyntax { Identifier.Text: "_" }, Parent: ExpressionStatementSyntax });
+        var isDiscardAssignment = parent is AssignmentExpressionSyntax assignment
+            && assignment.Right == invocation
+            && assignment is { Left: IdentifierNameSyntax { Identifier.Text: "_" }, Parent: ExpressionStatementSyntax };
+        return parent is ExpressionStatementSyntax || isDiscardAssignment;
     }
 
     private bool HasTaskReturnType(IMethodSymbol method, Compilation compilation)

@@ -91,13 +91,14 @@ public sealed class SingleBlankLineBetweenUsingsAndNamespaceAnalyzer : Diagnosti
 
     private bool HasPreprocessorTriviaKind(SyntaxTrivia trivia)
     {
-        return trivia.IsKind(SyntaxKind.IfDirectiveTrivia)
+        var isPreprocessorTrivia = trivia.IsKind(SyntaxKind.IfDirectiveTrivia)
             || trivia.IsKind(SyntaxKind.ElifDirectiveTrivia)
             || trivia.IsKind(SyntaxKind.ElseDirectiveTrivia)
             || trivia.IsKind(SyntaxKind.EndIfDirectiveTrivia)
             || trivia.IsKind(SyntaxKind.DisabledTextTrivia)
             || trivia.IsKind(SyntaxKind.DefineDirectiveTrivia)
             || trivia.IsKind(SyntaxKind.UndefDirectiveTrivia);
+        return isPreprocessorTrivia;
     }
 
     private void ProcessTriviaList(SyntaxTriviaList triviaList, BlankLineState state)

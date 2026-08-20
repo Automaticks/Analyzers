@@ -98,8 +98,9 @@ public sealed class CognitiveComplexityAnalyzer : DiagnosticAnalyzer
 
         public override void VisitBinaryExpression(BinaryExpressionSyntax node)
         {
-            if ((node.IsKind(SyntaxKind.LogicalAndExpression) || node.IsKind(SyntaxKind.LogicalOrExpression))
-                && (node.Parent is not BinaryExpressionSyntax parentBinary || !parentBinary.IsKind(node.Kind())))
+            var isNewLogicalOperatorSequence = (node.IsKind(SyntaxKind.LogicalAndExpression) || node.IsKind(SyntaxKind.LogicalOrExpression))
+                && (node.Parent is not BinaryExpressionSyntax parentBinary || !parentBinary.IsKind(node.Kind()));
+            if (isNewLogicalOperatorSequence)
             {
                 Score++;
             }

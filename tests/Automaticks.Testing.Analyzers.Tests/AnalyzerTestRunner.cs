@@ -112,7 +112,10 @@ public static class AnalyzerTestRunner
             syntaxTrees,
             references,
             compilationOptions);
-        var configOptionsHolder = new TestAnalyzerConfigOptionsHolder(options.IsTestProject, options.IsAnalyzerProject);
+        var configOptionsHolder = new TestAnalyzerConfigOptionsHolder(
+            options.IsTestProject,
+            options.IsAnalyzerProject,
+            options.ConfigOptions);
         var additionalFiles = options.AdditionalFiles is null
             ? ImmutableArray<AdditionalText>.Empty
             : ImmutableArray.CreateRange(options.AdditionalFiles);

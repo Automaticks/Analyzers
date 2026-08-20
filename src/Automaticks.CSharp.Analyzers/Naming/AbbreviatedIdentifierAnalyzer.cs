@@ -248,10 +248,11 @@ public sealed class AbbreviatedIdentifierAnalyzer : DiagnosticAnalyzer
 
     private bool HasAbbreviatedSegment(string segment, string? previousSegment, string? nextSegment)
     {
-        if (AxisSegments.Contains(segment) ||
+        var isExemptSegment = AxisSegments.Contains(segment) ||
             segment.Equals("Xml", StringComparison.OrdinalIgnoreCase) ||
             (segment.Equals("T", StringComparison.OrdinalIgnoreCase) && string.Equals(previousSegment, "Of", StringComparison.OrdinalIgnoreCase)) ||
-            (segment.Equals("N", StringComparison.OrdinalIgnoreCase) && string.Equals(nextSegment, "Substitute", StringComparison.OrdinalIgnoreCase)))
+            (segment.Equals("N", StringComparison.OrdinalIgnoreCase) && string.Equals(nextSegment, "Substitute", StringComparison.OrdinalIgnoreCase));
+        if (isExemptSegment)
         {
             return false;
         }
@@ -329,12 +330,13 @@ public sealed class AbbreviatedIdentifierAnalyzer : DiagnosticAnalyzer
             var current = name[index];
             var previous = name[index - 1];
             bool startsNewSegment;
+            var isNewSegmentAfterAcronym = char.IsUpper(current) && index + 1 < name.Length && char.IsLower(name[index + 1]) && char.IsUpper(previous);
 
             if (char.IsUpper(current) && char.IsLower(previous))
             {
                 startsNewSegment = true;
             }
-            else if (char.IsUpper(current) && index + 1 < name.Length && char.IsLower(name[index + 1]) && char.IsUpper(previous))
+            else if (isNewSegmentAfterAcronym)
             {
                 startsNewSegment = true;
             }

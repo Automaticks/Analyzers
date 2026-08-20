@@ -220,10 +220,11 @@ public sealed class MissingSummaryXmlDocAnalyzer : DiagnosticAnalyzer
 
     private bool HasDocumentationRequirement(SyntaxNode node)
     {
-        return !HasOverrideModifier(node) &&
+        var hasDocumentationRequirement = !HasOverrideModifier(node) &&
                !HasExplicitInterfaceImplementation(node) &&
                HasPublicOrProtected(node) &&
                HasPubliclyAccessibleContext(node);
+        return hasDocumentationRequirement;
     }
 
     private bool HasExplicitInterfaceImplementation(SyntaxNode node)

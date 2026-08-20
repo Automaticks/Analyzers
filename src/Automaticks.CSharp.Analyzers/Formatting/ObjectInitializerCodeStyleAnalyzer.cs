@@ -108,8 +108,9 @@ public sealed class ObjectInitializerCodeStyleAnalyzer : DiagnosticAnalyzer
             var sharesWithCloseBrace = endLines[index] == closeBraceLine;
             var sharesWithPrevious = index > 0 && startLines[index] == endLines[index - 1];
             var sharesWithNext = index < count - 1 && endLines[index] == startLines[index + 1];
+            var sharesLineWithNeighbor = sharesWithOpenBrace || sharesWithCloseBrace || sharesWithPrevious || sharesWithNext;
 
-            if (sharesWithOpenBrace || sharesWithCloseBrace || sharesWithPrevious || sharesWithNext)
+            if (sharesLineWithNeighbor)
             {
                 context.ReportDiagnostic(Diagnostic.Create(FormatRule, initializer.Expressions[index].GetLocation()));
             }

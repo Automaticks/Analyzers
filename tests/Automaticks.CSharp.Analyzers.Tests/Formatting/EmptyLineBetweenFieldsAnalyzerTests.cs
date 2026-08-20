@@ -1,4 +1,6 @@
-﻿using System.Threading;
+﻿using Microsoft.CodeAnalysis;
+using System.Collections.Immutable;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Automaticks.CSharp.Analyzers.Tests.Formatting;
@@ -330,7 +332,11 @@ public class EmptyLineBetweenFieldsAnalyzerTests
     /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
     public async Task Analyze_DocCommentOnSecondFieldNoBlankLine_ReportsNoDiagnostic(CancellationToken cancellationToken)
-        => await AssertNoDiagnosticForDocCommentOnSecondFieldAsync(cancellationToken);
+    {
+        var diagnostics = await GetDocCommentOnSecondFieldDiagnosticsAsync(cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS039")).IsFalse();
+    }
 
     /// <summary>
     ///     Tests that Analyze_EmptyClass_ReportsNoDiagnostic.
@@ -454,7 +460,11 @@ public class EmptyLineBetweenFieldsAnalyzerTests
     /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
     public async Task Analyze_NoBlankLineAndSecondFieldHasExtensibleMarkupLanguageDoc_ReportsNoDiagnostic(CancellationToken cancellationToken)
-        => await AssertNoDiagnosticForDocCommentOnSecondFieldAsync(cancellationToken);
+    {
+        var diagnostics = await GetDocCommentOnSecondFieldDiagnosticsAsync(cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS039")).IsFalse();
+    }
 
     /// <summary>
     ///     Tests that Analyze_SingleField_ReportsNoDiagnostic.
@@ -520,7 +530,7 @@ public class EmptyLineBetweenFieldsAnalyzerTests
         await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS039")).IsTrue();
     }
 
-    private async Task AssertNoDiagnosticForDocCommentOnSecondFieldAsync(CancellationToken cancellationToken)
+    private async Task<ImmutableArray<Diagnostic>> GetDocCommentOnSecondFieldDiagnosticsAsync(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp {
@@ -535,8 +545,6 @@ public class EmptyLineBetweenFieldsAnalyzerTests
                               """;
 
         var analyzer = new EmptyLineBetweenFieldsAnalyzer();
-        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
-
-        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS039")).IsFalse();
+        return await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
     }
 }

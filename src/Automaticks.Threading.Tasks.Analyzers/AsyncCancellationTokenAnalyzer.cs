@@ -1,4 +1,4 @@
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using System.Collections.Immutable;
 
@@ -135,10 +135,12 @@ public sealed class AsyncCancellationTokenAnalyzer : DiagnosticAnalyzer
 
     private bool HasMethodExemption(IMethodSymbol method, INamedTypeSymbol? hubType)
     {
-        return method.IsOverride && HasExternalOverride(method)
+        var hasExternalOverride = method.IsOverride && HasExternalOverride(method);
+        var hasExemption = hasExternalOverride
                || HasExplicitExternalInterfaceImplementation(method)
                || HasImplicitExternalInterfaceImplementation(method)
                || HasSignalRealtimeHubMethod(method, hubType);
+        return hasExemption;
     }
 
     private bool HasSignalRealtimeHubMethod(IMethodSymbol method, INamedTypeSymbol? hubType)

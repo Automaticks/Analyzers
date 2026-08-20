@@ -150,9 +150,10 @@ public sealed class InterfaceDefaultImplementationAnalyzer : DiagnosticAnalyzer
 
     private bool HasImplementation(MethodDeclarationSyntax method)
     {
+        var hasStaticImplementation = HasStaticModifier(method.Modifiers) && !HasAbstractModifier(method.Modifiers);
         return method.Body != null
                || method.ExpressionBody != null
-               || (HasStaticModifier(method.Modifiers) && !HasAbstractModifier(method.Modifiers));
+               || hasStaticImplementation;
     }
 
     private bool HasImplementation(PropertyDeclarationSyntax property)

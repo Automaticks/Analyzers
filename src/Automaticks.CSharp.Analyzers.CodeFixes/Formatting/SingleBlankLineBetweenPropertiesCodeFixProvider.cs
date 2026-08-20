@@ -1,4 +1,4 @@
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
@@ -61,10 +61,11 @@ public sealed class SingleBlankLineBetweenPropertiesCodeFixProvider : CodeFixPro
         var position = member.SpanStart;
         foreach (var trivia in member.GetLeadingTrivia())
         {
-            if (trivia.IsKind(SyntaxKind.SingleLineDocumentationCommentTrivia) ||
+            var isDocOrCommentTrivia = trivia.IsKind(SyntaxKind.SingleLineDocumentationCommentTrivia) ||
                 trivia.IsKind(SyntaxKind.MultiLineDocumentationCommentTrivia) ||
                 trivia.IsKind(SyntaxKind.SingleLineCommentTrivia) ||
-                trivia.IsKind(SyntaxKind.MultiLineCommentTrivia))
+                trivia.IsKind(SyntaxKind.MultiLineCommentTrivia);
+            if (isDocOrCommentTrivia)
             {
                 position = trivia.SpanStart;
                 break;

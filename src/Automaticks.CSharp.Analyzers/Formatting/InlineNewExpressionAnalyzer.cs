@@ -154,9 +154,10 @@ public sealed class InlineNewExpressionAnalyzer : DiagnosticAnalyzer
 
     private bool HasTopLevelSimpleAssignmentParent(ExpressionSyntax effective)
     {
-        return effective.Parent is AssignmentExpressionSyntax assignment
+        var isSimpleAssignmentStatement = effective.Parent is AssignmentExpressionSyntax assignment
             && assignment.IsKind(SyntaxKind.SimpleAssignmentExpression)
             && assignment.Right == effective
             && assignment.Parent is ExpressionStatementSyntax;
+        return isSimpleAssignmentStatement;
     }
 }

@@ -137,9 +137,10 @@ public sealed class MissingReturnsXmlDocAnalyzer : DiagnosticAnalyzer
 
     private bool HasReturnsRequirement(MethodDeclarationSyntax method)
     {
-        return !HasOverrideModifier(method) &&
+        var hasReturnsRequirement = !HasOverrideModifier(method) &&
                method.ExplicitInterfaceSpecifier == null &&
                HasPublicOrProtectedAccess(method) &&
                HasPubliclyAccessibleContext(method);
+        return hasReturnsRequirement;
     }
 }

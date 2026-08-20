@@ -106,6 +106,17 @@ public sealed class CoverageReport
 
     private void Parse(string reportXml)
     {
+        try
+        {
+            ParseCore(reportXml);
+        }
+        catch (XmlException)
+        {
+        }
+    }
+
+    private void ParseCore(string reportXml)
+    {
         var settings = new XmlReaderSettings
         {
             DtdProcessing = DtdProcessing.Prohibit,

@@ -1,4 +1,4 @@
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
 
 namespace Automaticks.Testing.Analyzers.Tests;
@@ -11,6 +11,9 @@ public readonly struct AnalysisOptions
 
     /// <summary>Gets the additional metadata references to include in compilation.</summary>
     public IReadOnlyList<MetadataReference>? AdditionalReferences { get; init; }
+
+    /// <summary>Gets additional analyzer config (.editorconfig-style) key/value pairs.</summary>
+    public IReadOnlyDictionary<string, string>? ConfigOptions { get; init; }
 
     /// <summary>Gets the file path to use when parsing the source text.</summary>
     public string? FilePath { get; init; }

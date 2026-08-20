@@ -151,10 +151,11 @@ public sealed class EventHandlerDeclarationAnalyzer : DiagnosticAnalyzer
         var eventHandlerType = compilation.GetTypeByMetadataName("System.EventHandler");
         var eventHandlerOfTType = compilation.GetTypeByMetadataName("System.EventHandler`1");
 
-        return (eventHandlerType is not null && SymbolEqualityComparer.Default.Equals(type, eventHandlerType))
-               || (type is INamedTypeSymbol { IsGenericType: true } namedType && eventHandlerOfTType is not null
-                                                                              && SymbolEqualityComparer.Default.Equals(
-                                                                                  namedType.ConstructUnboundGenericType(),
-                                                                                  eventHandlerOfTType.ConstructUnboundGenericType()));
+        var isPlainEventHandler = eventHandlerType is not null && SymbolEqualityComparer.Default.Equals(type, eventHandlerType);
+        var isGenericEventHandler = type is INamedTypeSymbol { IsGenericType: true } namedType && eventHandlerOfTType is not null
+                                                                          && SymbolEqualityComparer.Default.Equals(
+                                                                              namedType.ConstructUnboundGenericType(),
+                                                                              eventHandlerOfTType.ConstructUnboundGenericType());
+        return isPlainEventHandler || isGenericEventHandler;
     }
 }

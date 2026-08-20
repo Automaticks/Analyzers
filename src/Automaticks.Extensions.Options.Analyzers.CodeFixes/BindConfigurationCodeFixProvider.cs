@@ -1,4 +1,4 @@
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
@@ -71,10 +71,22 @@ public sealed class BindConfigurationCodeFixProvider : CodeFixProvider
             return null;
         }
 
-        if (bindAccess.Expression is not InvocationExpressionSyntax addOptions ||
-            addOptions.Expression is not MemberAccessExpressionSyntax addOptionsAccess ||
-            addOptionsAccess.Name is not GenericNameSyntax { Identifier.ValueText: "AddOptions" } addOptionsName ||
-            addOptionsName.TypeArgumentList.Arguments.Count != 1)
+        if (bindAccess.Expression is not InvocationExpressionSyntax addOptions)
+        {
+            return null;
+        }
+
+        if (addOptions.Expression is not MemberAccessExpressionSyntax addOptionsAccess)
+        {
+            return null;
+        }
+
+        if (addOptionsAccess.Name is not GenericNameSyntax { Identifier.ValueText: "AddOptions" } addOptionsName)
+        {
+            return null;
+        }
+
+        if (addOptionsName.TypeArgumentList.Arguments.Count != 1)
         {
             return null;
         }
