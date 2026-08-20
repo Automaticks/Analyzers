@@ -57,6 +57,6 @@ public static class AsyncReturnTypeHelper
     {
         return type.Name == "IAsyncEnumerable"
                && type.TypeArguments.Length == 1
-               && type.ContainingNamespace?.ToDisplayString() == "System.Collections.Generic";
+               && type.ContainingNamespace.ToDisplayString() == "System.Collections.Generic";
     }
 }

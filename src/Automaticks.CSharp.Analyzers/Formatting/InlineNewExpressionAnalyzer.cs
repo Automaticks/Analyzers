@@ -131,10 +131,13 @@ public sealed class InlineNewExpressionAnalyzer : DiagnosticAnalyzer
             case ThrowExpressionSyntax:
                 return true;
 
-            case EqualsValueClauseSyntax { Parent: VariableDeclaratorSyntax { Parent: VariableDeclarationSyntax varDecl } }:
+            case EqualsValueClauseSyntax { Parent: VariableDeclaratorSyntax declarator }:
+            {
+                var varDecl = (declarator.Parent as VariableDeclarationSyntax)!;
                 return varDecl.Parent is LocalDeclarationStatementSyntax
                     || varDecl.Parent is ForStatementSyntax
                     || varDecl.Parent is UsingStatementSyntax;
+            }
 
             default:
                 return HasTopLevelSimpleAssignmentParent(effective);

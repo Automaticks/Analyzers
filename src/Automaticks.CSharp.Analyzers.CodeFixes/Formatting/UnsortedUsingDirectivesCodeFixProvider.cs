@@ -58,8 +58,8 @@ public sealed class UnsortedUsingDirectivesCodeFixProvider : CodeFixProvider
         }
 
         sortable.Sort((left, right) => string.Compare(
-            left.Name?.ToString() ?? string.Empty,
-            right.Name?.ToString() ?? string.Empty,
+            left.Name!.ToString(),
+            right.Name!.ToString(),
             StringComparison.OrdinalIgnoreCase));
 
         var rebuilt = new List<UsingDirectiveSyntax>();
