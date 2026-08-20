@@ -31,21 +31,11 @@ public sealed class InternalModifierCodeFixProvider : CodeFixProvider
     /// <inheritdoc />
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
-        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken);
-        if (root is null)
-        {
-            return;
-        }
-
+        var root = (await context.Document.GetSyntaxRootAsync(context.CancellationToken))!;
         foreach (var diagnostic in context.Diagnostics)
         {
             var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
-            var declaration = node.FirstAncestorOrSelf<MemberDeclarationSyntax>();
-            if (declaration is null)
-            {
-                continue;
-            }
-
+            var declaration = node.FirstAncestorOrSelf<MemberDeclarationSyntax>()!;
             var action = CodeAction.Create(
                 Title,
                 cancellationToken => MakePublicAsync(context.Document, declaration, cancellationToken),
@@ -81,12 +71,14 @@ public sealed class InternalModifierCodeFixProvider : CodeFixProvider
             return declaration.Modifiers[0];
         }
 
-        foreach (var token in declaration.ChildTokens())
+        var children = declaration.ChildNodesAndTokens();
+        var index = 0;
+        while (!children[index].IsToken)
         {
-            return token;
+            index++;
         }
 
-        return declaration.GetFirstToken();
+        return children[index].AsToken();
     }
 
     private async Task<Document> MakePublicAsync(
@@ -94,12 +86,7 @@ public sealed class InternalModifierCodeFixProvider : CodeFixProvider
         MemberDeclarationSyntax declaration,
         CancellationToken cancellationToken)
     {
-        var root = await document.GetSyntaxRootAsync(cancellationToken);
-        if (root is null)
-        {
-            return document;
-        }
-
+        var root = (await document.GetSyntaxRootAsync(cancellationToken))!;
         var newDeclaration = BuildPublicDeclaration(declaration);
         var newRoot = root.ReplaceNode(declaration, newDeclaration);
         return document.WithSyntaxRoot(newRoot);

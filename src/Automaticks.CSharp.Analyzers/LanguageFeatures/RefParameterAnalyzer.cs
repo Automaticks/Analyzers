@@ -63,11 +63,7 @@ public sealed class RefParameterAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeLocalFunction(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not LocalFunctionStatementSyntax localFunction)
-        {
-            return;
-        }
-
+        var localFunction = (context.Node as LocalFunctionStatementSyntax)!;
         var parameters = localFunction.ParameterList.Parameters;
         var refIndices = GetRefParamIndicesSyntax(parameters);
         var info = new RefViolationSyntaxInfo(
@@ -80,11 +76,7 @@ public sealed class RefParameterAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeMethod(SymbolAnalysisContext context)
     {
-        if (context.Symbol is not IMethodSymbol method)
-        {
-            return;
-        }
-
+        var method = (context.Symbol as IMethodSymbol)!;
         if (method.MethodKind is not MethodKind.Ordinary)
         {
             return;
@@ -93,17 +85,6 @@ public sealed class RefParameterAnalyzer : DiagnosticAnalyzer
         if (method.IsOverride && HasExternalOverride(method))
         {
             return;
-        }
-
-        if (method.ExplicitInterfaceImplementations.Length > 0)
-        {
-            foreach (var ifaceMethod in method.ExplicitInterfaceImplementations)
-            {
-                if (ifaceMethod.DeclaringSyntaxReferences.IsEmpty)
-                {
-                    return;
-                }
-            }
         }
 
         if (HasImplicitExternalInterfaceImplementation(method))
@@ -198,7 +179,7 @@ public sealed class RefParameterAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        var location = methodLocations.Length > 0 ? methodLocations[0] : Location.None;
+        var location = methodLocations[0];
 
         if (methodName != SetPropertyName)
         {
@@ -215,7 +196,7 @@ public sealed class RefParameterAnalyzer : DiagnosticAnalyzer
             var parameter = parameters[index];
             if (parameter.RefKind == RefKind.Ref && index != 0)
             {
-                var paramLocation = parameter.Locations.Length > 0 ? parameter.Locations[0] : Location.None;
+                var paramLocation = parameter.Locations[0];
                 context.ReportDiagnostic(Diagnostic.Create(PositionRule, paramLocation, parameter.Name, methodName));
             }
         }

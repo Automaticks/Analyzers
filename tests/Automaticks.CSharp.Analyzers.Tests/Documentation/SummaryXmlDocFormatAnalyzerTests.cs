@@ -214,6 +214,22 @@ public class SummaryXmlDocFormatAnalyzerTests
     }
 
     /// <summary>
+    ///     Tests that Analyze_MultiLineContentWithEntityReferenceMissingIndentation_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_MultiLineContentWithEntityReferenceMissingIndentation_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = "namespace MyApp {\n    /// <summary>\n    ///     Uses &amp; entity here.\n    /// </summary>\n    public class Foo { }\n}\n";
+
+        var analyzer = new SummaryXmlDocFormatAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS050")).IsFalse();
+    }
+
+    /// <summary>
     ///     Tests that Analyze_NoDocComment_NoDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>

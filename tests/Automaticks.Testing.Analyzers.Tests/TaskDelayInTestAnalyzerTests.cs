@@ -90,4 +90,86 @@ public class TaskDelayInTestAnalyzerTests
 
         await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTST004")).IsTrue();
     }
+
+    /// <summary>
+    ///     Tests that Analyze_TestProjectWithTaskDelayAndTimeProvider_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_TestProjectWithTaskDelayAndTimeProvider_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System;
+                              using System.Threading.Tasks;
+                              namespace MyApp.Tests {
+                                  public class FooTests {
+                                      public async Task Bar_Something_ReturnsTrue() {
+                                          await Task.Delay(TimeSpan.FromMilliseconds(200), TimeProvider.System);
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new TaskDelayInTestAnalyzer();
+        var options = new AnalysisOptions
+{
+    IsTestProject = true
+};
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, options, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTST004")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_TestProjectWithUnrelatedMethodCall_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_TestProjectWithUnrelatedMethodCall_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp.Tests {
+                                  public class FooTests {
+                                      public void Bar_Something_ReturnsTrue() { System.Console.WriteLine("x"); }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new TaskDelayInTestAnalyzer();
+        var options = new AnalysisOptions
+{
+    IsTestProject = true
+};
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, options, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTST004")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_TestProjectWithUnresolvedMethodCall_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_TestProjectWithUnresolvedMethodCall_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp.Tests {
+                                  public class FooTests {
+                                      public void Bar_Something_ReturnsTrue() { UndefinedDelay(200); }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new TaskDelayInTestAnalyzer();
+        var options = new AnalysisOptions
+{
+    IsTestProject = true
+};
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, options, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTST004")).IsFalse();
+    }
 }

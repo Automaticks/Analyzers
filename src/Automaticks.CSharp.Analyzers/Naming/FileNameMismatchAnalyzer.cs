@@ -87,12 +87,8 @@ public sealed class FileNameMismatchAnalyzer : DiagnosticAnalyzer
             return baseTypeDecl.Identifier;
         }
 
-        if (node is DelegateDeclarationSyntax delegateDecl)
-        {
-            return delegateDecl.Identifier;
-        }
-
-        return default;
+        var delegateDecl = (node as DelegateDeclarationSyntax)!;
+        return delegateDecl.Identifier;
     }
 
     private bool HasEnclosingTypeDeclaration(SyntaxNode node)
@@ -112,11 +108,7 @@ public sealed class FileNameMismatchAnalyzer : DiagnosticAnalyzer
             return false;
         }
 
-        var symbol = context.SemanticModel.GetDeclaredSymbol(context.Node);
-        if (symbol is null)
-        {
-            return false;
-        }
+        var symbol = context.SemanticModel.GetDeclaredSymbol(context.Node)!;
 
         foreach (var syntaxRef in symbol.DeclaringSyntaxReferences)
         {

@@ -26,14 +26,39 @@ public static class DiagnosticIds
         public const string CompositeBitmaskTest = "ATXTST006";
 
         /// <summary>
+        ///     Diagnostic ID for <c>ATXTST008</c>: conditional compilation branches on the DEBUG symbol.
+        /// </summary>
+        public const string DebugConditionalCompilation = "ATXTST008";
+
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXTST005</c>: a boolean decision combines too many leaf conditions.
+        /// </summary>
+        public const string ExcessiveDecisionConditions = "ATXTST005";
+
+        /// <summary>
         ///     Diagnostic ID for <c>ATXTST013</c>: file line coverage is below the configured minimum.
         /// </summary>
         public const string FileLineCoverage = "ATXTST013";
 
         /// <summary>
+        ///     Diagnostic ID for <c>ATXTST015</c>: method branch coverage is below the configured minimum.
+        /// </summary>
+        public const string MethodBranchCoverage = "ATXTST015";
+
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXTST011</c>: a test method contains no assertion.
+        /// </summary>
+        public const string MissingAssertion = "ATXTST011";
+
+        /// <summary>
         ///     Diagnostic ID for <c>ATXTST001</c>: mocking frameworks are not allowed; use hand-written stubs.
         /// </summary>
         public const string MockingFramework = "ATXTST001";
+
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXTST007</c>: a redundant default label on an exhaustive enum switch.
+        /// </summary>
+        public const string RedundantEnumSwitchDefault = "ATXTST007";
 
         /// <summary>
         ///     Diagnostic ID for <c>ATXTST014</c>: the real <c>TimeProvider.System</c> is used in a test project.
@@ -60,5 +85,10 @@ public static class DiagnosticIds
         ///     Diagnostic ID for <c>ATXTST012</c>: public member has no coverage in the supplied report.
         /// </summary>
         public const string UncoveredPublicMember = "ATXTST012";
+
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXTST016</c>: the supplied coverage report is unusable.
+        /// </summary>
+        public const string UnusableCoverageReport = "ATXTST016";
     }
 }

@@ -119,6 +119,30 @@ public class MissingReturnsXmlDocAnalyzerTests
     }
 
     /// <summary>
+    ///     Tests that Analyze_PublicMethodInPrivateNestedClass_NoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_PublicMethodInPrivateNestedClass_NoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Outer {
+                                      private class Inner {
+                                          public int GetValue() => 0;
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new MissingReturnsXmlDocAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS053")).IsFalse();
+    }
+
+    /// <summary>
     ///     Tests that Analyze_PublicNonGenericTaskMethodWithNoReturnsTag_ReportsDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>

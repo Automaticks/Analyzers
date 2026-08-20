@@ -1,5 +1,6 @@
 ﻿using Automaticks.CSharp.CodeFixes.Naming;
 using Microsoft.CodeAnalysis.CodeFixes;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -51,16 +52,17 @@ public class FileNameMismatchCodeFixProviderTests
 
         var analyzer = new FileNameMismatchAnalyzer();
         var provider = new FileNameMismatchCodeFixProvider();
+        var directory = Path.Combine("repo", "src");
         var request = new CodeFixRequest
         {
             Analyzer = analyzer,
-            FilePath = "C:\\repo\\src\\Gadget.cs",
+            FilePath = Path.Combine(directory, "Gadget.cs"),
             Provider = provider,
             Source = source
         };
-        var fixedName = await CodeFixTestRunner.GetFixedDocumentNameAsync(request, cancellationToken);
+        var fixedPath = await CodeFixTestRunner.GetFixedDocumentFilePathAsync(request, cancellationToken);
 
-        await Assert.That(fixedName).IsEqualTo("Widget.cs");
+        await Assert.That(fixedPath).IsEqualTo(Path.Combine(directory, "Widget.cs"));
     }
 
     /// <summary>Verifies a file name with no extension yields the bare type name.</summary>

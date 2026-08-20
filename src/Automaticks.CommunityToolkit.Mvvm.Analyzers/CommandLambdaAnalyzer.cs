@@ -49,11 +49,7 @@ public sealed class CommandLambdaAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeObjectCreation(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not ObjectCreationExpressionSyntax creation)
-        {
-            return;
-        }
-
+        var creation = (context.Node as ObjectCreationExpressionSyntax)!;
         var typeInfo = context.SemanticModel.GetTypeInfo(creation);
 
         if (typeInfo.Type is not INamedTypeSymbol createdType)
@@ -82,7 +78,7 @@ public sealed class CommandLambdaAnalyzer : DiagnosticAnalyzer
 
     private bool HasCommandType(INamedTypeSymbol type)
     {
-        var namespaceName = type.ContainingNamespace?.ToDisplayString() ?? string.Empty;
+        var namespaceName = type.ContainingNamespace.ToDisplayString();
         string metadataName;
         if (type.IsGenericType)
         {

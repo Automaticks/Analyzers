@@ -33,12 +33,7 @@ public sealed class UnsortedUsingDirectivesCodeFixProvider : CodeFixProvider
     /// <inheritdoc />
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
-        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken);
-        if (root is not CompilationUnitSyntax compilationUnit)
-        {
-            return;
-        }
-
+        var compilationUnit = ((await context.Document.GetSyntaxRootAsync(context.CancellationToken)) as CompilationUnitSyntax)!;
         foreach (var diagnostic in context.Diagnostics)
         {
             var action = CodeAction.Create(
@@ -63,8 +58,8 @@ public sealed class UnsortedUsingDirectivesCodeFixProvider : CodeFixProvider
         }
 
         sortable.Sort((left, right) => string.Compare(
-            left.Name?.ToString() ?? string.Empty,
-            right.Name?.ToString() ?? string.Empty,
+            left.Name!.ToString(),
+            right.Name!.ToString(),
             StringComparison.OrdinalIgnoreCase));
 
         var rebuilt = new List<UsingDirectiveSyntax>();
@@ -91,12 +86,7 @@ public sealed class UnsortedUsingDirectivesCodeFixProvider : CodeFixProvider
 
     private async Task<Document> SortDirectivesAsync(Document document, CancellationToken cancellationToken)
     {
-        var root = await document.GetSyntaxRootAsync(cancellationToken);
-        if (root is not CompilationUnitSyntax compilationUnit)
-        {
-            return document;
-        }
-
+        var compilationUnit = ((await document.GetSyntaxRootAsync(cancellationToken)) as CompilationUnitSyntax)!;
         var sorted = BuildSortedList(compilationUnit.Usings);
         var newRoot = compilationUnit.WithUsings(sorted);
         return document.WithSyntaxRoot(newRoot);

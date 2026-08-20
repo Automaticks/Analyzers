@@ -1,4 +1,4 @@
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
@@ -34,12 +34,8 @@ public sealed class BindConfigurationCodeFixProvider : CodeFixProvider
     /// <inheritdoc />
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
-        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken);
-        var semanticModel = await context.Document.GetSemanticModelAsync(context.CancellationToken);
-        if (root is null || semanticModel is null)
-        {
-            return;
-        }
+        var root = (await context.Document.GetSyntaxRootAsync(context.CancellationToken))!;
+        var semanticModel = (await context.Document.GetSemanticModelAsync(context.CancellationToken))!;
 
         foreach (var diagnostic in context.Diagnostics)
         {
@@ -71,10 +67,22 @@ public sealed class BindConfigurationCodeFixProvider : CodeFixProvider
             return null;
         }
 
-        if (bindAccess.Expression is not InvocationExpressionSyntax addOptions ||
-            addOptions.Expression is not MemberAccessExpressionSyntax addOptionsAccess ||
-            addOptionsAccess.Name is not GenericNameSyntax { Identifier.ValueText: "AddOptions" } addOptionsName ||
-            addOptionsName.TypeArgumentList.Arguments.Count != 1)
+        if (bindAccess.Expression is not InvocationExpressionSyntax addOptions)
+        {
+            return null;
+        }
+
+        if (addOptions.Expression is not MemberAccessExpressionSyntax addOptionsAccess)
+        {
+            return null;
+        }
+
+        if (addOptionsAccess.Name is not GenericNameSyntax { Identifier.ValueText: "AddOptions" } addOptionsName)
+        {
+            return null;
+        }
+
+        if (addOptionsName.TypeArgumentList.Arguments.Count != 1)
         {
             return null;
         }
@@ -106,12 +114,8 @@ public sealed class BindConfigurationCodeFixProvider : CodeFixProvider
 
         foreach (var parameter in method.ParameterList.Parameters)
         {
-            if (parameter.Type is null)
-            {
-                continue;
-            }
-
-            var typeSymbol = semanticModel.GetTypeInfo(parameter.Type).Type;
+            var parameterType = parameter.Type!;
+            var typeSymbol = semanticModel.GetTypeInfo(parameterType).Type!;
             if (HasConfigurationType(typeSymbol))
             {
                 return parameter.Identifier.ValueText;
@@ -121,19 +125,14 @@ public sealed class BindConfigurationCodeFixProvider : CodeFixProvider
         return null;
     }
 
-    private bool HasConfigurationType(ITypeSymbol? typeSymbol)
+    private bool HasConfigurationType(ITypeSymbol typeSymbol)
     {
-        if (typeSymbol is null)
-        {
-            return false;
-        }
-
         if (!string.Equals(typeSymbol.Name, ConfigurationTypeName, StringComparison.Ordinal))
         {
             return false;
         }
 
-        var namespaceName = typeSymbol.ContainingNamespace?.ToDisplayString() ?? string.Empty;
+        var namespaceName = typeSymbol.ContainingNamespace.ToDisplayString();
         return string.Equals(namespaceName, ConfigurationNamespace, StringComparison.Ordinal);
     }
 
@@ -143,12 +142,7 @@ public sealed class BindConfigurationCodeFixProvider : CodeFixProvider
         string replacementText,
         CancellationToken cancellationToken)
     {
-        var root = await document.GetSyntaxRootAsync(cancellationToken);
-        if (root is null)
-        {
-            return document;
-        }
-
+        var root = (await document.GetSyntaxRootAsync(cancellationToken))!;
         var replacement = SyntaxFactory.ParseExpression(replacementText).WithTriviaFrom(invocation);
         var newRoot = root.ReplaceNode(invocation, replacement);
         return document.WithSyntaxRoot(newRoot);

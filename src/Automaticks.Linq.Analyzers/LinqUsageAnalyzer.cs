@@ -1,4 +1,4 @@
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -42,11 +42,7 @@ public sealed class LinqUsageAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeUsing(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not UsingDirectiveSyntax usingDirective)
-        {
-            return;
-        }
-
+        var usingDirective = (context.Node as UsingDirectiveSyntax)!;
         var name = usingDirective.Name?.ToString() ?? string.Empty;
         var isLinqUsage = name.Equals("System.Linq", StringComparison.Ordinal)
             || (name.StartsWith("System.Linq.", StringComparison.Ordinal)

@@ -18,7 +18,7 @@ Roslyn analyzers for C#, Entity Framework Core, CommunityToolkit.Mvvm, and more.
 
 ## Rules
 
-All 72 diagnostic rules and suppressors are catalogued in [docs/RULES.md](docs/RULES.md).
+All 86 diagnostic rules and suppressors are catalogued in [docs/RULES.md](docs/RULES.md).
 
 ## Code fixes
 

@@ -1,4 +1,4 @@
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Rename;
@@ -31,21 +31,11 @@ public sealed class BooleanMemberNamingCodeFixProvider : CodeFixProvider
     /// <inheritdoc />
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
-        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken);
-        if (root is null)
-        {
-            return;
-        }
-
+        var root = (await context.Document.GetSyntaxRootAsync(context.CancellationToken))!;
         foreach (var diagnostic in context.Diagnostics)
         {
             var token = root.FindToken(diagnostic.Location.SourceSpan.Start);
-            var declaration = token.Parent;
-            if (declaration is null)
-            {
-                continue;
-            }
-
+            var declaration = token.Parent!;
             var action = CodeAction.Create(
                 Title,
                 cancellationToken => RenameAsync(context.Document, declaration, cancellationToken),
@@ -60,12 +50,7 @@ public sealed class BooleanMemberNamingCodeFixProvider : CodeFixProvider
         CancellationToken cancellationToken)
     {
         var solution = document.Project.Solution;
-        var semanticModel = await document.GetSemanticModelAsync(cancellationToken);
-        if (semanticModel is null)
-        {
-            return solution;
-        }
-
+        var semanticModel = (await document.GetSemanticModelAsync(cancellationToken))!;
         var symbol = semanticModel.GetDeclaredSymbol(declaration, cancellationToken);
         if (symbol is null)
         {

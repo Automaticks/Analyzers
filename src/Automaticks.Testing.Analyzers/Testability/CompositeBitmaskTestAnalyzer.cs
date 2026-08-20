@@ -41,11 +41,7 @@ public sealed class CompositeBitmaskTestAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeBitwiseAnd(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not BinaryExpressionSyntax binary)
-        {
-            return;
-        }
-
+        var binary = (context.Node as BinaryExpressionSyntax)!;
         if (!HasZeroComparisonParent(binary))
         {
             return;
@@ -65,11 +61,7 @@ public sealed class CompositeBitmaskTestAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeHasFlag(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not InvocationExpressionSyntax invocation)
-        {
-            return;
-        }
-
+        var invocation = (context.Node as InvocationExpressionSyntax)!;
         var arguments = invocation.ArgumentList.Arguments;
         if (arguments.Count != 1 || !HasEnumHasFlagMethod(context, invocation))
         {
@@ -115,7 +107,7 @@ public sealed class CompositeBitmaskTestAnalyzer : DiagnosticAnalyzer
         }
 
         var enumType = context.SemanticModel.Compilation.GetTypeByMetadataName("System.Enum");
-        return enumType is not null && SymbolEqualityComparer.Default.Equals(method.ContainingType, enumType);
+        return SymbolEqualityComparer.Default.Equals(method.ContainingType, enumType);
     }
 
     private bool HasZeroComparisonParent(BinaryExpressionSyntax binary)
@@ -148,26 +140,42 @@ public sealed class CompositeBitmaskTestAnalyzer : DiagnosticAnalyzer
 
     private ulong ToBitPattern(object? value)
     {
-        switch (value)
+        if (value is int intValue)
         {
-            case int intValue:
-                return unchecked((ulong)intValue);
-            case uint uintValue:
-                return uintValue;
-            case long longValue:
-                return unchecked((ulong)longValue);
-            case ulong ulongValue:
-                return ulongValue;
-            case short shortValue:
-                return unchecked((ulong)shortValue);
-            case ushort ushortValue:
-                return ushortValue;
-            case byte byteValue:
-                return byteValue;
-            case sbyte sbyteValue:
-                return unchecked((ulong)sbyteValue);
-            default:
-                return 0;
+            return unchecked((ulong)intValue);
         }
+
+        if (value is uint uintValue)
+        {
+            return uintValue;
+        }
+
+        if (value is long longValue)
+        {
+            return unchecked((ulong)longValue);
+        }
+
+        if (value is ulong ulongValue)
+        {
+            return ulongValue;
+        }
+
+        if (value is short shortValue)
+        {
+            return unchecked((ulong)shortValue);
+        }
+
+        if (value is ushort ushortValue)
+        {
+            return ushortValue;
+        }
+
+        if (value is byte byteValue)
+        {
+            return byteValue;
+        }
+
+        var sbyteValue = (sbyte)value!;
+        return unchecked((ulong)sbyteValue);
     }
 }

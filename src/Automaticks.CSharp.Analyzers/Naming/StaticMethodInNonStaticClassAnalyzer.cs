@@ -42,11 +42,7 @@ public sealed class StaticMethodInNonStaticClassAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeMethod(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not MethodDeclarationSyntax method)
-        {
-            return;
-        }
-
+        var method = (context.Node as MethodDeclarationSyntax)!;
         if (!method.Modifiers.Any(SyntaxKind.StaticKeyword))
         {
             return;

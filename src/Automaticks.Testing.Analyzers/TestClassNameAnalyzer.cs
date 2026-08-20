@@ -1,4 +1,4 @@
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using System;
 using System.Collections.Generic;
@@ -44,11 +44,7 @@ public sealed class TestClassNameAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeType(SymbolAnalysisContext context, ImmutableHashSet<string> typeNames)
     {
-        if (context.Symbol is not INamedTypeSymbol typeSymbol)
-        {
-            return;
-        }
-
+        var typeSymbol = (context.Symbol as INamedTypeSymbol)!;
         if (!typeSymbol.Name.EndsWith("Tests", StringComparison.Ordinal))
         {
             return;
@@ -86,10 +82,7 @@ public sealed class TestClassNameAnalyzer : DiagnosticAnalyzer
             }
         }
 
-        var location = typeSymbol.Locations.Length > 0
-            ? typeSymbol.Locations[0]
-            : Location.None;
-        context.ReportDiagnostic(Diagnostic.Create(Rule, location, typeSymbol.Name));
+        context.ReportDiagnostic(Diagnostic.Create(Rule, typeSymbol.Locations[0], typeSymbol.Name));
     }
 
     private ImmutableHashSet<string> BuildTypeNameSet(Compilation compilation)
@@ -151,7 +144,7 @@ public sealed class TestClassNameAnalyzer : DiagnosticAnalyzer
 
             foreach (var attribute in method.GetAttributes())
             {
-                if (attribute.AttributeClass?.Name == "TestAttribute")
+                if (attribute.AttributeClass!.Name == "TestAttribute")
                 {
                     return true;
                 }

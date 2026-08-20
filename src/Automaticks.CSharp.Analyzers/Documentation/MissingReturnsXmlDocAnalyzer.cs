@@ -47,11 +47,7 @@ public sealed class MissingReturnsXmlDocAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeNode(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not MethodDeclarationSyntax method)
-        {
-            return;
-        }
-
+        var method = (context.Node as MethodDeclarationSyntax)!;
         if (method.ReturnType is PredefinedTypeSyntax predefined &&
             predefined.Keyword.IsKind(SyntaxKind.VoidKeyword))
         {
@@ -137,9 +133,10 @@ public sealed class MissingReturnsXmlDocAnalyzer : DiagnosticAnalyzer
 
     private bool HasReturnsRequirement(MethodDeclarationSyntax method)
     {
-        return !HasOverrideModifier(method) &&
+        var hasReturnsRequirement = !HasOverrideModifier(method) &&
                method.ExplicitInterfaceSpecifier == null &&
                HasPublicOrProtectedAccess(method) &&
                HasPubliclyAccessibleContext(method);
+        return hasReturnsRequirement;
     }
 }

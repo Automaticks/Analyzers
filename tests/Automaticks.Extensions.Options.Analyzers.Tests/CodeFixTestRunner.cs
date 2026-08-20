@@ -115,6 +115,18 @@ public static class CodeFixTestRunner
             $"The fix introduced {after - before} compiler error(s). Fixed source:{Environment.NewLine}{text}");
     }
 
+    private static int CompareByLocation(Diagnostic left, Diagnostic right)
+    {
+        var leftPath = left.Location.SourceTree is null ? string.Empty : left.Location.SourceTree.FilePath;
+        var rightPath = right.Location.SourceTree is null ? string.Empty : right.Location.SourceTree.FilePath;
+        var pathComparison = string.CompareOrdinal(leftPath, rightPath);
+        if (pathComparison != 0)
+        {
+            return pathComparison;
+        }
+
+        return left.Location.SourceSpan.Start.CompareTo(right.Location.SourceSpan.Start);
+    }
     private static async Task<int> CountCompilerErrorsAsync(Document document, CancellationToken cancellationToken)
     {
         var compilation = await document.Project.GetCompilationAsync(cancellationToken)
@@ -179,6 +191,7 @@ public static class CodeFixTestRunner
             }
         }
 
+        matches.Sort(CompareByLocation);
         return matches;
     }
 

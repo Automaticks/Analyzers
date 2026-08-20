@@ -45,11 +45,7 @@ public sealed class RedundantInitSetterAnalyzer : DiagnosticAnalyzer
 
     private void Analyze(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not PropertyDeclarationSyntax property)
-        {
-            return;
-        }
-
+        var property = (context.Node as PropertyDeclarationSyntax)!;
         var initAccessor = GetInitAccessor(property);
         if (initAccessor is null)
         {

@@ -64,11 +64,7 @@ public sealed class TypeMemberOrderAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeTypeDeclaration(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not TypeDeclarationSyntax typeDeclaration)
-        {
-            return;
-        }
-
+        var typeDeclaration = (context.Node as TypeDeclarationSyntax)!;
         var isInterface = typeDeclaration is InterfaceDeclarationSyntax;
         var maxRank = MemberRank.Minimum;
 

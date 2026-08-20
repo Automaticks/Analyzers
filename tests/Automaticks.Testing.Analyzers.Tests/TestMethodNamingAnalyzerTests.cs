@@ -1,4 +1,4 @@
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 
 namespace Automaticks.Testing.Analyzers.Tests;
@@ -40,6 +40,38 @@ public class TestMethodNamingAnalyzerTests
         var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, options, cancellationToken);
 
         await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTST003")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_MethodWithArgumentsAttributeOnlyAndInvalidName_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_MethodWithArgumentsAttributeOnlyAndInvalidName_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace TUnit.Core {
+                                  public class ArgumentsAttribute : System.Attribute {
+                                      public ArgumentsAttribute(params object[] args) {}
+                                  }
+                              }
+                              namespace MyApp.Tests {
+                                  public class FooTests {
+                                      [TUnit.Core.Arguments(1, 2)]
+                                      public void ParseReturnsExpected(int a, int b) {}
+                                  }
+                              }
+                              """;
+
+        var analyzer = new TestMethodNamingAnalyzer();
+        var options = new AnalysisOptions
+{
+    IsTestProject = true
+};
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, options, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTST003")).IsTrue();
     }
 
     /// <summary>
@@ -124,5 +156,37 @@ public class TestMethodNamingAnalyzerTests
         var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, options, cancellationToken);
 
         await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTST003")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_MethodWithUnrelatedAttributeAndInvalidName_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_MethodWithUnrelatedAttributeAndInvalidName_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace TUnit.Core {
+                                  public class CategoryAttribute : System.Attribute {
+                                      public CategoryAttribute(string name) {}
+                                  }
+                              }
+                              namespace MyApp.Tests {
+                                  public class FooTests {
+                                      [TUnit.Core.Category("Slow")]
+                                      public void ParseReturnsExpected() {}
+                                  }
+                              }
+                              """;
+
+        var analyzer = new TestMethodNamingAnalyzer();
+        var options = new AnalysisOptions
+{
+    IsTestProject = true
+};
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, options, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTST003")).IsFalse();
     }
 }

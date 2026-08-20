@@ -173,6 +173,37 @@ public class CognitiveComplexityAnalyzerTests
     }
 
     /// <summary>
+    ///     Tests that Analyze_CatchClauseWithFilter_VisitsFilterExpression.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_CatchClauseWithFilter_VisitsFilterExpression(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo {
+                                      public void Method(int a) {
+                                          if (a == 1) {} if (a == 2) {} if (a == 3) {} if (a == 4) {}
+                                          if (a == 5) {} if (a == 6) {} if (a == 7) {} if (a == 8) {}
+                                          if (a == 9) {} if (a == 10) {} if (a == 11) {} if (a == 12) {}
+                                          if (a == 13) {} if (a == 14) {}
+                                          try {
+                                              if (a > 0) { }
+                                          }
+                                          catch (System.Exception e) when (e.Message.Length > 0 && a > 1) { }
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new CognitiveComplexityAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS033")).IsTrue();
+    }
+
+    /// <summary>
     ///     Tests that Analyze_ConditionalExpression_IncrementsWithNestingPenalty.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -312,6 +343,36 @@ public class CognitiveComplexityAnalyzerTests
     }
 
     /// <summary>
+    ///     Tests that Analyze_ForLoopWithExpressionInitializer_VisitsInitializers.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ForLoopWithExpressionInitializer_VisitsInitializers(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo {
+                                      public void Method(int a) {
+                                          if (a == 1) {} if (a == 2) {} if (a == 3) {} if (a == 4) {}
+                                          if (a == 5) {} if (a == 6) {} if (a == 7) {} if (a == 8) {}
+                                          if (a == 9) {} if (a == 10) {} if (a == 11) {} if (a == 12) {}
+                                          if (a == 13) {} if (a == 14) {} if (a == 15) {}
+                                          int i;
+                                          int j;
+                                          for (i = 0, j = 0; i < 10; i++) { }
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new CognitiveComplexityAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS033")).IsTrue();
+    }
+
+    /// <summary>
     ///     Tests that Analyze_LambdaBody_IncrementsNestingForInnerControlFlow.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -363,6 +424,36 @@ public class CognitiveComplexityAnalyzerTests
         var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
         await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS033")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_LocalFunctionExpressionBodied_ContributesToScore.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_LocalFunctionExpressionBodied_ContributesToScore(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo {
+                                      public void Method(int a) {
+                                          if (a == 1) {} if (a == 2) {} if (a == 3) {} if (a == 4) {}
+                                          if (a == 5) {} if (a == 6) {} if (a == 7) {} if (a == 8) {}
+                                          if (a == 9) {} if (a == 10) {} if (a == 11) {} if (a == 12) {}
+                                          if (a == 13) {} if (a == 14) {} if (a == 15) {}
+                                          Compute(a);
+
+                                          int Compute(int x) => x > 0 ? 1 : 0;
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new CognitiveComplexityAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS033")).IsTrue();
     }
 
     /// <summary>

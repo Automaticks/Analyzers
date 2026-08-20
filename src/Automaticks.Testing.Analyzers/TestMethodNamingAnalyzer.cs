@@ -1,4 +1,4 @@
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using System.Collections.Immutable;
 using System.Text.RegularExpressions;
@@ -42,11 +42,7 @@ public sealed class TestMethodNamingAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeMethod(SymbolAnalysisContext context)
     {
-        if (context.Symbol is not IMethodSymbol method)
-        {
-            return;
-        }
-
+        var method = (context.Symbol as IMethodSymbol)!;
         if (!HasTestOrArgumentsAttribute(method))
         {
             return;
@@ -54,10 +50,7 @@ public sealed class TestMethodNamingAnalyzer : DiagnosticAnalyzer
 
         if (!NamingPattern.IsMatch(method.Name))
         {
-            var location = method.Locations.Length > 0
-                ? method.Locations[0]
-                : Location.None;
-            context.ReportDiagnostic(Diagnostic.Create(Rule, location, method.Name));
+            context.ReportDiagnostic(Diagnostic.Create(Rule, method.Locations[0], method.Name));
         }
     }
 
@@ -65,7 +58,7 @@ public sealed class TestMethodNamingAnalyzer : DiagnosticAnalyzer
     {
         foreach (var attribute in method.GetAttributes())
         {
-            if (attribute.AttributeClass?.Name is "TestAttribute" or "ArgumentsAttribute")
+            if (attribute.AttributeClass!.Name is "TestAttribute" or "ArgumentsAttribute")
             {
                 return true;
             }

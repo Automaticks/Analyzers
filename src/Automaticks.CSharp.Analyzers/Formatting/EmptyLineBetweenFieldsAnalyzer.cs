@@ -49,11 +49,7 @@ public sealed class EmptyLineBetweenFieldsAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeTypeDeclaration(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not TypeDeclarationSyntax typeDecl)
-        {
-            return;
-        }
-
+        var typeDecl = (context.Node as TypeDeclarationSyntax)!;
         var members = typeDecl.Members;
 
         for (var index = 0; index < members.Count - 1; index++)
@@ -92,11 +88,6 @@ public sealed class EmptyLineBetweenFieldsAnalyzer : DiagnosticAnalyzer
         {
             if (trivia.IsKind(SyntaxKind.EndOfLineTrivia))
             {
-                if (sawNewline)
-                {
-                    return trivia.GetLocation();
-                }
-
                 sawNewline = true;
             }
             else if (!trivia.IsKind(SyntaxKind.WhitespaceTrivia))

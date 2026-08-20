@@ -1,4 +1,4 @@
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 
 namespace Automaticks.Diagnostics.CodeAnalysis.Analyzers.Tests;
@@ -22,6 +22,29 @@ public class SuppressMessageAnalyzerTests
                                   public class Foo {
                                       public void Bar() { }
                                   }
+                              }
+                              """;
+
+        var analyzer = new SuppressMessageAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXDC056")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_GlobalQualifiedAttribute_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_GlobalQualifiedAttribute_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              public class MyMarkerAttribute : System.Attribute { }
+
+                              namespace MyApp {
+                                  [global::MyMarkerAttribute]
+                                  public class Foo { }
                               }
                               """;
 

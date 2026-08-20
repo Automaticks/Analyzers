@@ -23,6 +23,27 @@ public class FileLineCoverageAnalyzerTests
                                   """;
 
     /// <summary>
+    ///     Tests that Analyze_ConfiguredThresholdLowered_SuppressesDefaultViolation.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ConfiguredThresholdLowered_SuppressesDefaultViolation(CancellationToken cancellationToken)
+    {
+        const string report = """
+                              <coverage version="1.9"><packages><package name="MyApp"><classes>
+                                <class name="MyApp.Foo" filename="MyApp/Foo.cs"><lines>
+                                  <line number="3" hits="1" /><line number="4" hits="0" />
+                                </lines></class>
+                              </classes></package></packages></coverage>
+                              """;
+
+        var diagnostics = await AnalyzeWithConfiguredThresholdAsync(report, "40", cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTST013")).IsFalse();
+    }
+
+    /// <summary>
     ///     Tests that Analyze_CoverageAboveMinimum_ReportsNoDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -71,6 +92,31 @@ public class FileLineCoverageAnalyzerTests
     }
 
     /// <summary>
+    ///     Tests that Analyze_InvalidThresholdConfiguration_UsesDefault.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_InvalidThresholdConfiguration_UsesDefault(CancellationToken cancellationToken)
+    {
+        const string report = """
+                              <coverage version="1.9"><packages><package name="MyApp"><classes>
+                                <class name="MyApp.Foo" filename="MyApp/Foo.cs"><lines>
+                                  <line number="3" hits="1" /><line number="4" hits="0" />
+                                  <line number="5" hits="0" /><line number="6" hits="0" />
+                                </lines></class>
+                              </classes></package></packages></coverage>
+                              """;
+
+        var diagnostics = await AnalyzeWithConfiguredThresholdAsync(report, "not-a-number", cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasIdWithMessageSubstring(
+            diagnostics,
+            "ATXTST013",
+            "below the required minimum of 80%")).IsTrue();
+    }
+
+    /// <summary>
     ///     Tests that Analyze_LineCoveredOnlyInSecondReport_ReportsNoDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -107,6 +153,52 @@ public class FileLineCoverageAnalyzerTests
 
         await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTST013")).IsFalse();
     }
+
+    /// <summary>
+    ///     Tests that Analyze_NegativeThresholdConfiguration_UsesDefault.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_NegativeThresholdConfiguration_UsesDefault(CancellationToken cancellationToken)
+    {
+        const string report = """
+                              <coverage version="1.9"><packages><package name="MyApp"><classes>
+                                <class name="MyApp.Foo" filename="MyApp/Foo.cs"><lines>
+                                  <line number="3" hits="1" /><line number="4" hits="0" />
+                                  <line number="5" hits="0" /><line number="6" hits="0" />
+                                </lines></class>
+                              </classes></package></packages></coverage>
+                              """;
+
+        var diagnostics = await AnalyzeWithConfiguredThresholdAsync(report, "-1", cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasIdWithMessageSubstring(
+            diagnostics,
+            "ATXTST013",
+            "below the required minimum of 80%")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_ReportForDifferentFile_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ReportForDifferentFile_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string report = """
+                              <coverage version="1.9"><packages><package name="Other"><classes>
+                                <class name="Other.Bar" filename="Other/Bar.cs"><lines>
+                                  <line number="3" hits="0" />
+                                </lines></class>
+                              </classes></package></packages></coverage>
+                              """;
+
+        var diagnostics = await AnalyzeWithReportAsync(report, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTST013")).IsFalse();
+    }
     /// <summary>
     ///     Tests that Analyze_ReportWithoutLines_ReportsNoDiagnostic.
     /// </summary>
@@ -127,6 +219,31 @@ public class FileLineCoverageAnalyzerTests
     }
 
     /// <summary>
+    ///     Tests that Analyze_ThresholdConfigurationAboveMaximum_UsesDefault.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ThresholdConfigurationAboveMaximum_UsesDefault(CancellationToken cancellationToken)
+    {
+        const string report = """
+                              <coverage version="1.9"><packages><package name="MyApp"><classes>
+                                <class name="MyApp.Foo" filename="MyApp/Foo.cs"><lines>
+                                  <line number="3" hits="1" /><line number="4" hits="0" />
+                                  <line number="5" hits="0" /><line number="6" hits="0" />
+                                </lines></class>
+                              </classes></package></packages></coverage>
+                              """;
+
+        var diagnostics = await AnalyzeWithConfiguredThresholdAsync(report, "150", cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasIdWithMessageSubstring(
+            diagnostics,
+            "ATXTST013",
+            "below the required minimum of 80%")).IsTrue();
+    }
+
+    /// <summary>
     ///     Tests that Analyze_WithoutReport_ReportsNoDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -142,6 +259,30 @@ public class FileLineCoverageAnalyzerTests
         var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, Source, options, cancellationToken);
 
         await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTST013")).IsFalse();
+    }
+
+    private async Task<ImmutableArray<Diagnostic>> AnalyzeWithConfiguredThresholdAsync(
+        string reportXml,
+        string minimumLineCoverage,
+        CancellationToken cancellationToken)
+    {
+        var analyzer = new FileLineCoverageAnalyzer();
+        var additionalText = new TestAdditionalText("C:/repo/artifacts/coverage.cobertura.xml", reportXml);
+        var additionalFiles = new List<AdditionalText>
+        {
+            additionalText,
+        };
+        var configOptions = new Dictionary<string, string>
+        {
+            ["automaticks.minimum_line_coverage"] = minimumLineCoverage,
+        };
+        var options = new AnalysisOptions
+        {
+            FilePath = "C:/repo/MyApp/Foo.cs",
+            AdditionalFiles = additionalFiles,
+            ConfigOptions = configOptions,
+        };
+        return await AnalyzerTestRunner.AnalyzeAsync(analyzer, Source, options, cancellationToken);
     }
 
     private async Task<ImmutableArray<Diagnostic>> AnalyzeWithReportAsync(

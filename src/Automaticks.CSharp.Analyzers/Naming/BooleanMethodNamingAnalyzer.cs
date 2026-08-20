@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using System;
 using System.Collections.Immutable;
 
 namespace Automaticks.CSharp.Naming;
@@ -48,11 +49,7 @@ public sealed class BooleanMethodNamingAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeLocalFunction(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not LocalFunctionStatementSyntax localFunc)
-        {
-            return;
-        }
-
+        var localFunc = (context.Node as LocalFunctionStatementSyntax)!;
         var name = localFunc.Identifier.Text;
 
         if (HasAllowedPrefix(name))
@@ -60,11 +57,7 @@ public sealed class BooleanMethodNamingAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        var symbol = context.SemanticModel.GetDeclaredSymbol(localFunc) as IMethodSymbol;
-        if (symbol is null)
-        {
-            return;
-        }
+        var symbol = (context.SemanticModel.GetDeclaredSymbol(localFunc) as IMethodSymbol)!;
 
         if (!HasBooleanType(symbol.ReturnType))
         {
@@ -76,11 +69,7 @@ public sealed class BooleanMethodNamingAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeMethod(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not MethodDeclarationSyntax method)
-        {
-            return;
-        }
-
+        var method = (context.Node as MethodDeclarationSyntax)!;
         var name = method.Identifier.Text;
 
         if (HasAllowedPrefix(name))
@@ -88,11 +77,7 @@ public sealed class BooleanMethodNamingAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        var symbol = context.SemanticModel.GetDeclaredSymbol(method);
-        if (symbol is null)
-        {
-            return;
-        }
+        var symbol = context.SemanticModel.GetDeclaredSymbol(method)!;
 
         if (!HasBooleanType(symbol.ReturnType))
         {
@@ -128,7 +113,7 @@ public sealed class BooleanMethodNamingAnalyzer : DiagnosticAnalyzer
         foreach (var prefix in AllowedPrefixes)
         {
             if (name.Length >= prefix.Length &&
-                string.Compare(name, 0, prefix, 0, prefix.Length, System.StringComparison.OrdinalIgnoreCase) == 0)
+                string.Compare(name, 0, prefix, 0, prefix.Length, StringComparison.OrdinalIgnoreCase) == 0)
             {
                 return true;
             }
@@ -146,8 +131,7 @@ public sealed class BooleanMethodNamingAnalyzer : DiagnosticAnalyzer
 
         if (type is INamedTypeSymbol { IsValueType: true, ConstructedFrom.SpecialType: SpecialType.System_Nullable_T } namedType)
         {
-            return namedType.TypeArguments.Length == 1 &&
-                   namedType.TypeArguments[0].SpecialType == SpecialType.System_Boolean;
+            return namedType.TypeArguments[0].SpecialType == SpecialType.System_Boolean;
         }
 
         return false;

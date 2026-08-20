@@ -1,4 +1,4 @@
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -35,12 +35,7 @@ public sealed class SummaryXmlDocFormatCodeFixProvider : CodeFixProvider
     /// <inheritdoc />
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
-        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken);
-        if (root is null)
-        {
-            return;
-        }
-
+        var root = (await context.Document.GetSyntaxRootAsync(context.CancellationToken))!;
         foreach (var diagnostic in context.Diagnostics)
         {
             var node = root.FindNode(diagnostic.Location.SourceSpan, findInsideTrivia: true, getInnermostNodeForTie: true);
@@ -98,12 +93,7 @@ public sealed class SummaryXmlDocFormatCodeFixProvider : CodeFixProvider
         XmlElementSyntax element,
         CancellationToken cancellationToken)
     {
-        var endTag = element.EndTag;
-        if (endTag is null)
-        {
-            return document;
-        }
-
+        var endTag = element.EndTag!;
         var text = await document.GetTextAsync(cancellationToken);
         var startLine = text.Lines.GetLineFromPosition(element.StartTag.SpanStart);
         var endLine = text.Lines.GetLineFromPosition(endTag.Span.End);

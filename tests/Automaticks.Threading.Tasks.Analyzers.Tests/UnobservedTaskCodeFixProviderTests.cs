@@ -175,6 +175,32 @@ public class UnobservedTaskCodeFixProviderTests
         await Assert.That(fixedSource).Contains("await WorkAsync();");
     }
 
+    /// <summary>Verifies no fix is offered when the diagnostic location has no invocation ancestor.</summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task CountOfferedActions_DiagnosticAtNodeWithNoInvocationAncestor_OffersNoFix(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo {
+                                  }
+                              }
+                              """;
+
+        var analyzer = new UnobservedTaskAtClassDeclarationAnalyzer();
+        var provider = new UnobservedTaskCodeFixProvider();
+        var request = new CodeFixRequest
+        {
+            Analyzer = analyzer,
+            Provider = provider,
+            Source = source
+        };
+        var offered = await CodeFixTestRunner.CountOfferedActionsAsync(request, cancellationToken);
+
+        await Assert.That(offered).IsEqualTo(0);
+    }
+
     /// <summary>Verifies no fix is offered when the discarded call is inside a constructor.</summary>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task representing the asynchronous test operation.</returns>
@@ -195,6 +221,38 @@ public class UnobservedTaskCodeFixProviderTests
                               """;
 
         var analyzer = new UnobservedTaskAnalyzer();
+        var provider = new UnobservedTaskCodeFixProvider();
+        var request = new CodeFixRequest
+        {
+            Analyzer = analyzer,
+            Provider = provider,
+            Source = source
+        };
+        var offered = await CodeFixTestRunner.CountOfferedActionsAsync(request, cancellationToken);
+
+        await Assert.That(offered).IsEqualTo(0);
+    }
+
+    /// <summary>Verifies no fix is offered when the invocation has no enclosing expression statement.</summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task CountOfferedActions_InvocationHasNoEnclosingStatement_OffersNoFix(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System.Threading.Tasks;
+                              namespace MyApp {
+                                  public class Foo {
+                                      public async Task RunAsync() {
+                                          var work = WorkAsync();
+                                      }
+
+                                      public Task WorkAsync() { return Task.CompletedTask; }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new UnobservedTaskAtLocalDeclarationAnalyzer();
         var provider = new UnobservedTaskCodeFixProvider();
         var request = new CodeFixRequest
         {

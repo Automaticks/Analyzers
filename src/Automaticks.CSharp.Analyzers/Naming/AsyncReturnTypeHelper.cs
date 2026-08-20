@@ -40,12 +40,12 @@ public static class AsyncReturnTypeHelper
 
         var unboundType = namedType.ConstructUnboundGenericType();
 
-        if (SymbolEqualityComparer.Default.Equals(unboundType, taskOfTType?.ConstructUnboundGenericType()))
+        if (SymbolEqualityComparer.Default.Equals(unboundType, taskOfTType!.ConstructUnboundGenericType()))
         {
             return true;
         }
 
-        if (SymbolEqualityComparer.Default.Equals(unboundType, valueTaskOfTType?.ConstructUnboundGenericType()))
+        if (SymbolEqualityComparer.Default.Equals(unboundType, valueTaskOfTType!.ConstructUnboundGenericType()))
         {
             return true;
         }
@@ -57,6 +57,6 @@ public static class AsyncReturnTypeHelper
     {
         return type.Name == "IAsyncEnumerable"
                && type.TypeArguments.Length == 1
-               && type.ContainingNamespace?.ToDisplayString() == "System.Collections.Generic";
+               && type.ContainingNamespace.ToDisplayString() == "System.Collections.Generic";
     }
 }
