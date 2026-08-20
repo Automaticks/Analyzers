@@ -131,8 +131,7 @@ public sealed class BooleanMethodNamingAnalyzer : DiagnosticAnalyzer
 
         if (type is INamedTypeSymbol { IsValueType: true, ConstructedFrom.SpecialType: SpecialType.System_Nullable_T } namedType)
         {
-            return namedType.TypeArguments.Length == 1 &&
-                   namedType.TypeArguments[0].SpecialType == SpecialType.System_Boolean;
+            return namedType.TypeArguments[0].SpecialType == SpecialType.System_Boolean;
         }
 
         return false;

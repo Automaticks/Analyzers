@@ -87,12 +87,8 @@ public sealed class FileNameMismatchAnalyzer : DiagnosticAnalyzer
             return baseTypeDecl.Identifier;
         }
 
-        if (node is DelegateDeclarationSyntax delegateDecl)
-        {
-            return delegateDecl.Identifier;
-        }
-
-        return default;
+        var delegateDecl = (node as DelegateDeclarationSyntax)!;
+        return delegateDecl.Identifier;
     }
 
     private bool HasEnclosingTypeDeclaration(SyntaxNode node)

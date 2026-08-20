@@ -203,6 +203,65 @@ public class BooleanMethodNamingAnalyzerTests
     }
 
     /// <summary>
+    ///     Tests that Analyze_ExplicitLocalInterfaceMethodImplementation_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ExplicitLocalInterfaceMethodImplementation_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public interface IValidator {
+                                      bool Validate();
+                                  }
+                                  public class Validator : IValidator {
+                                      bool IValidator.Validate() => true;
+                                  }
+                              }
+                              """;
+
+        var analyzer = new BooleanMethodNamingAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS063")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_ExternalInterfacePropertyWithMethod_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ExternalInterfacePropertyWithMethod_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string externalSource = """
+                                      public interface IValidator {
+                                          bool IsReady { get; }
+                                      }
+                                      """;
+
+        const string source = """
+                              namespace MyApp {
+                                  public class Validator : IValidator {
+                                      public bool IsReady { get; } = true;
+                                      public bool Validate() => true;
+                                  }
+                              }
+                              """;
+
+        var externalRef = AnalyzerTestRunner.CompileToReference(externalSource);
+        var analyzer = new BooleanMethodNamingAnalyzer();
+        var options = new AnalysisOptions
+{
+    AdditionalReferences = [externalRef]
+};
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, options, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS063")).IsTrue();
+    }
+
+    /// <summary>
     ///     Tests that Analyze_ExternalOverrideMethod_ReportsNoDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -294,6 +353,56 @@ public class BooleanMethodNamingAnalyzerTests
     }
 
     /// <summary>
+    ///     Tests that Analyze_LocalOverrideMethod_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_LocalOverrideMethod_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public abstract class Base {
+                                      public abstract bool Validate();
+                                  }
+                                  public class Derived : Base {
+                                      public override bool Validate() => true;
+                                  }
+                              }
+                              """;
+
+        var analyzer = new BooleanMethodNamingAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS063")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_NonBoolLocalFunction_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_NonBoolLocalFunction_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo {
+                                      public void Execute() {
+                                          string Validate() => string.Empty;
+                                          _ = Validate();
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new BooleanMethodNamingAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS063")).IsFalse();
+    }
+
+    /// <summary>
     ///     Tests that Analyze_NonBoolMethod_ReportsNoDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -382,6 +491,28 @@ public class BooleanMethodNamingAnalyzerTests
         var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
         await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS063")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_NullableIntMethod_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_NullableIntMethod_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo {
+                                      public int? Check() => null;
+                                  }
+                              }
+                              """;
+
+        var analyzer = new BooleanMethodNamingAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS063")).IsFalse();
     }
 
     /// <summary>

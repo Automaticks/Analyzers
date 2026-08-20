@@ -284,6 +284,42 @@ public class FileNameMismatchAnalyzerTests
     }
 
     /// <summary>
+    ///     Tests that AnalyzeTypeDeclaration_PartialClassEmptyDeclarationPath_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task AnalyzeTypeDeclaration_PartialClassEmptyDeclarationPath_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        var firstSourceFile = new SourceFile
+        {
+            Source = """
+                     namespace MyApp {
+                         public partial class Foo { }
+                     }
+                     """,
+            FilePath = string.Empty
+        };
+        var secondSourceFile = new SourceFile
+        {
+            Source = """
+                     namespace MyApp {
+                         public partial class Foo {
+                             public void Extra() { }
+                         }
+                     }
+                     """,
+            FilePath = "FooExtra.cs"
+        };
+        IReadOnlyList<SourceFile> sourceFiles = [firstSourceFile, secondSourceFile];
+
+        var analyzer = new FileNameMismatchAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, sourceFiles, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS031")).IsTrue();
+    }
+
+    /// <summary>
     ///     Tests that AnalyzeTypeDeclaration_PartialClassInMatchingFile_ReportsNoDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
