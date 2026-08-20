@@ -41,7 +41,7 @@ public static class CodeFixTestRunner
     /// <returns>A task that resolves to the fixed source text.</returns>
     public static async Task<string> ApplyFixAsync(CodeFixRequest request, CancellationToken cancellationToken)
     {
-        var document = CreateDocument(request.Source);
+        var document = CreateDocument(request.Source, request.OutputKind ?? OutputKind.DynamicallyLinkedLibrary);
         var diagnostics = await GetFixableDiagnosticsAsync(request, document, cancellationToken);
         if (diagnostics.Count == 0)
         {
@@ -76,7 +76,7 @@ public static class CodeFixTestRunner
     /// <returns>A task that resolves to the number of fixable diagnostics.</returns>
     public static async Task<int> CountFixableAsync(CodeFixRequest request, CancellationToken cancellationToken)
     {
-        var document = CreateDocument(request.Source);
+        var document = CreateDocument(request.Source, request.OutputKind ?? OutputKind.DynamicallyLinkedLibrary);
         var diagnostics = await GetFixableDiagnosticsAsync(request, document, cancellationToken);
         return diagnostics.Count;
     }
@@ -87,7 +87,7 @@ public static class CodeFixTestRunner
     /// <returns>A task that resolves to the number of offered code actions.</returns>
     public static async Task<int> CountOfferedActionsAsync(CodeFixRequest request, CancellationToken cancellationToken)
     {
-        var document = CreateDocument(request.Source);
+        var document = CreateDocument(request.Source, request.OutputKind ?? OutputKind.DynamicallyLinkedLibrary);
         var diagnostics = await GetFixableDiagnosticsAsync(request, document, cancellationToken);
         if (diagnostics.Count == 0)
         {
@@ -142,12 +142,12 @@ public static class CodeFixTestRunner
 
         return count;
     }
-    private static Document CreateDocument(string source)
+    private static Document CreateDocument(string source, OutputKind outputKind)
     {
         var workspace = new AdhocWorkspace();
         var projectId = ProjectId.CreateNewId(ProjectName);
         var versionStamp = VersionStamp.Create();
-        var compilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
+        var compilationOptions = new CSharpCompilationOptions(outputKind);
         var projectInfo = ProjectInfo
             .Create(projectId, versionStamp, ProjectName, ProjectName, LanguageNames.CSharp)
             .WithMetadataReferences(GetPlatformReferences())

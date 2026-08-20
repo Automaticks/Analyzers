@@ -1,4 +1,4 @@
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
@@ -36,12 +36,8 @@ public sealed class CommandLambdaCodeFixProvider : CodeFixProvider
     /// <inheritdoc />
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
-        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken);
-        var semanticModel = await context.Document.GetSemanticModelAsync(context.CancellationToken);
-        if (root is null || semanticModel is null)
-        {
-            return;
-        }
+        var root = (await context.Document.GetSyntaxRootAsync(context.CancellationToken))!;
+        var semanticModel = (await context.Document.GetSemanticModelAsync(context.CancellationToken))!;
 
         foreach (var diagnostic in context.Diagnostics)
         {
@@ -135,26 +131,15 @@ public sealed class CommandLambdaCodeFixProvider : CodeFixProvider
         AnonymousFunctionExpressionSyntax lambda,
         CancellationToken cancellationToken)
     {
-        var root = await document.GetSyntaxRootAsync(cancellationToken);
-        var semanticModel = await document.GetSemanticModelAsync(cancellationToken);
-        var typeDeclaration = lambda.FirstAncestorOrSelf<TypeDeclarationSyntax>();
-        if (root is null || semanticModel is null || typeDeclaration is null)
-        {
-            return document;
-        }
-
-        if (semanticModel.GetTypeInfo(lambda, cancellationToken).ConvertedType is not INamedTypeSymbol delegateType ||
-            delegateType.DelegateInvokeMethod is not { } invoke)
-        {
-            return document;
-        }
+        var root = (await document.GetSyntaxRootAsync(cancellationToken))!;
+        var semanticModel = (await document.GetSemanticModelAsync(cancellationToken))!;
+        var typeDeclaration = lambda.FirstAncestorOrSelf<TypeDeclarationSyntax>()!;
+        var delegateType = (semanticModel.GetTypeInfo(lambda, cancellationToken).ConvertedType as INamedTypeSymbol)!;
+        var invoke = delegateType.DelegateInvokeMethod!;
 
         var name = GetUniqueName(typeDeclaration, GetPreferredName(lambda));
         var methodText = BuildMethodText(lambda, invoke, semanticModel, name);
-        if (SyntaxFactory.ParseMemberDeclaration(methodText) is not MemberDeclarationSyntax method)
-        {
-            return document;
-        }
+        var method = SyntaxFactory.ParseMemberDeclaration(methodText)!;
 
         var methodGroup = SyntaxFactory.IdentifierName(name).WithTriviaFrom(lambda);
         var updatedType = typeDeclaration.ReplaceNode(lambda, methodGroup);
@@ -186,12 +171,9 @@ public sealed class CommandLambdaCodeFixProvider : CodeFixProvider
             return names;
         }
 
-        var parameterList = lambda switch
-        {
-            ParenthesizedLambdaExpressionSyntax parenthesized => parenthesized.ParameterList,
-            AnonymousMethodExpressionSyntax anonymous => anonymous.ParameterList,
-            _ => null
-        };
+        var parameterList = lambda is ParenthesizedLambdaExpressionSyntax parenthesized
+            ? parenthesized.ParameterList
+            : (lambda as AnonymousMethodExpressionSyntax)!.ParameterList;
 
         if (parameterList is null)
         {
@@ -270,17 +252,9 @@ public sealed class CommandLambdaCodeFixProvider : CodeFixProvider
 
     private bool HasOuterCapture(AnonymousFunctionExpressionSyntax lambda, SemanticModel semanticModel)
     {
-        var dataFlow = lambda.Body switch
-        {
-            BlockSyntax block => semanticModel.AnalyzeDataFlow(block),
-            ExpressionSyntax expression => semanticModel.AnalyzeDataFlow(expression),
-            _ => null
-        };
-
-        if (dataFlow is null || !dataFlow.Succeeded)
-        {
-            return true;
-        }
+        var dataFlow = (lambda.Body is BlockSyntax block
+            ? semanticModel.AnalyzeDataFlow(block)
+            : semanticModel.AnalyzeDataFlow((lambda.Body as ExpressionSyntax)!))!;
 
         var ownParameters = new HashSet<string>(StringComparer.Ordinal);
         foreach (var parameterName in GetParameterNames(lambda))
@@ -295,7 +269,7 @@ public sealed class CommandLambdaCodeFixProvider : CodeFixProvider
                 continue;
             }
 
-            if (symbol is ILocalSymbol or IParameterSymbol && !ownParameters.Contains(symbol.Name))
+            if (!ownParameters.Contains(symbol.Name))
             {
                 return true;
             }

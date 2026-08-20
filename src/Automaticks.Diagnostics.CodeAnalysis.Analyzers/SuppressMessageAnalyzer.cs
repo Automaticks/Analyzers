@@ -42,11 +42,7 @@ public sealed class SuppressMessageAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeAttribute(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not AttributeSyntax attribute)
-        {
-            return;
-        }
-
+        var attribute = (context.Node as AttributeSyntax)!;
         var name = GetAttributeName(attribute);
         if (name is SuppressMessageShortName or SuppressMessageFullName)
         {

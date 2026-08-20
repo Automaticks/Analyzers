@@ -58,11 +58,7 @@ public sealed class SuppressionCommentAnalyzer : DiagnosticAnalyzer
         {
             if (trivia.IsKind(SyntaxKind.PragmaWarningDirectiveTrivia))
             {
-                if (trivia.GetStructure() is not PragmaWarningDirectiveTriviaSyntax pragma)
-                {
-                    continue;
-                }
-
+                var pragma = (trivia.GetStructure() as PragmaWarningDirectiveTriviaSyntax)!;
                 if (pragma.DisableOrRestoreKeyword.IsKind(SyntaxKind.DisableKeyword))
                 {
                     context.ReportDiagnostic(Diagnostic.Create(PragmaRule, trivia.GetLocation()));

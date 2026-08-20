@@ -17,6 +17,62 @@ dotnet_diagnostic.ATXCS017.severity = none
 [tests/Automaticks.Diagnostics.CodeAnalysis.Analyzers.Tests/Stubs/SuppressMessageAtMethodAnalyzer.cs]
 dotnet_diagnostic.RS1001.severity = none
 
+# RS1001 (missing DiagnosticAnalyzer attribute) flags this test-only analyzer, which
+# intentionally omits the discovery attribute because it is never assembly-scanned: it is
+# constructed directly by LinqUsageSuppressorTests and supplied to WithAnalyzers to give
+# LinqUsageSuppressor an ATXLQ002 diagnostic with no source tree, exercising ReportSuppressions'
+# defensive null-tree guard.
+[tests/Automaticks.EntityFrameworkCore.Analyzers.Tests/Stubs/LinqUsageAt*.cs]
+dotnet_diagnostic.RS1001.severity = none
+
+# RS1001 (missing DiagnosticAnalyzer attribute) flags these test-only analyzers, which
+# intentionally omit the discovery attribute because they are never assembly-scanned: each is
+# constructed directly by BindConfigurationCodeFixProviderTests and supplied as the sole analyzer
+# to CodeFixTestRunner, giving BindConfigurationCodeFixProvider an ATXEO049 diagnostic shaped to
+# exercise its defensive node-shape guards in RegisterCodeFixesAsync and BuildReplacement.
+[tests/Automaticks.Extensions.Options.Analyzers.Tests/Stubs/BindConfigurationAt*.cs]
+dotnet_diagnostic.RS1001.severity = none
+
+# RS1001 (missing DiagnosticAnalyzer attribute) flags this test-only analyzer, which intentionally
+# omits the discovery attribute because it is never assembly-scanned: it is constructed directly by
+# CommandLambdaCodeFixProviderTests and supplied as the sole analyzer to CodeFixTestRunner, giving
+# CommandLambdaCodeFixProvider an ATXMV001 diagnostic on a lambda with no enclosing ArgumentSyntax,
+# exercising the fallback node lookup in RegisterCodeFixesAsync.
+[tests/Automaticks.CommunityToolkit.Mvvm.Analyzers.Tests/Stubs/CommandLambdaAtLocalDeclarationAnalyzer.cs]
+dotnet_diagnostic.RS1001.severity = none
+
+# RS1001 (missing DiagnosticAnalyzer attribute) flags this test-only analyzer, which intentionally
+# omits the discovery attribute because it is never assembly-scanned: it is constructed directly by
+# CommandLambdaCodeFixProviderBranchesTests and supplied as the sole analyzer to CodeFixTestRunner,
+# giving CommandLambdaCodeFixProvider an ATXMV001 diagnostic with no enclosing lambda at all,
+# exercising the "lambda is null" branch in RegisterCodeFixesAsync.
+[tests/Automaticks.CommunityToolkit.Mvvm.Analyzers.Tests/Stubs/CommandLambdaAtClassDeclarationAnalyzer.cs]
+dotnet_diagnostic.RS1001.severity = none
+
+# RS1001 (missing DiagnosticAnalyzer attribute) flags this test-only analyzer, which intentionally
+# omits the discovery attribute because it is never assembly-scanned: it is constructed directly by
+# SuppressionCommentCodeFixProviderTests and supplied as the sole analyzer to CodeFixTestRunner,
+# giving SuppressionCommentCodeFixProvider an ATXDC018 diagnostic on a class identifier rather than
+# trivia, exercising the "trivia.SpanStart != start" guard in RegisterCodeFixesAsync.
+[tests/Automaticks.Diagnostics.CodeAnalysis.Analyzers.Tests/Stubs/SuppressionPragmaAtNonTriviaLocationAnalyzer.cs]
+dotnet_diagnostic.RS1001.severity = none
+
+# RS1001 (missing DiagnosticAnalyzer attribute) flags this test-only analyzer, which intentionally
+# omits the discovery attribute because it is never assembly-scanned: it is constructed directly by
+# UnobservedTaskCodeFixProviderTests and supplied as the sole analyzer to CodeFixTestRunner, giving
+# UnobservedTaskCodeFixProvider an ATXTA010 diagnostic on an invocation with no enclosing expression
+# statement, exercising the "statement is null" guard in RegisterCodeFixesAsync.
+[tests/Automaticks.Threading.Tasks.Analyzers.Tests/Stubs/UnobservedTaskAtLocalDeclarationAnalyzer.cs]
+dotnet_diagnostic.RS1001.severity = none
+
+# RS1001 (missing DiagnosticAnalyzer attribute) flags this test-only analyzer, which intentionally
+# omits the discovery attribute because it is never assembly-scanned: it is constructed directly by
+# UnobservedTaskCodeFixProviderTests and supplied as the sole analyzer to CodeFixTestRunner, giving
+# UnobservedTaskCodeFixProvider an ATXTA010 diagnostic on a class declaration with no enclosing
+# invocation, exercising the "invocation is null" guard in RegisterCodeFixesAsync.
+[tests/Automaticks.Threading.Tasks.Analyzers.Tests/Stubs/UnobservedTaskAtClassDeclarationAnalyzer.cs]
+dotnet_diagnostic.RS1001.severity = none
+
 # Coverage gates. ATXTST013 and ATXTST015 read a Cobertura report produced by a previous
 # test run; see .github/copilot-instructions.md for how to run them. 100% is the standard for
 # this repository: a branch nobody exercises is a branch nobody has verified.

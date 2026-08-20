@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.CodeFixes;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Automaticks.CommunityToolkit.Mvvm.Analyzers.Tests;
@@ -11,6 +12,9 @@ public readonly struct CodeFixRequest
 
     /// <summary>Gets the equivalence key selecting one of several offered fixes.</summary>
     public string? EquivalenceKey { get; init; }
+
+    /// <summary>Gets the compilation output kind, defaulting to a dynamically linked library when unset.</summary>
+    public OutputKind? OutputKind { get; init; }
 
     /// <summary>Gets the provider that supplies the fix.</summary>
     public CodeFixProvider Provider { get; init; }
