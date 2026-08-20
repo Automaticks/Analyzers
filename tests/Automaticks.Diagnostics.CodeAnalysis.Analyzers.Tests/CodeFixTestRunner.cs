@@ -134,6 +134,18 @@ public static class CodeFixTestRunner
         throw new InvalidOperationException("The code action produced no ApplyChangesOperation.");
     }
 
+    private static int CompareByLocation(Diagnostic left, Diagnostic right)
+    {
+        var leftPath = left.Location.SourceTree is null ? string.Empty : left.Location.SourceTree.FilePath;
+        var rightPath = right.Location.SourceTree is null ? string.Empty : right.Location.SourceTree.FilePath;
+        var pathComparison = string.CompareOrdinal(leftPath, rightPath);
+        if (pathComparison != 0)
+        {
+            return pathComparison;
+        }
+
+        return left.Location.SourceSpan.Start.CompareTo(right.Location.SourceSpan.Start);
+    }
     private static Document CreateDocument(string source, string? documentName)
     {
         var workspace = new AdhocWorkspace();
@@ -172,6 +184,7 @@ public static class CodeFixTestRunner
             }
         }
 
+        matches.Sort(CompareByLocation);
         return matches;
     }
 

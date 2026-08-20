@@ -16,3 +16,10 @@ dotnet_diagnostic.ATXCS017.severity = none
 # exercising the "no attribute found" early-return branch in RegisterCodeFixesAsync.
 [tests/Automaticks.Diagnostics.CodeAnalysis.Analyzers.Tests/Stubs/SuppressMessageAtMethodAnalyzer.cs]
 dotnet_diagnostic.RS1001.severity = none
+
+# Coverage gates. ATXTST013 and ATXTST015 read a Cobertura report produced by a previous
+# test run; see .github/copilot-instructions.md for how to run them. 100% is the standard for
+# this repository: a branch nobody exercises is a branch nobody has verified.
+[*.cs]
+automaticks.minimum_line_coverage = 100
+automaticks.minimum_branch_coverage = 100

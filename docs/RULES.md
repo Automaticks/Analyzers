@@ -95,5 +95,5 @@ package under specific conditions. Rows marked `CodeFix` ship an automated fix; 
 | `ATXTST012` | Public member must be covered by a test | Testing | Warning | Analyzer | `Automaticks.Testing.Analyzers` |
 | `ATXTST013` | File line coverage must meet the configured minimum | Testing | Warning | Analyzer | `Automaticks.Testing.Analyzers` |
 | `ATXTST014` | TimeProvider.System is not allowed in tests | Testing | Warning | Analyzer | `Automaticks.Testing.Analyzers` |
-| `ATXTST015` | Method branch coverage must meet the configured minimum (opt-in) | Testing | Warning (disabled by default) | Analyzer | `Automaticks.Testing.Analyzers` |
+| `ATXTST015` | Method branch coverage must meet the configured minimum | Testing | Warning | Analyzer | `Automaticks.Testing.Analyzers` |
 | `ATXTST016` | Supplied coverage report must be usable | Testing | Warning | Analyzer | `Automaticks.Testing.Analyzers` |
