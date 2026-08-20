@@ -110,6 +110,55 @@ public class OutParameterAnalyzerExternalInterfaceTests
     }
 
     /// <summary>
+    ///     Tests that Analyze_MetadataInterfaceNotImplemented_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_MetadataInterfaceNotImplemented_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System.Collections;
+                              namespace MyApp {
+                                  public class Partial : IEnumerator {
+                                      public void Extra() { }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new OutParameterAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, DiagnosticIds.CSharp.OutParameterCount)).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_MethodOutsideMetadataInterface_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_MethodOutsideMetadataInterface_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System.Collections;
+                              namespace MyApp {
+                                  public class Cursor : IEnumerator {
+                                      public object Current { get { return null; } }
+                                      public bool MoveNext() { return false; }
+                                      public void Reset() { }
+                                      public void Extra() { }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new OutParameterAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, DiagnosticIds.CSharp.OutParameterCount)).IsFalse();
+    }
+
+    /// <summary>
     ///     Tests that Analyze_OverrideOfMetadataMethod_ReportsNoDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
