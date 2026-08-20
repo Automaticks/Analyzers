@@ -76,7 +76,7 @@ public sealed class CyclomaticComplexityAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        var memberName = "operator " + op.Type;
+        var memberName = "operator " + op.Type.ToString();
         AnalyzeMember(context, bodyNode, memberName, op.ImplicitOrExplicitKeyword.GetLocation());
     }
 
