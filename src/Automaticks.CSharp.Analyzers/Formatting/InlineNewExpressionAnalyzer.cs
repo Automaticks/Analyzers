@@ -50,11 +50,7 @@ public sealed class InlineNewExpressionAnalyzer : DiagnosticAnalyzer
 
     private void Analyze(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not ExpressionSyntax node)
-        {
-            return;
-        }
-
+        var node = (context.Node as ExpressionSyntax)!;
         if (HasExemptContext(node))
         {
             return;

@@ -61,11 +61,7 @@ public sealed class ObjectInitializerCodeStyleAnalyzer : DiagnosticAnalyzer
 
     private void Analyze(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not InitializerExpressionSyntax initializer)
-        {
-            return;
-        }
-
+        var initializer = (context.Node as InitializerExpressionSyntax)!;
         if (initializer.Expressions.Count == 0)
         {
             context.ReportDiagnostic(Diagnostic.Create(EmptyBracesRule, initializer.OpenBraceToken.GetLocation()));

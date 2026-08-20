@@ -52,16 +52,7 @@ public sealed class InternalModifierAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        Location location;
-        if (context.Symbol.Locations.Length > 0)
-        {
-            location = context.Symbol.Locations[0];
-        }
-        else
-        {
-            location = Location.None;
-        }
-
+        var location = context.Symbol.Locations[0];
         context.ReportDiagnostic(Diagnostic.Create(Rule, location, context.Symbol.Name));
     }
 }

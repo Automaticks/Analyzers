@@ -45,11 +45,7 @@ public sealed class AsyncMethodNamingAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeMethod(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not MethodDeclarationSyntax method)
-        {
-            return;
-        }
-
+        var method = (context.Node as MethodDeclarationSyntax)!;
         if (method.Identifier.Text.EndsWith("Async", StringComparison.Ordinal))
         {
             return;

@@ -61,21 +61,13 @@ public sealed class AbbreviatedIdentifierAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeForEachStatement(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not ForEachStatementSyntax forEach)
-        {
-            return;
-        }
-
+        var forEach = (context.Node as ForEachStatementSyntax)!;
         ReportIfAbbreviated(context, forEach.Identifier.Text, forEach.Identifier.GetLocation());
     }
 
     private void AnalyzeMethod(SymbolAnalysisContext context)
     {
-        if (context.Symbol is not IMethodSymbol method)
-        {
-            return;
-        }
-
+        var method = (context.Symbol as IMethodSymbol)!;
         if (method.IsOverride && HasExternalOverride(method))
         {
             return;
@@ -98,26 +90,13 @@ public sealed class AbbreviatedIdentifierAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        Location location;
-        if (method.Locations.Length > 0)
-        {
-            location = method.Locations[0];
-        }
-        else
-        {
-            location = Location.None;
-        }
-
+        var location = method.Locations[0];
         context.ReportDiagnostic(Diagnostic.Create(Rule, location, method.Name, abbreviated));
     }
 
     private void AnalyzeNamedType(SymbolAnalysisContext context)
     {
-        if (context.Symbol is not INamedTypeSymbol namedType)
-        {
-            return;
-        }
-
+        var namedType = (context.Symbol as INamedTypeSymbol)!;
         string nameToCheck;
         if (namedType is { TypeKind: TypeKind.Interface, Name.Length: > 1 } &&
             namedType.Name[0] == 'I' &&
@@ -136,26 +115,13 @@ public sealed class AbbreviatedIdentifierAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        Location location;
-        if (namedType.Locations.Length > 0)
-        {
-            location = namedType.Locations[0];
-        }
-        else
-        {
-            location = Location.None;
-        }
-
+        var location = namedType.Locations[0];
         context.ReportDiagnostic(Diagnostic.Create(Rule, location, namedType.Name, abbreviated));
     }
 
     private void AnalyzeParameter(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not ParameterSyntax parameter)
-        {
-            return;
-        }
-
+        var parameter = (context.Node as ParameterSyntax)!;
         if (parameter.Parent?.Parent is BaseMethodDeclarationSyntax methodDecl)
         {
             var methodSymbol = context.SemanticModel.GetDeclaredSymbol(methodDecl);
@@ -170,11 +136,7 @@ public sealed class AbbreviatedIdentifierAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeProperty(SymbolAnalysisContext context)
     {
-        if (context.Symbol is not IPropertySymbol property)
-        {
-            return;
-        }
-
+        var property = (context.Symbol as IPropertySymbol)!;
         if (property.IsIndexer)
         {
             return;
@@ -191,36 +153,19 @@ public sealed class AbbreviatedIdentifierAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        Location location;
-        if (property.Locations.Length > 0)
-        {
-            location = property.Locations[0];
-        }
-        else
-        {
-            location = Location.None;
-        }
-
+        var location = property.Locations[0];
         context.ReportDiagnostic(Diagnostic.Create(Rule, location, property.Name, abbreviated));
     }
 
     private void AnalyzeSingleVariableDesignation(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not SingleVariableDesignationSyntax designation)
-        {
-            return;
-        }
-
+        var designation = (context.Node as SingleVariableDesignationSyntax)!;
         ReportIfAbbreviated(context, designation.Identifier.Text, designation.Identifier.GetLocation());
     }
 
     private void AnalyzeVariableDeclarator(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not VariableDeclaratorSyntax declarator)
-        {
-            return;
-        }
-
+        var declarator = (context.Node as VariableDeclaratorSyntax)!;
         ReportIfAbbreviated(context, declarator.Identifier.Text, declarator.Identifier.GetLocation());
     }
 

@@ -48,11 +48,7 @@ public sealed class SingleBlankLineBetweenPropertiesAnalyzer : DiagnosticAnalyze
 
     private void AnalyzeTypeDeclaration(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not TypeDeclarationSyntax typeDecl)
-        {
-            return;
-        }
-
+        var typeDecl = (context.Node as TypeDeclarationSyntax)!;
         var members = typeDecl.Members;
 
         for (var index = 0; index < members.Count - 1; index++)

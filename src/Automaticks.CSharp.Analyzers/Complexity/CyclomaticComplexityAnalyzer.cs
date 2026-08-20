@@ -52,11 +52,7 @@ public sealed class CyclomaticComplexityAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeAccessor(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not AccessorDeclarationSyntax accessor)
-        {
-            return;
-        }
-
+        var accessor = (context.Node as AccessorDeclarationSyntax)!;
         var bodyNode = GetBodyNode(accessor.Body, accessor.ExpressionBody);
         if (bodyNode is null)
         {
@@ -83,11 +79,7 @@ public sealed class CyclomaticComplexityAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeConversionOperator(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not ConversionOperatorDeclarationSyntax op)
-        {
-            return;
-        }
-
+        var op = (context.Node as ConversionOperatorDeclarationSyntax)!;
         var bodyNode = GetBodyNode(op.Body, op.ExpressionBody);
         if (bodyNode is null)
         {
@@ -117,11 +109,7 @@ public sealed class CyclomaticComplexityAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeMethod(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not MethodDeclarationSyntax method)
-        {
-            return;
-        }
-
+        var method = (context.Node as MethodDeclarationSyntax)!;
         var bodyNode = GetBodyNode(method.Body, method.ExpressionBody);
         if (bodyNode is null)
         {
@@ -133,11 +121,7 @@ public sealed class CyclomaticComplexityAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeOperator(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not OperatorDeclarationSyntax op)
-        {
-            return;
-        }
-
+        var op = (context.Node as OperatorDeclarationSyntax)!;
         var bodyNode = GetBodyNode(op.Body, op.ExpressionBody);
         if (bodyNode is null)
         {

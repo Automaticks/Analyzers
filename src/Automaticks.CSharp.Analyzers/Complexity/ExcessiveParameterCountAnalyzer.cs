@@ -50,11 +50,7 @@ public sealed class ExcessiveParameterCountAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeAnonymousMethod(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not AnonymousMethodExpressionSyntax anonymousMethod)
-        {
-            return;
-        }
-
+        var anonymousMethod = (context.Node as AnonymousMethodExpressionSyntax)!;
         if (anonymousMethod.ParameterList is null)
         {
             return;
@@ -71,11 +67,7 @@ public sealed class ExcessiveParameterCountAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeIndexer(SymbolAnalysisContext context)
     {
-        if (context.Symbol is not IPropertySymbol property)
-        {
-            return;
-        }
-
+        var property = (context.Symbol as IPropertySymbol)!;
         if (!property.IsIndexer)
         {
             return;
@@ -97,26 +89,13 @@ public sealed class ExcessiveParameterCountAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        Location location;
-        if (property.Locations.Length > 0)
-        {
-            location = property.Locations[0];
-        }
-        else
-        {
-            location = Location.None;
-        }
-
+        var location = property.Locations[0];
         context.ReportDiagnostic(Diagnostic.Create(Rule, location, "this", paramCount, MaxParameters));
     }
 
     private void AnalyzeLambda(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not ParenthesizedLambdaExpressionSyntax lambda)
-        {
-            return;
-        }
-
+        var lambda = (context.Node as ParenthesizedLambdaExpressionSyntax)!;
         var paramCount = lambda.ParameterList.Parameters.Count;
         if (paramCount <= MaxParameters)
         {
@@ -128,11 +107,7 @@ public sealed class ExcessiveParameterCountAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeLocalFunction(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not LocalFunctionStatementSyntax localFunction)
-        {
-            return;
-        }
-
+        var localFunction = (context.Node as LocalFunctionStatementSyntax)!;
         var paramCount = localFunction.ParameterList.Parameters.Count;
         if (paramCount <= MaxParameters)
         {
@@ -144,11 +119,7 @@ public sealed class ExcessiveParameterCountAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeMethod(SymbolAnalysisContext context)
     {
-        if (context.Symbol is not IMethodSymbol method)
-        {
-            return;
-        }
-
+        var method = (context.Symbol as IMethodSymbol)!;
         if (method.MethodKind is not MethodKind.Ordinary)
         {
             return;
@@ -181,16 +152,7 @@ public sealed class ExcessiveParameterCountAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        Location location;
-        if (method.Locations.Length > 0)
-        {
-            location = method.Locations[0];
-        }
-        else
-        {
-            location = Location.None;
-        }
-
+        var location = method.Locations[0];
         context.ReportDiagnostic(Diagnostic.Create(Rule, location, method.Name, paramCount, MaxParameters));
     }
 

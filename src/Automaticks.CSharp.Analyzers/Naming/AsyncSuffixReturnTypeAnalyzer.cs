@@ -49,22 +49,13 @@ public sealed class AsyncSuffixReturnTypeAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeMethod(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not MethodDeclarationSyntax method)
-        {
-            return;
-        }
-
+        var method = (context.Node as MethodDeclarationSyntax)!;
         if (!method.Identifier.Text.EndsWith("Async", StringComparison.Ordinal))
         {
             return;
         }
 
-        var symbol = context.SemanticModel.GetDeclaredSymbol(method);
-        if (symbol is null)
-        {
-            return;
-        }
-
+        var symbol = context.SemanticModel.GetDeclaredSymbol(method)!;
         if (HasAsyncReturnType(symbol, context.SemanticModel.Compilation))
         {
             return;

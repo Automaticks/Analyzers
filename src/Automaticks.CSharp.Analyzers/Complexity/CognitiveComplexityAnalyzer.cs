@@ -47,11 +47,7 @@ public sealed class CognitiveComplexityAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeMethod(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not MethodDeclarationSyntax method)
-        {
-            return;
-        }
-
+        var method = (context.Node as MethodDeclarationSyntax)!;
         SyntaxNode? bodyNode;
         if (method.Body is not null)
         {

@@ -45,11 +45,7 @@ public sealed class InlineFieldInitializerAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeField(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not FieldDeclarationSyntax field)
-        {
-            return;
-        }
-
+        var field = (context.Node as FieldDeclarationSyntax)!;
         if (HasConstModifier(field))
         {
             return;
@@ -75,11 +71,7 @@ public sealed class InlineFieldInitializerAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeProperty(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not PropertyDeclarationSyntax property)
-        {
-            return;
-        }
-
+        var property = (context.Node as PropertyDeclarationSyntax)!;
         if (property.Initializer is null)
         {
             return;

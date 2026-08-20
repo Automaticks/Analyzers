@@ -43,11 +43,7 @@ public sealed class SingleBlankLineBetweenUsingsAndNamespaceAnalyzer : Diagnosti
 
     private void AnalyzeCompilationUnit(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not CompilationUnitSyntax compilationUnit)
-        {
-            return;
-        }
-
+        var compilationUnit = (context.Node as CompilationUnitSyntax)!;
         if (compilationUnit.Usings.Count == 0)
         {
             return;

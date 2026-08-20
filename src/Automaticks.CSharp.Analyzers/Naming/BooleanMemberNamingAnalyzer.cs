@@ -48,11 +48,7 @@ public sealed class BooleanMemberNamingAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeField(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not FieldDeclarationSyntax fieldDecl)
-        {
-            return;
-        }
-
+        var fieldDecl = (context.Node as FieldDeclarationSyntax)!;
         foreach (var variable in fieldDecl.Declaration.Variables)
         {
             var name = variable.Identifier.Text;
@@ -78,11 +74,7 @@ public sealed class BooleanMemberNamingAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeProperty(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not PropertyDeclarationSyntax propDecl)
-        {
-            return;
-        }
-
+        var propDecl = (context.Node as PropertyDeclarationSyntax)!;
         var name = propDecl.Identifier.Text;
 
         if (HasAllowedPrefix(name))

@@ -43,11 +43,7 @@ public sealed class AutoPropertySingleLineAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeProperty(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not PropertyDeclarationSyntax property)
-        {
-            return;
-        }
-
+        var property = (context.Node as PropertyDeclarationSyntax)!;
         if (property.AccessorList is not { } accessorList)
         {
             return;

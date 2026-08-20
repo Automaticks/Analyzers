@@ -40,11 +40,7 @@ public sealed class InterfaceDefaultImplementationAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeInterface(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not InterfaceDeclarationSyntax interfaceDeclaration)
-        {
-            return;
-        }
-
+        var interfaceDeclaration = (context.Node as InterfaceDeclarationSyntax)!;
         var interfaceName = interfaceDeclaration.Identifier.Text;
 
         foreach (var member in interfaceDeclaration.Members)
