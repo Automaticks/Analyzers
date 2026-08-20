@@ -47,12 +47,7 @@ public sealed class DirectCastAnalyzer : DiagnosticAnalyzer
         var typeInfo = context.SemanticModel.GetTypeInfo(castExpression.Type);
         var targetType = typeInfo.Type;
 
-        if (targetType is null)
-        {
-            return;
-        }
-
-        if (targetType.IsValueType)
+        if (targetType!.IsValueType)
         {
             return;
         }

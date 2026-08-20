@@ -67,13 +67,8 @@ public sealed class InterfaceDefaultImplementationCodeFixProvider : CodeFixProvi
                 .WithAccessorList(accessorList);
         }
 
-        if (property.AccessorList is null)
-        {
-            return property;
-        }
-
         var rebuilt = new List<AccessorDeclarationSyntax>();
-        foreach (var accessor in property.AccessorList.Accessors)
+        foreach (var accessor in property.AccessorList!.Accessors)
         {
             rebuilt.Add(accessor.WithBody(null).WithExpressionBody(null).WithSemicolonToken(semicolon));
         }

@@ -37,7 +37,7 @@ public sealed class ObjectInitializerEmptyBracesCodeFixProvider : CodeFixProvide
         {
             var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
             var initializer = node.FirstAncestorOrSelf<InitializerExpressionSyntax>();
-            if (initializer?.Parent is not ObjectCreationExpressionSyntax creation)
+            if (initializer!.Parent is not ObjectCreationExpressionSyntax creation)
             {
                 continue;
             }

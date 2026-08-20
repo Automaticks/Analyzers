@@ -148,7 +148,7 @@ public sealed class AsyncMethodNamingAnalyzer : DiagnosticAnalyzer
     {
         foreach (var attr in method.GetAttributes())
         {
-            var name = attr.AttributeClass?.Name;
+            var name = attr.AttributeClass!.Name;
             if (name is "TestAttribute" or "FactAttribute" or "TheoryAttribute" or "TestMethodAttribute" or "ArgumentsAttribute")
             {
                 return true;

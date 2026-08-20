@@ -122,7 +122,7 @@ public sealed class AbbreviatedIdentifierAnalyzer : DiagnosticAnalyzer
     private void AnalyzeParameter(SyntaxNodeAnalysisContext context)
     {
         var parameter = (context.Node as ParameterSyntax)!;
-        if (parameter.Parent?.Parent is BaseMethodDeclarationSyntax methodDecl)
+        if (parameter.Parent!.Parent is BaseMethodDeclarationSyntax methodDecl)
         {
             var methodSymbol = context.SemanticModel.GetDeclaredSymbol(methodDecl);
             if (methodSymbol is { IsOverride: true } && HasExternalOverride(methodSymbol))
