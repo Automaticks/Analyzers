@@ -64,7 +64,7 @@ public class ExcessiveParameterCountAnalyzerMultipleIndexerTests
         const string source = """
                               namespace MyApp {
                                   public class Shape : External.IShape {
-                                      public int this[int a, int b, int c, int d, int e, int f] { get { return a; } }
+                                      public int this[string a, string b, string c, string d, string e, string f] { get { return 0; } }
                                   }
                               }
                               """;

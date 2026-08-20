@@ -64,7 +64,7 @@ public class ParameterDefaultValueAnalyzerMultipleIndexerTests
         const string source = """
                               namespace MyApp {
                                   public class Shape : External.IShape {
-                                      public int this[int index = 1] { get { return index; } }
+                                      public int this[string name = ""] { get { return 0; } }
                                   }
                               }
                               """;

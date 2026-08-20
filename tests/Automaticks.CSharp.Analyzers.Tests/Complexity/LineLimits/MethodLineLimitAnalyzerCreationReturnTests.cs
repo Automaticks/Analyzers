@@ -3,7 +3,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Automaticks.CSharp.Analyzers.Tests.Complexity;
+namespace Automaticks.CSharp.Analyzers.Tests.Complexity.LineLimits;
 
 /// <summary>
 ///     Tests which returned creation expressions exempt a long method from the line limit.

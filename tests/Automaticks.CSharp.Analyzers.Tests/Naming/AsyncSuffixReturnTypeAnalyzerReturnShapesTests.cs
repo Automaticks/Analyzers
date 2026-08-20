@@ -78,6 +78,29 @@ public class AsyncSuffixReturnTypeAnalyzerReturnShapesTests
     }
 
     /// <summary>
+    ///     Tests that a generic type unrelated to tasks is reported.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_GenericNonTaskReturnType_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System.Collections.Generic;
+                              namespace MyApp {
+                                  public class Shape {
+                                      public List<int> DrawAsync() { return null!; }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new AsyncSuffixReturnTypeAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, DiagnosticIds.CSharp.AsyncSuffixReturnType)).IsTrue();
+    }
+
+    /// <summary>
     ///     Tests that a look-alike with the wrong arity is not read as a task.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
