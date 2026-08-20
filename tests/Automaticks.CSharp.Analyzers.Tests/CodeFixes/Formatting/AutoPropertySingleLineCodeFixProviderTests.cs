@@ -16,6 +16,12 @@ public class AutoPropertySingleLineCodeFixProviderTests
     private const string NoModifierMultiLineSource = "namespace MyApp {\n    public class Foo {\n        string Name\n        {\n            get;\n            set;\n        }\n    }\n}\n";
     private const string SingleLineSource = "namespace MyApp {\n    public class Foo {\n        public string Name { get; set; }\n    }\n}\n";
     private const string TwoMultiLineSource = "namespace MyApp {\n    public class Foo {\n        public string Name\n        {\n            get;\n            set;\n        }\n\n        public int Count\n        {\n            get;\n            init;\n        }\n    }\n}\n";
+
+    /// <summary>
+    ///     Tests that repeated application collapses every multi-line auto-property.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
     public async Task ApplyAllFixes_SeveralMultiLineProperties_CollapsesEveryOne(CancellationToken cancellationToken)
     {
