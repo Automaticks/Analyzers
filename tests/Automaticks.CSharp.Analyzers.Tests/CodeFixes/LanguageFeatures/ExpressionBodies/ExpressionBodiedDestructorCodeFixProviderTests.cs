@@ -1,5 +1,6 @@
 ﻿using Automaticks.CSharp.CodeFixes.LanguageFeatures.ExpressionBodies;
 using Automaticks.CSharp.LanguageFeatures.ExpressionBodies;
+using Microsoft.CodeAnalysis.CodeFixes;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -32,5 +33,26 @@ public class ExpressionBodiedDestructorCodeFixProviderTests
 
         await Assert.That(fixedSource).Contains("System.Console.WriteLine();");
         await Assert.That(fixedSource).DoesNotContain("=>");
+    }
+
+    /// <summary>
+    ///     Tests that the provider advertises the document Fix All scope.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task GetFixAllProvider_Always_SupportsDocumentScope(CancellationToken cancellationToken)
+    {
+        var analyzer = new ExpressionBodiedDestructorAnalyzer();
+        var provider = new ExpressionBodiedDestructorCodeFixProvider();
+        var request = new CodeFixRequest
+        {
+            Analyzer = analyzer,
+            Provider = provider,
+            Source = "namespace MyApp { }"
+        };
+        var scopes = CodeFixTestRunner.GetSupportedFixAllScopes(request);
+
+        await Assert.That(scopes).Contains(FixAllScope.Document);
     }
 }

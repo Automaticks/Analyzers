@@ -76,11 +76,7 @@ public sealed class QualifiedTypeReferenceAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        if (!HasQualificationParts(node, out var parts))
-        {
-            return;
-        }
-
+        var parts = GetQualificationParts(node);
         if (context.SemanticModel.GetSymbolInfo(node).Symbol is not INamedTypeSymbol targetType)
         {
             return;
@@ -116,6 +112,20 @@ public sealed class QualifiedTypeReferenceAnalyzer : DiagnosticAnalyzer
             collidingDisplayName));
     }
 
+    /// <summary>
+    ///     Splits a reference into its left part and simple name for either syntax shape.
+    /// </summary>
+    private QualificationParts GetQualificationParts(SyntaxNode node)
+    {
+        if (node is QualifiedNameSyntax qualifiedName)
+        {
+            return new QualificationParts(qualifiedName.Left, qualifiedName.Right);
+        }
+
+        var memberAccess = (node as MemberAccessExpressionSyntax)!;
+        return new QualificationParts(memberAccess.Expression, memberAccess.Name);
+    }
+
     private bool HasMatchingType(ImmutableArray<ISymbol> visibleSymbols, INamedTypeSymbol targetType)
     {
         foreach (var visibleSymbol in visibleSymbols)
@@ -141,25 +151,6 @@ public sealed class QualifiedTypeReferenceAnalyzer : DiagnosticAnalyzer
         }
 
         return false;
-    }
-
-    /// <summary>
-    ///     Splits a reference into its left part and simple name for either syntax shape.
-    /// </summary>
-    private bool HasQualificationParts(SyntaxNode node, out QualificationParts parts)
-    {
-        switch (node)
-        {
-            case QualifiedNameSyntax qualifiedName:
-                parts = new QualificationParts(qualifiedName.Left, qualifiedName.Right);
-                return true;
-            case MemberAccessExpressionSyntax memberAccess:
-                parts = new QualificationParts(memberAccess.Expression, memberAccess.Name);
-                return true;
-            default:
-                parts = new QualificationParts(null!, null!);
-                return false;
-        }
     }
 
     private bool HasUsingDirectiveAncestor(SyntaxNode node)

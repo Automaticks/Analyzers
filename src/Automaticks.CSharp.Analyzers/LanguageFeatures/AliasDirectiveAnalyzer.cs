@@ -60,15 +60,13 @@ public sealed class AliasDirectiveAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeNode(SyntaxNodeAnalysisContext context)
     {
-        switch (context.Node)
+        if (context.Node is UsingDirectiveSyntax usingDirective)
         {
-            case UsingDirectiveSyntax usingDirective:
-                AnalyzeUsingDirective(context, usingDirective);
-                break;
-            case ExternAliasDirectiveSyntax externAliasDirective:
-                AnalyzeExternAliasDirective(context, externAliasDirective);
-                break;
+            AnalyzeUsingDirective(context, usingDirective);
+            return;
         }
+
+        AnalyzeExternAliasDirective(context, (context.Node as ExternAliasDirectiveSyntax)!);
     }
 
     private void AnalyzeUsingDirective(SyntaxNodeAnalysisContext context, UsingDirectiveSyntax usingDirective)

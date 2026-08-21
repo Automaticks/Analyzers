@@ -49,11 +49,7 @@ public sealed class GlobalAliasQualifierAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeNode(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not AliasQualifiedNameSyntax aliasQualifiedName)
-        {
-            return;
-        }
-
+        var aliasQualifiedName = (context.Node as AliasQualifiedNameSyntax)!;
         if (!aliasQualifiedName.Alias.Identifier.IsKind(SyntaxKind.GlobalKeyword))
         {
             return;
