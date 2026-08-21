@@ -93,15 +93,25 @@ public sealed class QualifiedTypeReferenceCodeFixProvider : CodeFixProvider
         return lastRegularIndex + 1;
     }
 
+    /// <summary>
+    ///     Splits a reference into its left part and simple name for either syntax shape.
+    /// </summary>
+    private QualificationParts GetQualificationParts(SyntaxNode node)
+    {
+        if (node is QualifiedNameSyntax qualifiedName)
+        {
+            return new QualificationParts(qualifiedName.Left, qualifiedName.Right);
+        }
+
+        var memberAccess = (node as MemberAccessExpressionSyntax)!;
+        return new QualificationParts(memberAccess.Expression, memberAccess.Name);
+    }
+
     private bool HasClassification(SyntaxNode node, SemanticModel semanticModel, out ClassificationResult classification)
     {
         classification = new ClassificationResult(null, string.Empty);
 
-        if (!HasQualificationParts(node, out var parts))
-        {
-            return false;
-        }
-
+        var parts = GetQualificationParts(node);
         if (semanticModel.GetSymbolInfo(node).Symbol is not INamedTypeSymbol targetType)
         {
             return false;
@@ -144,25 +154,6 @@ public sealed class QualifiedTypeReferenceCodeFixProvider : CodeFixProvider
         return false;
     }
 
-    /// <summary>
-    ///     Splits a reference into its left part and simple name for either syntax shape.
-    /// </summary>
-    private bool HasQualificationParts(SyntaxNode node, out QualificationParts parts)
-    {
-        switch (node)
-        {
-            case QualifiedNameSyntax qualifiedName:
-                parts = new QualificationParts(qualifiedName.Left, qualifiedName.Right);
-                return true;
-            case MemberAccessExpressionSyntax memberAccess:
-                parts = new QualificationParts(memberAccess.Expression, memberAccess.Name);
-                return true;
-            default:
-                parts = new QualificationParts(null!, null!);
-                return false;
-        }
-    }
-
     private CompilationUnitSyntax InsertUsingDirective(CompilationUnitSyntax compilationUnit, string namespaceName)
     {
         var usings = compilationUnit.Usings;
@@ -194,11 +185,7 @@ public sealed class QualifiedTypeReferenceCodeFixProvider : CodeFixProvider
         }
 
         var flaggedNode = compilationUnit.FindNode(nodeSpan, getInnermostNodeForTie: true);
-        if (!HasQualificationParts(flaggedNode, out var parts))
-        {
-            return document;
-        }
-
+        var parts = GetQualificationParts(flaggedNode);
         var replaced = compilationUnit.ReplaceNode(flaggedNode, parts.SimpleName.WithTriviaFrom(flaggedNode));
         if (namespaceNameToAdd is null)
         {
