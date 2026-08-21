@@ -1,4 +1,6 @@
 ﻿using Automaticks.CSharp.Complexity;
+using Microsoft.CodeAnalysis;
+using System.Collections.Immutable;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -49,7 +51,7 @@ public class MethodLineLimitAnalyzerCreationReturnTests
         await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, DiagnosticIds.CSharp.MethodLineLimit)).IsTrue();
     }
 
-    private async Task<System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.Diagnostic>> AnalyzeReturnAsync(
+    private async Task<ImmutableArray<Diagnostic>> AnalyzeReturnAsync(
         string returnStatement,
         CancellationToken cancellationToken)
     {

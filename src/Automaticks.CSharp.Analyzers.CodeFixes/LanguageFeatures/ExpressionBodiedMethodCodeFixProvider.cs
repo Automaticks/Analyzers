@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using System.Collections.Immutable;
@@ -43,52 +44,78 @@ public sealed class ExpressionBodiedMethodCodeFixProvider : CodeFixProvider
         foreach (var diagnostic in context.Diagnostics)
         {
             var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
-            if (!HasFlaggedMember(node, out var member))
+            if (!HasFlaggedMember(node, semanticModel, context.CancellationToken, out var member))
             {
                 continue;
             }
 
-            if (semanticModel.GetDeclaredSymbol(member.Node, context.CancellationToken) is not IMethodSymbol symbol)
-            {
-                continue;
-            }
-
-            var wrapInReturn = !HasVoidLikeReturn(symbol, semanticModel.Compilation);
             var action = CodeAction.Create(
                 Title,
-                cancellationToken => ConvertToBlockAsync(context.Document, member, wrapInReturn, cancellationToken),
+                cancellationToken => ConvertToBlockAsync(context.Document, member, cancellationToken),
                 Title);
             context.RegisterCodeFix(action, diagnostic);
         }
     }
 
-    private string BuildReplacement(ExpressionSyntax expression, bool wrapInReturn, string baseIndent, string lineBreak)
+    private string BuildReplacement(FlaggedMember member, string baseIndent, string lineBreak)
     {
         var builder = new StringBuilder();
+        var bodyIndent = member.IsGetterWrapped ? baseIndent + IndentStep + IndentStep : baseIndent + IndentStep;
         builder.Append(lineBreak).Append(baseIndent).Append('{');
-        builder.Append(lineBreak).Append(baseIndent).Append(IndentStep);
-        if (wrapInReturn)
+        if (member.IsGetterWrapped)
+        {
+            builder.Append(lineBreak).Append(baseIndent).Append(IndentStep).Append("get");
+            builder.Append(lineBreak).Append(baseIndent).Append(IndentStep).Append('{');
+        }
+
+        builder.Append(lineBreak).Append(bodyIndent);
+        if (member.IsReturnWrapped)
         {
             builder.Append("return ");
         }
 
-        builder.Append(expression.ToString()).Append(';');
+        builder.Append(member.ExpressionBody.Expression.ToString()).Append(';');
+        if (member.IsGetterWrapped)
+        {
+            builder.Append(lineBreak).Append(baseIndent).Append(IndentStep).Append('}');
+        }
+
         builder.Append(lineBreak).Append(baseIndent).Append('}');
         return builder.ToString();
+    }
+
+    private bool CanWrapInReturn(SyntaxNode owner, SemanticModel semanticModel, CancellationToken cancellationToken)
+    {
+        if (owner is ConstructorDeclarationSyntax or DestructorDeclarationSyntax)
+        {
+            return false;
+        }
+
+        if (owner is AccessorDeclarationSyntax accessor)
+        {
+            return accessor.Keyword.IsKind(SyntaxKind.GetKeyword);
+        }
+
+        if (owner is PropertyDeclarationSyntax or IndexerDeclarationSyntax)
+        {
+            return true;
+        }
+
+        var symbol = semanticModel.GetDeclaredSymbol(owner, cancellationToken) as IMethodSymbol;
+        return symbol is not null && !HasVoidLikeReturn(symbol, semanticModel.Compilation);
     }
 
     private async Task<Document> ConvertToBlockAsync(
         Document document,
         FlaggedMember member,
-        bool wrapInReturn,
         CancellationToken cancellationToken)
     {
         var text = await document.GetTextAsync(cancellationToken);
         var previousToken = member.ExpressionBody.ArrowToken.GetPreviousToken();
         var baseIndent = GetIndentation(text, member.Node.SpanStart);
         var lineBreak = GetLineBreak(text);
-        var replacement = BuildReplacement(member.ExpressionBody.Expression, wrapInReturn, baseIndent, lineBreak);
-        var span = TextSpan.FromBounds(previousToken.Span.End, member.SemicolonToken.Span.End);
+        var replacement = BuildReplacement(member, baseIndent, lineBreak);
+        var span = TextSpan.FromBounds(previousToken.Span.End, GetSemicolonToken(member.Node).Span.End);
         var newText = text.Replace(span, replacement);
         return document.WithText(newText);
     }
@@ -125,24 +152,70 @@ public sealed class ExpressionBodiedMethodCodeFixProvider : CodeFixProvider
         return "\n";
     }
 
-    private bool HasFlaggedMember(SyntaxNode node, out FlaggedMember member)
+    private SyntaxToken GetSemicolonToken(SyntaxNode owner)
     {
-        var candidate = node.FirstAncestorOrSelf<SyntaxNode>(ancestor => ancestor is MethodDeclarationSyntax or LocalFunctionStatementSyntax);
-
-        if (candidate is MethodDeclarationSyntax { ExpressionBody: not null } method)
+        if (owner is MethodDeclarationSyntax method)
         {
-            member = new FlaggedMember(method, method.ExpressionBody, method.SemicolonToken);
-            return true;
+            return method.SemicolonToken;
         }
 
-        if (candidate is LocalFunctionStatementSyntax { ExpressionBody: not null } localFunction)
+        if (owner is LocalFunctionStatementSyntax localFunction)
         {
-            member = new FlaggedMember(localFunction, localFunction.ExpressionBody, localFunction.SemicolonToken);
-            return true;
+            return localFunction.SemicolonToken;
         }
 
-        member = new FlaggedMember(null!, null!, default);
-        return false;
+        if (owner is PropertyDeclarationSyntax property)
+        {
+            return property.SemicolonToken;
+        }
+
+        if (owner is IndexerDeclarationSyntax indexer)
+        {
+            return indexer.SemicolonToken;
+        }
+
+        if (owner is OperatorDeclarationSyntax operatorDeclaration)
+        {
+            return operatorDeclaration.SemicolonToken;
+        }
+
+        if (owner is ConversionOperatorDeclarationSyntax conversionOperator)
+        {
+            return conversionOperator.SemicolonToken;
+        }
+
+        if (owner is ConstructorDeclarationSyntax constructor)
+        {
+            return constructor.SemicolonToken;
+        }
+
+        if (owner is DestructorDeclarationSyntax destructor)
+        {
+            return destructor.SemicolonToken;
+        }
+
+        var accessor = (owner as AccessorDeclarationSyntax)!;
+        return accessor.SemicolonToken;
+    }
+
+    private bool HasFlaggedMember(SyntaxNode node, SemanticModel semanticModel, CancellationToken cancellationToken, out FlaggedMember member)
+    {
+        var arrow = node.FirstAncestorOrSelf<ArrowExpressionClauseSyntax>();
+        if (arrow is null)
+        {
+            member = default;
+            return false;
+        }
+
+        var owner = arrow.Parent!;
+        var isReturnWrapped = CanWrapInReturn(owner, semanticModel, cancellationToken);
+        member = new FlaggedMember(owner, arrow, isReturnWrapped, HasGetterWrapper(owner));
+        return true;
+    }
+
+    private bool HasGetterWrapper(SyntaxNode owner)
+    {
+        return owner is PropertyDeclarationSyntax or IndexerDeclarationSyntax;
     }
 
     private bool HasVoidLikeReturn(IMethodSymbol method, Compilation compilation)
@@ -174,20 +247,26 @@ public sealed class ExpressionBodiedMethodCodeFixProvider : CodeFixProvider
         public ArrowExpressionClauseSyntax ExpressionBody { get; }
 
         /// <summary>
-        ///     Gets the method or local function declaration that owns the expression body.
+        ///     Gets a value indicating whether the block must be wrapped in a get accessor.
+        /// </summary>
+        public bool IsGetterWrapped { get; }
+
+        /// <summary>
+        ///     Gets a value indicating whether the expression must be preceded by return.
+        /// </summary>
+        public bool IsReturnWrapped { get; }
+
+        /// <summary>
+        ///     Gets the declaration that owns the expression body.
         /// </summary>
         public SyntaxNode Node { get; }
 
-        /// <summary>
-        ///     Gets the semicolon token that terminates the expression body.
-        /// </summary>
-        public SyntaxToken SemicolonToken { get; }
-
-        public FlaggedMember(SyntaxNode node, ArrowExpressionClauseSyntax expressionBody, SyntaxToken semicolonToken)
+        public FlaggedMember(SyntaxNode node, ArrowExpressionClauseSyntax expressionBody, bool isReturnWrapped, bool isGetterWrapped)
         {
             Node = node;
             ExpressionBody = expressionBody;
-            SemicolonToken = semicolonToken;
+            IsReturnWrapped = isReturnWrapped;
+            IsGetterWrapped = isGetterWrapped;
         }
     }
 }
