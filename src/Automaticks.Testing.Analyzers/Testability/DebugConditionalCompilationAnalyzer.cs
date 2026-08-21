@@ -37,7 +37,13 @@ public sealed class DebugConditionalCompilationAnalyzer : DiagnosticAnalyzer
     }
 
     /// <inheritdoc />
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
+    {
+        get
+        {
+            return [Rule];
+        }
+    }
 
     private void AnalyzeDirectiveTrivia(SyntaxTreeAnalysisContext context, SyntaxTrivia trivia)
     {

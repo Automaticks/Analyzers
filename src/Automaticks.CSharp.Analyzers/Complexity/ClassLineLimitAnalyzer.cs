@@ -44,7 +44,13 @@ public sealed class ClassLineLimitAnalyzer : DiagnosticAnalyzer
     }
 
     /// <inheritdoc />
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
+    {
+        get
+        {
+            return [Rule];
+        }
+    }
 
     private List<TextSpan> CollectBlockCommentSpans(SyntaxNode node)
     {

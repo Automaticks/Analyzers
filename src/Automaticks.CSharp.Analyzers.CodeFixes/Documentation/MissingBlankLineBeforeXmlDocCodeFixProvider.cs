@@ -19,8 +19,13 @@ public sealed class MissingBlankLineBeforeXmlDocCodeFixProvider : CodeFixProvide
     private const string Title = "Add a blank line before the XML doc comment";
 
     /// <inheritdoc />
-    public override ImmutableArray<string> FixableDiagnosticIds =>
-        [DiagnosticIds.CSharp.MissingBlankLineBeforeXmlDoc];
+    public override ImmutableArray<string> FixableDiagnosticIds
+    {
+        get
+        {
+            return [DiagnosticIds.CSharp.MissingBlankLineBeforeXmlDoc];
+        }
+    }
 
     /// <inheritdoc />
     public override FixAllProvider GetFixAllProvider()

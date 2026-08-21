@@ -50,5 +50,11 @@ public sealed class LinqUsageSuppressor : DiagnosticSuppressor
     }
 
     /// <inheritdoc />
-    public override ImmutableArray<SuppressionDescriptor> SupportedSuppressions => [Rule];
+    public override ImmutableArray<SuppressionDescriptor> SupportedSuppressions
+    {
+        get
+        {
+            return [Rule];
+        }
+    }
 }

@@ -1,5 +1,6 @@
 ﻿using Automaticks.CSharp.CodeFixes.Formatting;
 using Microsoft.CodeAnalysis.CodeFixes;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -40,8 +41,8 @@ public class TypeMemberOrderCodeFixProviderTests
             Source = source
         };
         var fixedSource = await CodeFixTestRunner.ApplyFixAsync(request, cancellationToken);
-        var summaryIndex = fixedSource.IndexOf("The size.", System.StringComparison.Ordinal);
-        var propertyIndex = fixedSource.IndexOf("public int Size", System.StringComparison.Ordinal);
+        var summaryIndex = fixedSource.IndexOf("The size.", StringComparison.Ordinal);
+        var propertyIndex = fixedSource.IndexOf("public int Size", StringComparison.Ordinal);
 
         await Assert.That(summaryIndex).IsLessThan(propertyIndex);
     }
@@ -73,8 +74,8 @@ public class TypeMemberOrderCodeFixProviderTests
             Source = source
         };
         var fixedSource = await CodeFixTestRunner.ApplyFixAsync(request, cancellationToken);
-        var fieldIndex = fixedSource.IndexOf("private int size;", System.StringComparison.Ordinal);
-        var methodIndex = fixedSource.IndexOf("public void Work()", System.StringComparison.Ordinal);
+        var fieldIndex = fixedSource.IndexOf("private int size;", StringComparison.Ordinal);
+        var methodIndex = fixedSource.IndexOf("public void Work()", StringComparison.Ordinal);
 
         await Assert.That(fieldIndex).IsLessThan(methodIndex);
     }
@@ -148,8 +149,8 @@ public class TypeMemberOrderCodeFixProviderTests
             Source = source
         };
         var fixedSource = await CodeFixTestRunner.ApplyFixAsync(request, cancellationToken);
-        var alphaIndex = fixedSource.IndexOf("public void Alpha()", System.StringComparison.Ordinal);
-        var zebraIndex = fixedSource.IndexOf("public void Zebra()", System.StringComparison.Ordinal);
+        var alphaIndex = fixedSource.IndexOf("public void Alpha()", StringComparison.Ordinal);
+        var zebraIndex = fixedSource.IndexOf("public void Zebra()", StringComparison.Ordinal);
 
         await Assert.That(alphaIndex).IsLessThan(zebraIndex);
     }

@@ -62,8 +62,20 @@ Read a neighbouring analyzer and its tests before writing anything. The ones tha
 - No `using System.Linq` (`ATXLQ002`) — use explicit loops.
 - No tuples (`ATXCS012`), no `ref` parameters, no inline `new` as an argument (`ATXCS058`).
 - Bool **methods** start with `Can`/`Has`; bool **properties** start with `Is`/`Allow`.
-- No namespace-qualified type references (`ATXCS072`) and no expression-bodied methods (`ATXCS075`).
+- No namespace-qualified type references (`ATXCS072`), no `global::` (`ATXCS073`), no using aliases
+  (`ATXCS074`), and no expression bodies on any member (`ATXCS075`-`ATXCS083`, one rule per kind).
 - XML `<summary>` on every type and public member; never `<remarks>`; one short line per tag.
 - Max 20 `.cs` files per folder and per namespace; 50 lines per method; 500 lines per class.
 
 Files are UTF-8. Prefer the editing tools over PowerShell writes so encoding is preserved.
+
+## Let the code fixes do the work
+
+Most rules ship a fix, and `Directory.Build.targets` loads the `*.CodeFixes.dll` assemblies so they
+work here, not only for consumers. Mechanical breaks like member order are cheaper to fix this way:
+
+```powershell
+dotnet format analyzers Analyzers.slnx --diagnostics ATXCS064 --severity error --include <file>
+```
+
+Build first: fixes are read from `.dogfood`, so an edit is invisible until the cache refreshes.

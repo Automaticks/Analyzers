@@ -21,7 +21,13 @@ public sealed class RedundantNullCheckCodeFixProvider : CodeFixProvider
     private const string Title = "Remove the redundant null check";
 
     /// <inheritdoc />
-    public override ImmutableArray<string> FixableDiagnosticIds => [DiagnosticIds.CSharp.RedundantNullCheck];
+    public override ImmutableArray<string> FixableDiagnosticIds
+    {
+        get
+        {
+            return [DiagnosticIds.CSharp.RedundantNullCheck];
+        }
+    }
 
     /// <inheritdoc />
     public override FixAllProvider GetFixAllProvider()

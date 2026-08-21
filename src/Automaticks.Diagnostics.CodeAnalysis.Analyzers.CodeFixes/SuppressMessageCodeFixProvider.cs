@@ -19,7 +19,13 @@ public sealed class SuppressMessageCodeFixProvider : CodeFixProvider
     private const string Title = "Remove the [SuppressMessage] attribute";
 
     /// <inheritdoc />
-    public override ImmutableArray<string> FixableDiagnosticIds => [DiagnosticIds.DiagnosticsCodeAnalysis.SuppressMessage];
+    public override ImmutableArray<string> FixableDiagnosticIds
+    {
+        get
+        {
+            return [DiagnosticIds.DiagnosticsCodeAnalysis.SuppressMessage];
+        }
+    }
 
     /// <inheritdoc />
     public override FixAllProvider GetFixAllProvider()

@@ -24,7 +24,13 @@ public sealed class MissingSummaryXmlDocCodeFixProvider : CodeFixProvider
     private const string Title = "Add an empty <summary> documentation block";
 
     /// <inheritdoc />
-    public override ImmutableArray<string> FixableDiagnosticIds => [DiagnosticIds.CSharp.MissingSummaryXmlDoc];
+    public override ImmutableArray<string> FixableDiagnosticIds
+    {
+        get
+        {
+            return [DiagnosticIds.CSharp.MissingSummaryXmlDoc];
+        }
+    }
 
     /// <inheritdoc />
     public override FixAllProvider GetFixAllProvider()

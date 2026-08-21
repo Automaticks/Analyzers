@@ -23,7 +23,13 @@ public sealed class ObjectInitializerFormatCodeFixProvider : CodeFixProvider
     private const string Title = "Put each initializer member on its own line";
 
     /// <inheritdoc />
-    public override ImmutableArray<string> FixableDiagnosticIds => [DiagnosticIds.CSharp.ObjectInitializerFormat];
+    public override ImmutableArray<string> FixableDiagnosticIds
+    {
+        get
+        {
+            return [DiagnosticIds.CSharp.ObjectInitializerFormat];
+        }
+    }
 
     /// <inheritdoc />
     public override FixAllProvider GetFixAllProvider()

@@ -22,11 +22,16 @@ public sealed class SuppressionCommentCodeFixProvider : CodeFixProvider
     private const string ReSharperTitle = "Remove the // ReSharper disable comment";
 
     /// <inheritdoc />
-    public override ImmutableArray<string> FixableDiagnosticIds =>
-    [
+    public override ImmutableArray<string> FixableDiagnosticIds
+    {
+        get
+        {
+            return [
         DiagnosticIds.DiagnosticsCodeAnalysis.SuppressionPragma,
         DiagnosticIds.DiagnosticsCodeAnalysis.SuppressionReSharper
     ];
+        }
+    }
 
     /// <inheritdoc />
     public override FixAllProvider GetFixAllProvider()

@@ -39,7 +39,13 @@ public sealed class SingleBlankLineBetweenUsingsAndNamespaceAnalyzer : Diagnosti
     }
 
     /// <inheritdoc />
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [TooFewBlankLinesRule];
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
+    {
+        get
+        {
+            return [TooFewBlankLinesRule];
+        }
+    }
 
     private void AnalyzeCompilationUnit(SyntaxNodeAnalysisContext context)
     {

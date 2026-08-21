@@ -69,6 +69,20 @@ dotnet add package Automaticks.CSharp.Analyzers
 | `ATXCS067` | Namespaces must not exceed the maximum number of source files | Maintainability | Error | Analyzer |
 | `ATXCS068` | No-op discard statement is forbidden | CSharp | Error | Analyzer, CodeFix |
 | `ATXCS069` | Static methods must only exist in static classes, not records or structs | CSharp | Error | Analyzer |
+| `ATXCS070` | Mutable static state must not exist in a non-static class | CSharp | Error | Analyzer |
+| `ATXCS071` | XML documentation element is too long | Documentation | Error | Analyzer |
+| `ATXCS072` | Namespace-qualified type reference is forbidden | CSharp | Error | Analyzer, CodeFix |
+| `ATXCS073` | 'global::' alias qualifier is forbidden | CSharp | Error | Analyzer |
+| `ATXCS074` | Alias directive is forbidden | CSharp | Error | Analyzer |
+| `ATXCS075` | Expression-bodied methods are forbidden | CSharp | Error | Analyzer, CodeFix |
+| `ATXCS076` | Expression-bodied local functions are forbidden | CSharp | Error | Analyzer, CodeFix |
+| `ATXCS077` | Expression-bodied properties are forbidden | CSharp | Error | Analyzer, CodeFix |
+| `ATXCS078` | Expression-bodied indexers are forbidden | CSharp | Error | Analyzer, CodeFix |
+| `ATXCS079` | Expression-bodied operators are forbidden | CSharp | Error | Analyzer, CodeFix |
+| `ATXCS080` | Expression-bodied conversion operators are forbidden | CSharp | Error | Analyzer, CodeFix |
+| `ATXCS081` | Expression-bodied constructors are forbidden | CSharp | Error | Analyzer, CodeFix |
+| `ATXCS082` | Expression-bodied destructors are forbidden | CSharp | Error | Analyzer, CodeFix |
+| `ATXCS083` | Expression-bodied accessors are forbidden | CSharp | Error | Analyzer, CodeFix |
 
 ## Code fixes
 
@@ -109,6 +123,16 @@ dotnet format analyzers --diagnostics ATXCS048 --severity error
 | `ATXCS063` | Prefix the method name with `can` |
 | `ATXCS064` | Sort the type members into canonical order |
 | `ATXCS068` | Remove the no-op discard statement |
+| `ATXCS072` | Simplify to the type name, adding a `using` if needed |
+| `ATXCS075` | Convert the expression body to a block body |
+| `ATXCS076` | Convert the expression body to a block body |
+| `ATXCS077` | Convert the expression body to a block body |
+| `ATXCS078` | Convert the expression body to a block body |
+| `ATXCS079` | Convert the expression body to a block body |
+| `ATXCS080` | Convert the expression body to a block body |
+| `ATXCS081` | Convert the expression body to a block body |
+| `ATXCS082` | Convert the expression body to a block body |
+| `ATXCS083` | Convert the expression body to a block body |
 
 Review these before committing, because they remove or invent content rather than rewrite it:
 `ATXCS038` drops `<remarks>` without merging its prose into `<summary>`, `ATXCS041` deletes the
@@ -124,14 +148,14 @@ Some fixes are deliberately narrower than the rule:
 |---|---|
 | `ATXCS060` | Array creation such as `new int[] { }`, which has no valid brace-free form |
 | `ATXCS061` | Fields and static members, which cannot become a contract without being deleted |
-| `ATXCS070` | Mutable static state must not exist in a non-static class | CSharp | Error | Analyzer |
-| `ATXCS071` | XML documentation element is too long | Documentation | Error | Analyzer |
+| `ATXCS072` | A collision needing a rename, which a fix can't invent |
 
 Rules with no fix need a judgement a tool should not make: choosing a descriptive name
 (`ATXCS017`), splitting an oversized type (`ATXCS021`, `ATXCS034`), designing a replacement type
-(`ATXCS012`, `ATXCS020`), or changing a signature and every call site (`ATXCS024`, `ATXCS026`,
-`ATXCS055`, `ATXCS057`). `ATXCS029` is excluded because `as` returns `null` where a cast throws,
-and `ATXCS058` because extracting a `new` expression reorders argument evaluation.
+(`ATXCS012`, `ATXCS020`), picking an alias-free name (`ATXCS073`, `ATXCS074`), or changing a
+signature and every call site (`ATXCS024`, `ATXCS026`, `ATXCS055`, `ATXCS057`). `ATXCS029` is
+excluded because `as` returns `null` where a cast throws, and `ATXCS058` because extracting a
+`new` expression reorders argument evaluation.
 
 `ATXCS042` and `ATXCS064` describe the same ordering, so one fix settles both. It rewrites the
 whole member list rather than nudging the reported member, and documentation moves with its

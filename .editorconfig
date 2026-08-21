@@ -79,3 +79,4 @@ dotnet_diagnostic.RS1001.severity = none
 [*.cs]
 automaticks.minimum_line_coverage = 100
 automaticks.minimum_branch_coverage = 100
+

@@ -48,7 +48,13 @@ public sealed class SuppressionCommentAnalyzer : DiagnosticAnalyzer
     }
 
     /// <inheritdoc />
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [PragmaRule, ReSharperRule];
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
+    {
+        get
+        {
+            return [PragmaRule, ReSharperRule];
+        }
+    }
 
     private void AnalyzeSyntaxTree(SyntaxTreeAnalysisContext context)
     {

@@ -20,10 +20,15 @@ public sealed class GeneratedCodeMarkerCodeFixProvider : CodeFixProvider
     private const string Title = "Remove the generated-code marker comment";
 
     /// <inheritdoc />
-    public override ImmutableArray<string> FixableDiagnosticIds =>
-    [
+    public override ImmutableArray<string> FixableDiagnosticIds
+    {
+        get
+        {
+            return [
         DiagnosticIds.DiagnosticsCodeAnalysis.GeneratedCodeMarker
     ];
+        }
+    }
 
     /// <inheritdoc />
     public override FixAllProvider GetFixAllProvider()

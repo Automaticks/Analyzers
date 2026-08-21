@@ -73,7 +73,13 @@ public sealed class ReflectionAnalyzer : DiagnosticAnalyzer
     }
 
     /// <inheritdoc />
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
+    {
+        get
+        {
+            return [Rule];
+        }
+    }
 
     private void AnalyzeIdentifier(SyntaxNodeAnalysisContext context, CompilationSymbols symbols, ConcurrentDictionary<SyntaxTree, bool> aliasTrees)
     {

@@ -20,8 +20,13 @@ public sealed class ObjectInitializerEmptyBracesCodeFixProvider : CodeFixProvide
     private const string Title = "Remove the empty initializer braces";
 
     /// <inheritdoc />
-    public override ImmutableArray<string> FixableDiagnosticIds =>
-        [DiagnosticIds.CSharp.ObjectInitializerEmptyBraces];
+    public override ImmutableArray<string> FixableDiagnosticIds
+    {
+        get
+        {
+            return [DiagnosticIds.CSharp.ObjectInitializerEmptyBraces];
+        }
+    }
 
     /// <inheritdoc />
     public override FixAllProvider GetFixAllProvider()

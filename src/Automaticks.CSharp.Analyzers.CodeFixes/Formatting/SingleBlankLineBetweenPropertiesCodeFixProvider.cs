@@ -21,8 +21,13 @@ public sealed class SingleBlankLineBetweenPropertiesCodeFixProvider : CodeFixPro
     private const string Title = "Add a blank line between the members";
 
     /// <inheritdoc />
-    public override ImmutableArray<string> FixableDiagnosticIds =>
-        [DiagnosticIds.CSharp.SingleBlankLineBetweenProperties];
+    public override ImmutableArray<string> FixableDiagnosticIds
+    {
+        get
+        {
+            return [DiagnosticIds.CSharp.SingleBlankLineBetweenProperties];
+        }
+    }
 
     /// <inheritdoc />
     public override FixAllProvider GetFixAllProvider()

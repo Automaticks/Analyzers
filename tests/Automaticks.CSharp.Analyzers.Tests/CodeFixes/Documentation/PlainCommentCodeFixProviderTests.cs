@@ -1,6 +1,7 @@
 ﻿using Automaticks.CSharp.CodeFixes.Documentation;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Text;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -208,7 +209,7 @@ public class PlainCommentCodeFixProviderTests
             Provider = provider,
             Source = source
         };
-        var commentStart = source.IndexOf("// a note", System.StringComparison.Ordinal);
+        var commentStart = source.IndexOf("// a note", StringComparison.Ordinal);
         var span = new TextSpan(commentStart + 3, 1);
         var count = await CodeFixTestRunner.CountActionsForSpanAsync(
             request,

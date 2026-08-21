@@ -32,7 +32,13 @@ public sealed class CommandLambdaAtClassDeclarationAnalyzer : DiagnosticAnalyzer
     }
 
     /// <inheritdoc />
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
+    {
+        get
+        {
+            return [Rule];
+        }
+    }
 
     private void Analyze(SyntaxNodeAnalysisContext context)
     {

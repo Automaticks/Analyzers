@@ -16,6 +16,11 @@ public static class DiagnosticIds
         public const string AbbreviatedIdentifier = "ATXCS017";
 
         /// <summary>
+        ///     Diagnostic ID for <c>ATXCS074</c>: using-alias and extern-alias directives are forbidden.
+        /// </summary>
+        public const string AliasDirective = "ATXCS074";
+
+        /// <summary>
         ///     Diagnostic ID for <c>ATXCS012</c>: anonymous tuple types are forbidden.
         /// </summary>
         public const string AnonymousTuple = "ATXCS012";
@@ -96,6 +101,51 @@ public static class DiagnosticIds
         public const string ExplicitConstructor = "ATXCS037";
 
         /// <summary>
+        ///     Diagnostic ID for <c>ATXCS083</c>: expression-bodied accessors are forbidden.
+        /// </summary>
+        public const string ExpressionBodiedAccessor = "ATXCS083";
+
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXCS081</c>: expression-bodied constructors are forbidden.
+        /// </summary>
+        public const string ExpressionBodiedConstructor = "ATXCS081";
+
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXCS080</c>: expression-bodied conversion operators are forbidden.
+        /// </summary>
+        public const string ExpressionBodiedConversionOperator = "ATXCS080";
+
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXCS082</c>: expression-bodied destructors are forbidden.
+        /// </summary>
+        public const string ExpressionBodiedDestructor = "ATXCS082";
+
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXCS078</c>: expression-bodied indexers are forbidden.
+        /// </summary>
+        public const string ExpressionBodiedIndexer = "ATXCS078";
+
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXCS076</c>: expression-bodied local functions are forbidden.
+        /// </summary>
+        public const string ExpressionBodiedLocalFunction = "ATXCS076";
+
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXCS075</c>: expression-bodied methods are forbidden.
+        /// </summary>
+        public const string ExpressionBodiedMethod = "ATXCS075";
+
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXCS079</c>: expression-bodied operators are forbidden.
+        /// </summary>
+        public const string ExpressionBodiedOperator = "ATXCS079";
+
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXCS077</c>: expression-bodied properties are forbidden.
+        /// </summary>
+        public const string ExpressionBodiedProperty = "ATXCS077";
+
+        /// <summary>
         ///     Diagnostic ID for <c>ATXCS031</c>: type name does not match the file name.
         /// </summary>
         public const string FileNameMismatch = "ATXCS031";
@@ -109,6 +159,11 @@ public static class DiagnosticIds
         ///     Diagnostic ID for <c>ATXCS020</c>: built-in generic delegate types (<c>Action</c>, <c>Func</c>, <c>Predicate</c>, <c>Comparison</c>, <c>Converter</c>) are forbidden.
         /// </summary>
         public const string GenericDelegate = "ATXCS020";
+
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXCS073</c>: the <c>global::</c> alias qualifier is forbidden.
+        /// </summary>
+        public const string GlobalAliasQualifier = "ATXCS073";
 
         /// <summary>
         ///     Diagnostic ID for <c>ATXCS036</c>: fields and auto-properties must not be initialized inline; initialization must move to the constructor.
@@ -159,6 +214,11 @@ public static class DiagnosticIds
         ///     Diagnostic ID for <c>ATXCS067</c>: a namespace is declared by more than the maximum number of source files.
         /// </summary>
         public const string NamespaceFileCount = "ATXCS067";
+
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXCS072</c>: namespace-qualified type references are forbidden.
+        /// </summary>
+        public const string NamespaceQualifiedTypeReference = "ATXCS072";
 
         /// <summary>
         ///     Diagnostic ID for <c>ATXCS032</c>: method nesting depth exceeds the maximum.

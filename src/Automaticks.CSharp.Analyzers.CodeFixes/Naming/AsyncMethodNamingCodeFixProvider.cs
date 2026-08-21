@@ -22,7 +22,13 @@ public sealed class AsyncMethodNamingCodeFixProvider : CodeFixProvider
     private const string Title = "Append the Async suffix";
 
     /// <inheritdoc />
-    public override ImmutableArray<string> FixableDiagnosticIds => [DiagnosticIds.CSharp.AsyncMethodNaming];
+    public override ImmutableArray<string> FixableDiagnosticIds
+    {
+        get
+        {
+            return [DiagnosticIds.CSharp.AsyncMethodNaming];
+        }
+    }
 
     /// <inheritdoc />
     public override FixAllProvider GetFixAllProvider()

@@ -1,6 +1,7 @@
 ﻿using Automaticks.CSharp.CodeFixes.Documentation;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Text;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -76,8 +77,8 @@ public class MissingSummaryXmlDocCodeFixProviderTests
             Source = source
         };
         var fixedSource = await CodeFixTestRunner.ApplyFixAsync(request, cancellationToken);
-        var summaryIndex = fixedSource.IndexOf("/// <summary>", System.StringComparison.Ordinal);
-        var attributeIndex = fixedSource.IndexOf("[Obsolete", System.StringComparison.Ordinal);
+        var summaryIndex = fixedSource.IndexOf("/// <summary>", StringComparison.Ordinal);
+        var attributeIndex = fixedSource.IndexOf("[Obsolete", StringComparison.Ordinal);
 
         await Assert.That(summaryIndex).IsLessThan(attributeIndex);
     }
@@ -161,7 +162,7 @@ public class MissingSummaryXmlDocCodeFixProviderTests
             Provider = provider,
             Source = source
         };
-        var start = source.IndexOf("Bar", System.StringComparison.Ordinal);
+        var start = source.IndexOf("Bar", StringComparison.Ordinal);
         var span = new TextSpan(start, "Bar".Length);
         var fixedSource = await CodeFixTestRunner.ApplyFixForSpanAsync(
             request,
@@ -195,7 +196,7 @@ public class MissingSummaryXmlDocCodeFixProviderTests
             Provider = provider,
             Source = source
         };
-        var start = source.IndexOf("System", System.StringComparison.Ordinal);
+        var start = source.IndexOf("System", StringComparison.Ordinal);
         var span = new TextSpan(start, "System".Length);
         var count = await CodeFixTestRunner.CountActionsForSpanAsync(
             request,

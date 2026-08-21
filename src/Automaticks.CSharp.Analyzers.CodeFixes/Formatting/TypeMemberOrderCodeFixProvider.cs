@@ -22,11 +22,16 @@ public sealed class TypeMemberOrderCodeFixProvider : CodeFixProvider
     private const string Title = "Sort the type members into canonical order";
 
     /// <inheritdoc />
-    public override ImmutableArray<string> FixableDiagnosticIds =>
-    [
+    public override ImmutableArray<string> FixableDiagnosticIds
+    {
+        get
+        {
+            return [
         DiagnosticIds.CSharp.TypeMemberOrder,
         DiagnosticIds.CSharp.TypeMemberWithinGroupOrder
     ];
+        }
+    }
 
     /// <inheritdoc />
     public override FixAllProvider GetFixAllProvider()

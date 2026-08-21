@@ -37,7 +37,13 @@ public sealed class FileLineCoverageAnalyzer : DiagnosticAnalyzer
     }
 
     /// <inheritdoc />
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
+    {
+        get
+        {
+            return [Rule];
+        }
+    }
 
     private void AnalyzeSyntaxTree(SyntaxTreeAnalysisContext context, CoverageReport report)
     {

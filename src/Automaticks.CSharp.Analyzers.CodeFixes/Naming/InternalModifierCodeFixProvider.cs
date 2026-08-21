@@ -20,7 +20,13 @@ public sealed class InternalModifierCodeFixProvider : CodeFixProvider
     private const string Title = "Make the declaration public";
 
     /// <inheritdoc />
-    public override ImmutableArray<string> FixableDiagnosticIds => [DiagnosticIds.CSharp.InternalModifier];
+    public override ImmutableArray<string> FixableDiagnosticIds
+    {
+        get
+        {
+            return [DiagnosticIds.CSharp.InternalModifier];
+        }
+    }
 
     /// <inheritdoc />
     public override FixAllProvider GetFixAllProvider()

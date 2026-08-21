@@ -23,7 +23,13 @@ public sealed class BindConfigurationCodeFixProvider : CodeFixProvider
     private const string Title = "Use Configure with GetRequiredSection";
 
     /// <inheritdoc />
-    public override ImmutableArray<string> FixableDiagnosticIds => [DiagnosticIds.Options.BindConfiguration];
+    public override ImmutableArray<string> FixableDiagnosticIds
+    {
+        get
+        {
+            return [DiagnosticIds.Options.BindConfiguration];
+        }
+    }
 
     /// <inheritdoc />
     public override FixAllProvider GetFixAllProvider()

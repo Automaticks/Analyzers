@@ -19,7 +19,13 @@ public sealed class EmptyLineBetweenFieldsCodeFixProvider : CodeFixProvider
     private const string Title = "Remove the blank line between the fields";
 
     /// <inheritdoc />
-    public override ImmutableArray<string> FixableDiagnosticIds => [DiagnosticIds.CSharp.EmptyLineBetweenFields];
+    public override ImmutableArray<string> FixableDiagnosticIds
+    {
+        get
+        {
+            return [DiagnosticIds.CSharp.EmptyLineBetweenFields];
+        }
+    }
 
     /// <inheritdoc />
     public override FixAllProvider GetFixAllProvider()

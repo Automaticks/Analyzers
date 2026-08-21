@@ -21,8 +21,13 @@ public sealed class InterfaceDefaultImplementationCodeFixProvider : CodeFixProvi
     private const string Title = "Remove the default implementation";
 
     /// <inheritdoc />
-    public override ImmutableArray<string> FixableDiagnosticIds =>
-        [DiagnosticIds.CSharp.InterfaceDefaultImplementation];
+    public override ImmutableArray<string> FixableDiagnosticIds
+    {
+        get
+        {
+            return [DiagnosticIds.CSharp.InterfaceDefaultImplementation];
+        }
+    }
 
     /// <inheritdoc />
     public override FixAllProvider GetFixAllProvider()

@@ -20,7 +20,13 @@ public sealed class PlainCommentCodeFixProvider : CodeFixProvider
     private const string Title = "Remove the comment";
 
     /// <inheritdoc />
-    public override ImmutableArray<string> FixableDiagnosticIds => [DiagnosticIds.CSharp.PlainComment];
+    public override ImmutableArray<string> FixableDiagnosticIds
+    {
+        get
+        {
+            return [DiagnosticIds.CSharp.PlainComment];
+        }
+    }
 
     /// <inheritdoc />
     public override FixAllProvider GetFixAllProvider()

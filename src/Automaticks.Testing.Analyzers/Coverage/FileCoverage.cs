@@ -20,7 +20,13 @@ public sealed class FileCoverage
     /// <summary>
     ///     Gets the percentage of executed lines, or -1 when the file reports no lines.
     /// </summary>
-    public int LinePercentage => TotalLines == 0 ? -1 : CoveredLines * 100 / TotalLines;
+    public int LinePercentage
+    {
+        get
+        {
+            return TotalLines == 0 ? -1 : CoveredLines * 100 / TotalLines;
+        }
+    }
 
     /// <summary>
     ///     Gets the file path exactly as written in the coverage report.

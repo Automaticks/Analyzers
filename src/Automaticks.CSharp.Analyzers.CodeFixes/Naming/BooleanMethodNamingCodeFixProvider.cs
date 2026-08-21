@@ -20,7 +20,13 @@ public sealed class BooleanMethodNamingCodeFixProvider : CodeFixProvider
     private const string Title = "Prefix the method name with 'can'";
 
     /// <inheritdoc />
-    public override ImmutableArray<string> FixableDiagnosticIds => [DiagnosticIds.CSharp.BooleanMethodNaming];
+    public override ImmutableArray<string> FixableDiagnosticIds
+    {
+        get
+        {
+            return [DiagnosticIds.CSharp.BooleanMethodNaming];
+        }
+    }
 
     /// <inheritdoc />
     public override FixAllProvider GetFixAllProvider()

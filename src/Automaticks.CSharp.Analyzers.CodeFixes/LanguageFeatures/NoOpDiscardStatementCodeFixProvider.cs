@@ -19,7 +19,13 @@ public sealed class NoOpDiscardStatementCodeFixProvider : CodeFixProvider
     private const string Title = "Remove the no-op discard statement";
 
     /// <inheritdoc />
-    public override ImmutableArray<string> FixableDiagnosticIds => [DiagnosticIds.CSharp.NoOpDiscardStatement];
+    public override ImmutableArray<string> FixableDiagnosticIds
+    {
+        get
+        {
+            return [DiagnosticIds.CSharp.NoOpDiscardStatement];
+        }
+    }
 
     /// <inheritdoc />
     public override FixAllProvider GetFixAllProvider()

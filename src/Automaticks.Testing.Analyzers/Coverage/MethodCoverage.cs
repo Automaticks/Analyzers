@@ -45,7 +45,13 @@ public sealed class MethodCoverage
     /// <summary>
     ///     Gets a value indicating whether any line of the method was executed.
     /// </summary>
-    public bool IsCovered => CoveredLines > 0;
+    public bool IsCovered
+    {
+        get
+        {
+            return CoveredLines > 0;
+        }
+    }
 
     /// <summary>
     ///     Gets the method name as written in the coverage report.
@@ -66,7 +72,13 @@ public sealed class MethodCoverage
     /// <summary>
     ///     Gets the number of reported lines.
     /// </summary>
-    public int TotalLines => _hitsByLine.Count;
+    public int TotalLines
+    {
+        get
+        {
+            return _hitsByLine.Count;
+        }
+    }
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="MethodCoverage" /> class.

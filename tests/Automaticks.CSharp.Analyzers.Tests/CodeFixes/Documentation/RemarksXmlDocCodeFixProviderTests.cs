@@ -1,5 +1,6 @@
 ﻿using Automaticks.CSharp.CodeFixes.Documentation;
 using Microsoft.CodeAnalysis.Text;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -175,7 +176,7 @@ public class RemarksXmlDocCodeFixProviderTests
             Provider = provider,
             Source = source
         };
-        var start = source.IndexOf("<remarks>", System.StringComparison.Ordinal) + 1;
+        var start = source.IndexOf("<remarks>", StringComparison.Ordinal) + 1;
         var span = new TextSpan(start, "remarks".Length);
         var fixedSource = await CodeFixTestRunner.ApplyFixForSpanAsync(
             request,
@@ -208,7 +209,7 @@ public class RemarksXmlDocCodeFixProviderTests
             Provider = provider,
             Source = source
         };
-        var start = source.IndexOf("System", System.StringComparison.Ordinal);
+        var start = source.IndexOf("System", StringComparison.Ordinal);
         var span = new TextSpan(start, "System".Length);
         var count = await CodeFixTestRunner.CountActionsForSpanAsync(
             request,

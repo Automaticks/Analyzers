@@ -44,7 +44,13 @@ public sealed class SingleBlankLineBetweenPropertiesAnalyzer : DiagnosticAnalyze
     }
 
     /// <inheritdoc />
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [TooFewBlankLinesRule];
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
+    {
+        get
+        {
+            return [TooFewBlankLinesRule];
+        }
+    }
 
     private void AnalyzeTypeDeclaration(SyntaxNodeAnalysisContext context)
     {

@@ -49,7 +49,13 @@ public sealed class AmbientDependencyAnalyzer : DiagnosticAnalyzer
     }
 
     /// <inheritdoc />
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
+    {
+        get
+        {
+            return [Rule];
+        }
+    }
 
     private void AnalyzeMemberAccess(SyntaxNodeAnalysisContext context, ConcurrentDictionary<SyntaxTree, bool> aliasTrees)
     {
