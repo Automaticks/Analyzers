@@ -36,6 +36,30 @@ public class ExpressionBodiedAccessorCodeFixProviderTests
     }
 
     /// <summary>
+    ///     Tests that a set accessor takes a bare statement rather than a return.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task ApplyFix_SetAccessor_ConvertsToStatementBlock(CancellationToken cancellationToken)
+    {
+        const string source = "namespace MyApp {\n    public class Shape {\n        private int _size;\n        public int Size {\n            get { return _size; }\n            set => _size = value;\n        }\n    }\n}\n";
+
+        var analyzer = new ExpressionBodiedAccessorAnalyzer();
+        var provider = new ExpressionBodiedAccessorCodeFixProvider();
+        var request = new CodeFixRequest
+        {
+            Analyzer = analyzer,
+            Provider = provider,
+            Source = source
+        };
+        var fixedSource = await CodeFixTestRunner.ApplyFixAsync(request, cancellationToken);
+
+        await Assert.That(fixedSource).Contains("_size = value;");
+        await Assert.That(fixedSource).DoesNotContain("return _size = value;");
+    }
+
+    /// <summary>
     ///     Tests that the provider advertises the document Fix All scope.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
