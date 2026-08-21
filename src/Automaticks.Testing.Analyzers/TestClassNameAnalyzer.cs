@@ -40,7 +40,13 @@ public sealed class TestClassNameAnalyzer : DiagnosticAnalyzer
     }
 
     /// <inheritdoc />
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
+    {
+        get
+        {
+            return [Rule];
+        }
+    }
 
     private void AnalyzeType(SymbolAnalysisContext context, ImmutableHashSet<string> typeNames)
     {

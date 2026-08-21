@@ -19,7 +19,13 @@ public sealed class DuplicateUsingDirectiveCodeFixProvider : CodeFixProvider
     private const string Title = "Remove the duplicate using directive";
 
     /// <inheritdoc />
-    public override ImmutableArray<string> FixableDiagnosticIds => [DiagnosticIds.CSharp.DuplicateUsingDirective];
+    public override ImmutableArray<string> FixableDiagnosticIds
+    {
+        get
+        {
+            return [DiagnosticIds.CSharp.DuplicateUsingDirective];
+        }
+    }
 
     /// <inheritdoc />
     public override FixAllProvider GetFixAllProvider()

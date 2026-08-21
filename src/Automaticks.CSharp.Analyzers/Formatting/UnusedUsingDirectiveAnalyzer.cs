@@ -41,7 +41,13 @@ public sealed class UnusedUsingDirectiveAnalyzer : DiagnosticAnalyzer
     }
 
     /// <inheritdoc />
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
+    {
+        get
+        {
+            return [Rule];
+        }
+    }
 
     private void AnalyzeCompilationUnit(SyntaxNodeAnalysisContext context)
     {

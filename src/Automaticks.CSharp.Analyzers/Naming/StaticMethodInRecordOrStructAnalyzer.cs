@@ -35,7 +35,13 @@ public sealed class StaticMethodInRecordOrStructAnalyzer : DiagnosticAnalyzer
     }
 
     /// <inheritdoc />
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
+    {
+        get
+        {
+            return [Rule];
+        }
+    }
 
     private void AnalyzeMethod(SyntaxNodeAnalysisContext context)
     {

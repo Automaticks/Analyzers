@@ -57,7 +57,13 @@ public sealed class ObjectInitializerCodeStyleAnalyzer : DiagnosticAnalyzer
     }
 
     /// <inheritdoc />
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [FormatRule, EmptyBracesRule];
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
+    {
+        get
+        {
+            return [FormatRule, EmptyBracesRule];
+        }
+    }
 
     private void Analyze(SyntaxNodeAnalysisContext context)
     {

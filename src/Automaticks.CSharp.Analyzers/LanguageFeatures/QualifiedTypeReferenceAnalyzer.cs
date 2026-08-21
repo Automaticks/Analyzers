@@ -54,7 +54,13 @@ public sealed class QualifiedTypeReferenceAnalyzer : DiagnosticAnalyzer
     }
 
     /// <inheritdoc />
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [CollisionRule, Rule];
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
+    {
+        get
+        {
+            return [CollisionRule, Rule];
+        }
+    }
 
     private void AnalyzeNode(SyntaxNodeAnalysisContext context)
     {

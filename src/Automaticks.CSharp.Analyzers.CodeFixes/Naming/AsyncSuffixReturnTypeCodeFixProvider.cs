@@ -22,7 +22,13 @@ public sealed class AsyncSuffixReturnTypeCodeFixProvider : CodeFixProvider
     private const string Title = "Remove the Async suffix";
 
     /// <inheritdoc />
-    public override ImmutableArray<string> FixableDiagnosticIds => [DiagnosticIds.CSharp.AsyncSuffixReturnType];
+    public override ImmutableArray<string> FixableDiagnosticIds
+    {
+        get
+        {
+            return [DiagnosticIds.CSharp.AsyncSuffixReturnType];
+        }
+    }
 
     /// <inheritdoc />
     public override FixAllProvider GetFixAllProvider()

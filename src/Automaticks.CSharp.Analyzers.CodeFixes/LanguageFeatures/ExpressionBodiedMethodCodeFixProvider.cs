@@ -23,7 +23,13 @@ public sealed class ExpressionBodiedMethodCodeFixProvider : CodeFixProvider
     private const string Title = "Convert to a block body";
 
     /// <inheritdoc />
-    public override ImmutableArray<string> FixableDiagnosticIds => [DiagnosticIds.CSharp.ExpressionBodiedMethod];
+    public override ImmutableArray<string> FixableDiagnosticIds
+    {
+        get
+        {
+            return [DiagnosticIds.CSharp.ExpressionBodiedMethod];
+        }
+    }
 
     /// <inheritdoc />
     public override FixAllProvider GetFixAllProvider()

@@ -59,7 +59,13 @@ public sealed class RefParameterAnalyzer : DiagnosticAnalyzer
     }
 
     /// <inheritdoc />
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [ForbiddenRule, PositionRule, CountRule];
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
+    {
+        get
+        {
+            return [ForbiddenRule, PositionRule, CountRule];
+        }
+    }
 
     private void AnalyzeLocalFunction(SyntaxNodeAnalysisContext context)
     {

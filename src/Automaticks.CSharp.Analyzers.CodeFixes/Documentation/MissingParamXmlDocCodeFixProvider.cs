@@ -20,7 +20,13 @@ public sealed class MissingParamXmlDocCodeFixProvider : CodeFixProvider
     private const string Title = "Add an empty <param> element";
 
     /// <inheritdoc />
-    public override ImmutableArray<string> FixableDiagnosticIds => [DiagnosticIds.CSharp.MissingParamXmlDoc];
+    public override ImmutableArray<string> FixableDiagnosticIds
+    {
+        get
+        {
+            return [DiagnosticIds.CSharp.MissingParamXmlDoc];
+        }
+    }
 
     /// <inheritdoc />
     public override FixAllProvider GetFixAllProvider()

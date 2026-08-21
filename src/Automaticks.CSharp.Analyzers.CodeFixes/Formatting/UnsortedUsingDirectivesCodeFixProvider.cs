@@ -22,7 +22,13 @@ public sealed class UnsortedUsingDirectivesCodeFixProvider : CodeFixProvider
     private const string Title = "Sort the using directives alphabetically";
 
     /// <inheritdoc />
-    public override ImmutableArray<string> FixableDiagnosticIds => [DiagnosticIds.CSharp.UnsortedUsingDirectives];
+    public override ImmutableArray<string> FixableDiagnosticIds
+    {
+        get
+        {
+            return [DiagnosticIds.CSharp.UnsortedUsingDirectives];
+        }
+    }
 
     /// <inheritdoc />
     public override FixAllProvider GetFixAllProvider()

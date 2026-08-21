@@ -20,7 +20,13 @@ public sealed class FileNameMismatchCodeFixProvider : CodeFixProvider
     private const string TitlePrefix = "Rename the file to ";
 
     /// <inheritdoc />
-    public override ImmutableArray<string> FixableDiagnosticIds => [DiagnosticIds.CSharp.FileNameMismatch];
+    public override ImmutableArray<string> FixableDiagnosticIds
+    {
+        get
+        {
+            return [DiagnosticIds.CSharp.FileNameMismatch];
+        }
+    }
 
     /// <inheritdoc />
     public override FixAllProvider GetFixAllProvider()

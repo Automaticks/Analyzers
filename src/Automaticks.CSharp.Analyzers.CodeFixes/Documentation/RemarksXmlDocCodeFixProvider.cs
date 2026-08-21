@@ -19,7 +19,13 @@ public sealed class RemarksXmlDocCodeFixProvider : CodeFixProvider
     private const string Title = "Remove the <remarks> element";
 
     /// <inheritdoc />
-    public override ImmutableArray<string> FixableDiagnosticIds => [DiagnosticIds.CSharp.RemarksXmlDoc];
+    public override ImmutableArray<string> FixableDiagnosticIds
+    {
+        get
+        {
+            return [DiagnosticIds.CSharp.RemarksXmlDoc];
+        }
+    }
 
     /// <inheritdoc />
     public override FixAllProvider GetFixAllProvider()

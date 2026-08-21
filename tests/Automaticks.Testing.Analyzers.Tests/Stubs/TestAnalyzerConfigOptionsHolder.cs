@@ -49,5 +49,11 @@ public sealed class TestAnalyzerConfigOptionsHolder : AnalyzerConfigOptionsProvi
     }
 
     /// <inheritdoc />
-    public override AnalyzerConfigOptions GlobalOptions => _globalOptions;
+    public override AnalyzerConfigOptions GlobalOptions
+    {
+        get
+        {
+            return _globalOptions;
+        }
+    }
 }

@@ -38,7 +38,13 @@ public sealed class SuppressMessageAnalyzer : DiagnosticAnalyzer
     }
 
     /// <inheritdoc />
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
+    {
+        get
+        {
+            return [Rule];
+        }
+    }
 
     private void AnalyzeAttribute(SyntaxNodeAnalysisContext context)
     {

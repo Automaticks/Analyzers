@@ -25,7 +25,13 @@ public sealed class CommandLambdaCodeFixProvider : CodeFixProvider
     private const string Title = "Extract the lambda into a named method";
 
     /// <inheritdoc />
-    public override ImmutableArray<string> FixableDiagnosticIds => [DiagnosticIds.ModelViewViewModel.CommandLambda];
+    public override ImmutableArray<string> FixableDiagnosticIds
+    {
+        get
+        {
+            return [DiagnosticIds.ModelViewViewModel.CommandLambda];
+        }
+    }
 
     /// <inheritdoc />
     public override FixAllProvider GetFixAllProvider()

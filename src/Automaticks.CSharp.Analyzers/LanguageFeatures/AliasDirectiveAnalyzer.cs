@@ -42,7 +42,13 @@ public sealed class AliasDirectiveAnalyzer : DiagnosticAnalyzer
     }
 
     /// <inheritdoc />
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
+    {
+        get
+        {
+            return [Rule];
+        }
+    }
 
     private void AnalyzeExternAliasDirective(SyntaxNodeAnalysisContext context, ExternAliasDirectiveSyntax externAliasDirective)
     {

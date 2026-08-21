@@ -32,7 +32,13 @@ public sealed class SuppressionPragmaAtNonTriviaLocationAnalyzer : DiagnosticAna
     }
 
     /// <inheritdoc />
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
+    {
+        get
+        {
+            return [Rule];
+        }
+    }
 
     private void Analyze(SyntaxNodeAnalysisContext context)
     {

@@ -19,7 +19,13 @@ public sealed class ConsecutiveBlankLinesCodeFixProvider : CodeFixProvider
     private const string Title = "Remove the extra blank line";
 
     /// <inheritdoc />
-    public override ImmutableArray<string> FixableDiagnosticIds => [DiagnosticIds.CSharp.ConsecutiveBlankLines];
+    public override ImmutableArray<string> FixableDiagnosticIds
+    {
+        get
+        {
+            return [DiagnosticIds.CSharp.ConsecutiveBlankLines];
+        }
+    }
 
     /// <inheritdoc />
     public override FixAllProvider GetFixAllProvider()

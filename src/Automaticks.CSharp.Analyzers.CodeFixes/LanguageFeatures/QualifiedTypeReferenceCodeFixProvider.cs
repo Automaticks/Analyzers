@@ -20,7 +20,13 @@ namespace Automaticks.CSharp.CodeFixes.LanguageFeatures;
 public sealed class QualifiedTypeReferenceCodeFixProvider : CodeFixProvider
 {
     /// <inheritdoc />
-    public override ImmutableArray<string> FixableDiagnosticIds => [DiagnosticIds.CSharp.NamespaceQualifiedTypeReference];
+    public override ImmutableArray<string> FixableDiagnosticIds
+    {
+        get
+        {
+            return [DiagnosticIds.CSharp.NamespaceQualifiedTypeReference];
+        }
+    }
 
     /// <inheritdoc />
     public override FixAllProvider GetFixAllProvider()

@@ -19,8 +19,13 @@ public sealed class SingleBlankLineBetweenUsingsAndNamespaceCodeFixProvider : Co
     private const string Title = "Add a blank line before the namespace declaration";
 
     /// <inheritdoc />
-    public override ImmutableArray<string> FixableDiagnosticIds =>
-        [DiagnosticIds.CSharp.SingleBlankLineBetweenUsingsAndNamespace];
+    public override ImmutableArray<string> FixableDiagnosticIds
+    {
+        get
+        {
+            return [DiagnosticIds.CSharp.SingleBlankLineBetweenUsingsAndNamespace];
+        }
+    }
 
     /// <inheritdoc />
     public override FixAllProvider GetFixAllProvider()

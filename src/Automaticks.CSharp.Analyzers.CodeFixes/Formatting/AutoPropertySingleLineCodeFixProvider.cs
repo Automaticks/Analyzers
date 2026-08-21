@@ -21,7 +21,13 @@ public sealed class AutoPropertySingleLineCodeFixProvider : CodeFixProvider
     private const string Title = "Put the property on a single line";
 
     /// <inheritdoc />
-    public override ImmutableArray<string> FixableDiagnosticIds => [DiagnosticIds.CSharp.AutoPropertySingleLine];
+    public override ImmutableArray<string> FixableDiagnosticIds
+    {
+        get
+        {
+            return [DiagnosticIds.CSharp.AutoPropertySingleLine];
+        }
+    }
 
     /// <inheritdoc />
     public override FixAllProvider GetFixAllProvider()

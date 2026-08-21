@@ -24,7 +24,13 @@ public sealed class SummaryXmlDocFormatCodeFixProvider : CodeFixProvider
     private const string Title = "Reformat the <summary> block";
 
     /// <inheritdoc />
-    public override ImmutableArray<string> FixableDiagnosticIds => [DiagnosticIds.CSharp.SummaryXmlDocFormat];
+    public override ImmutableArray<string> FixableDiagnosticIds
+    {
+        get
+        {
+            return [DiagnosticIds.CSharp.SummaryXmlDocFormat];
+        }
+    }
 
     /// <inheritdoc />
     public override FixAllProvider GetFixAllProvider()

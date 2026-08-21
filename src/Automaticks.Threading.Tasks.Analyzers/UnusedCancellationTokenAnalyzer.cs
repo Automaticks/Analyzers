@@ -39,7 +39,13 @@ public sealed class UnusedCancellationTokenAnalyzer : DiagnosticAnalyzer
     }
 
     /// <inheritdoc />
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
+    {
+        get
+        {
+            return [Rule];
+        }
+    }
 
     private void AnalyzeLocalFunction(SyntaxNodeAnalysisContext context, INamedTypeSymbol? tokenType, ConcurrentDictionary<SyntaxTree, bool> aliasTrees)
     {

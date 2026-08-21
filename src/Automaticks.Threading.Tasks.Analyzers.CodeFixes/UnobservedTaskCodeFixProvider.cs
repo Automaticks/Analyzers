@@ -20,7 +20,13 @@ public sealed class UnobservedTaskCodeFixProvider : CodeFixProvider
     private const string Title = "Await the returned task";
 
     /// <inheritdoc />
-    public override ImmutableArray<string> FixableDiagnosticIds => [DiagnosticIds.ThreadingTasks.UnobservedTask];
+    public override ImmutableArray<string> FixableDiagnosticIds
+    {
+        get
+        {
+            return [DiagnosticIds.ThreadingTasks.UnobservedTask];
+        }
+    }
 
     /// <inheritdoc />
     public override FixAllProvider GetFixAllProvider()

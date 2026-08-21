@@ -60,7 +60,13 @@ public sealed class TypeMemberOrderAnalyzer : DiagnosticAnalyzer
     }
 
     /// <inheritdoc />
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule, WithinGroupOrderRule];
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
+    {
+        get
+        {
+            return [Rule, WithinGroupOrderRule];
+        }
+    }
 
     private void AnalyzeTypeDeclaration(SyntaxNodeAnalysisContext context)
     {

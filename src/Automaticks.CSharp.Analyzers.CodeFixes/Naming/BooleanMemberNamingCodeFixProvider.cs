@@ -20,7 +20,13 @@ public sealed class BooleanMemberNamingCodeFixProvider : CodeFixProvider
     private const string Title = "Prefix the member name with 'is'";
 
     /// <inheritdoc />
-    public override ImmutableArray<string> FixableDiagnosticIds => [DiagnosticIds.CSharp.BooleanMemberNaming];
+    public override ImmutableArray<string> FixableDiagnosticIds
+    {
+        get
+        {
+            return [DiagnosticIds.CSharp.BooleanMemberNaming];
+        }
+    }
 
     /// <inheritdoc />
     public override FixAllProvider GetFixAllProvider()

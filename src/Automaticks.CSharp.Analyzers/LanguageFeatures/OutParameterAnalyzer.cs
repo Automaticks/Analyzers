@@ -48,7 +48,13 @@ public sealed class OutParameterAnalyzer : DiagnosticAnalyzer
     }
 
     /// <inheritdoc />
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [CountRule, PositionRule];
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
+    {
+        get
+        {
+            return [CountRule, PositionRule];
+        }
+    }
 
     private void AnalyzeLocalFunction(SyntaxNodeAnalysisContext context)
     {

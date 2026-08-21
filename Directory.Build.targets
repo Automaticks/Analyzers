@@ -83,10 +83,25 @@
         sibling outputs during a parallel solution build, while still allowing analyzer-to-analyzer
         dogfooding after the cache has been populated once.
     -->
-    <PropertyGroup Condition="'$(IsAnalyzerProject)' == 'true' OR '$(IsCodeFixProject)' == 'true'">
+    <PropertyGroup>
         <DogfoodAnalyzerCacheDirectory>$(MSBuildThisFileDirectory).dogfood\</DogfoodAnalyzerCacheDirectory>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(IsAnalyzerProject)' == 'true' OR '$(IsCodeFixProject)' == 'true'">
         <DogfoodAnalyzerCachePath>$(DogfoodAnalyzerCacheDirectory)$(MSBuildProjectName).dll</DogfoodAnalyzerCachePath>
     </PropertyGroup>
+
+    <!--
+        Load the cached code-fix assemblies the same way the shipped package does, so that
+        `dotnet format analyzers` can apply the fixes every diagnostic message advertises. Without
+        this the fixes exist only inside the NuGet output and are unavailable in this repository.
+    -->
+    <Target Name="AddSiblingCodeFixes" BeforeTargets="CoreCompile">
+        <ItemGroup>
+            <Analyzer Include="$(DogfoodAnalyzerCacheDirectory)*.CodeFixes.dll"
+                      Exclude="$(DogfoodAnalyzerCacheDirectory)$(MSBuildProjectName).dll" />
+        </ItemGroup>
+    </Target>
 
     <Target Name="AddSiblingAnalyzers" BeforeTargets="CoreCompile"
             Condition="'$(IsAnalyzerProject)' == 'true' OR '$(IsCodeFixProject)' == 'true'">
@@ -121,7 +136,7 @@
             Condition="Exists('$(MSBuildThisFileDirectory)src\Automaticks.Testing.Analyzers\build\Automaticks.Testing.Analyzers.targets')" />
 
     <Target Name="UpdateDogfoodAnalyzerCache" AfterTargets="Build"
-            Condition="'$(IsAnalyzerProject)' == 'true' and Exists('$(TargetPath)')">
+            Condition="('$(IsAnalyzerProject)' == 'true' OR '$(IsCodeFixProject)' == 'true') and Exists('$(TargetPath)')">
         <MakeDir Directories="$(DogfoodAnalyzerCacheDirectory)" />
         <Copy SourceFiles="$(TargetPath)"
               DestinationFiles="$(DogfoodAnalyzerCachePath)"

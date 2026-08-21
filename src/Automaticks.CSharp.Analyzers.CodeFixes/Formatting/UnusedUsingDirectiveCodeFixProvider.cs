@@ -19,7 +19,13 @@ public sealed class UnusedUsingDirectiveCodeFixProvider : CodeFixProvider
     private const string Title = "Remove the unused using directive";
 
     /// <inheritdoc />
-    public override ImmutableArray<string> FixableDiagnosticIds => [DiagnosticIds.CSharp.UnusedUsingDirective];
+    public override ImmutableArray<string> FixableDiagnosticIds
+    {
+        get
+        {
+            return [DiagnosticIds.CSharp.UnusedUsingDirective];
+        }
+    }
 
     /// <inheritdoc />
     public override FixAllProvider GetFixAllProvider()

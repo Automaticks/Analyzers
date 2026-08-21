@@ -20,7 +20,13 @@ public sealed class MissingReturnsXmlDocCodeFixProvider : CodeFixProvider
     private const string Title = "Add an empty <returns> element";
 
     /// <inheritdoc />
-    public override ImmutableArray<string> FixableDiagnosticIds => [DiagnosticIds.CSharp.MissingReturnsXmlDoc];
+    public override ImmutableArray<string> FixableDiagnosticIds
+    {
+        get
+        {
+            return [DiagnosticIds.CSharp.MissingReturnsXmlDoc];
+        }
+    }
 
     /// <inheritdoc />
     public override FixAllProvider GetFixAllProvider()
