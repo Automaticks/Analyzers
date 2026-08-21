@@ -72,6 +72,14 @@ package under specific conditions. Rows marked `CodeFix` ship an automated fix; 
 | `ATXCS073` | 'global::' alias qualifier is forbidden | CSharp | Error | Analyzer | `Automaticks.CSharp.Analyzers` |
 | `ATXCS074` | Alias directive is forbidden | CSharp | Error | Analyzer | `Automaticks.CSharp.Analyzers` |
 | `ATXCS075` | Expression-bodied methods are forbidden | CSharp | Error | Analyzer, CodeFix | `Automaticks.CSharp.Analyzers` |
+| `ATXCS076` | Expression-bodied local functions are forbidden | CSharp | Error | Analyzer, CodeFix | `Automaticks.CSharp.Analyzers` |
+| `ATXCS077` | Expression-bodied properties are forbidden | CSharp | Error | Analyzer, CodeFix | `Automaticks.CSharp.Analyzers` |
+| `ATXCS078` | Expression-bodied indexers are forbidden | CSharp | Error | Analyzer, CodeFix | `Automaticks.CSharp.Analyzers` |
+| `ATXCS079` | Expression-bodied operators are forbidden | CSharp | Error | Analyzer, CodeFix | `Automaticks.CSharp.Analyzers` |
+| `ATXCS080` | Expression-bodied conversion operators are forbidden | CSharp | Error | Analyzer, CodeFix | `Automaticks.CSharp.Analyzers` |
+| `ATXCS081` | Expression-bodied constructors are forbidden | CSharp | Error | Analyzer, CodeFix | `Automaticks.CSharp.Analyzers` |
+| `ATXCS082` | Expression-bodied destructors are forbidden | CSharp | Error | Analyzer, CodeFix | `Automaticks.CSharp.Analyzers` |
+| `ATXCS083` | Expression-bodied accessors are forbidden | CSharp | Error | Analyzer, CodeFix | `Automaticks.CSharp.Analyzers` |
 | `ATXDC018` | #pragma warning disable is not allowed | Diagnostics.CodeAnalysis | Error | Analyzer, CodeFix | `Automaticks.Diagnostics.CodeAnalysis.Analyzers` |
 | `ATXDC019` | // ReSharper disable is not allowed | Diagnostics.CodeAnalysis | Error | Analyzer, CodeFix | `Automaticks.Diagnostics.CodeAnalysis.Analyzers` |
 | `ATXDC021` | Generated-code marker is not allowed in hand-written source | Diagnostics.CodeAnalysis | Error | Analyzer, CodeFix | `Automaticks.Diagnostics.CodeAnalysis.Analyzers` |

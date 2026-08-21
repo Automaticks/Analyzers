@@ -75,6 +75,14 @@ dotnet add package Automaticks.CSharp.Analyzers
 | `ATXCS073` | 'global::' alias qualifier is forbidden | CSharp | Error | Analyzer |
 | `ATXCS074` | Alias directive is forbidden | CSharp | Error | Analyzer |
 | `ATXCS075` | Expression-bodied methods are forbidden | CSharp | Error | Analyzer, CodeFix |
+| `ATXCS076` | Expression-bodied local functions are forbidden | CSharp | Error | Analyzer, CodeFix |
+| `ATXCS077` | Expression-bodied properties are forbidden | CSharp | Error | Analyzer, CodeFix |
+| `ATXCS078` | Expression-bodied indexers are forbidden | CSharp | Error | Analyzer, CodeFix |
+| `ATXCS079` | Expression-bodied operators are forbidden | CSharp | Error | Analyzer, CodeFix |
+| `ATXCS080` | Expression-bodied conversion operators are forbidden | CSharp | Error | Analyzer, CodeFix |
+| `ATXCS081` | Expression-bodied constructors are forbidden | CSharp | Error | Analyzer, CodeFix |
+| `ATXCS082` | Expression-bodied destructors are forbidden | CSharp | Error | Analyzer, CodeFix |
+| `ATXCS083` | Expression-bodied accessors are forbidden | CSharp | Error | Analyzer, CodeFix |
 
 ## Code fixes
 
@@ -117,6 +125,14 @@ dotnet format analyzers --diagnostics ATXCS048 --severity error
 | `ATXCS068` | Remove the no-op discard statement |
 | `ATXCS072` | Simplify to the type name, adding a `using` if needed |
 | `ATXCS075` | Convert the expression body to a block body |
+| `ATXCS076` | Convert the expression body to a block body |
+| `ATXCS077` | Convert the expression body to a block body |
+| `ATXCS078` | Convert the expression body to a block body |
+| `ATXCS079` | Convert the expression body to a block body |
+| `ATXCS080` | Convert the expression body to a block body |
+| `ATXCS081` | Convert the expression body to a block body |
+| `ATXCS082` | Convert the expression body to a block body |
+| `ATXCS083` | Convert the expression body to a block body |
 
 Review these before committing, because they remove or invent content rather than rewrite it:
 `ATXCS038` drops `<remarks>` without merging its prose into `<summary>`, `ATXCS041` deletes the
