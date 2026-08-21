@@ -43,20 +43,11 @@ public sealed class DirectCastAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeNode(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not CastExpressionSyntax castExpression)
-        {
-            return;
-        }
-
+        var castExpression = (context.Node as CastExpressionSyntax)!;
         var typeInfo = context.SemanticModel.GetTypeInfo(castExpression.Type);
         var targetType = typeInfo.Type;
 
-        if (targetType is null)
-        {
-            return;
-        }
-
-        if (targetType.IsValueType)
+        if (targetType!.IsValueType)
         {
             return;
         }

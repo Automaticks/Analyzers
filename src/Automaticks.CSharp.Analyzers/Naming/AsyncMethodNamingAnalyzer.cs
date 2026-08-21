@@ -45,21 +45,13 @@ public sealed class AsyncMethodNamingAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeMethod(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not MethodDeclarationSyntax method)
-        {
-            return;
-        }
-
+        var method = (context.Node as MethodDeclarationSyntax)!;
         if (method.Identifier.Text.EndsWith("Async", StringComparison.Ordinal))
         {
             return;
         }
 
-        var symbol = context.SemanticModel.GetDeclaredSymbol(method);
-        if (symbol is null)
-        {
-            return;
-        }
+        var symbol = context.SemanticModel.GetDeclaredSymbol(method)!;
 
         if (!HasAsyncReturnType(symbol, context.SemanticModel.Compilation))
         {
@@ -156,7 +148,7 @@ public sealed class AsyncMethodNamingAnalyzer : DiagnosticAnalyzer
     {
         foreach (var attr in method.GetAttributes())
         {
-            var name = attr.AttributeClass?.Name;
+            var name = attr.AttributeClass!.Name;
             if (name is "TestAttribute" or "FactAttribute" or "TheoryAttribute" or "TestMethodAttribute" or "ArgumentsAttribute")
             {
                 return true;

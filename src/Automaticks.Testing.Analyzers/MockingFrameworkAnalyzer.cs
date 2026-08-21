@@ -50,11 +50,7 @@ public sealed class MockingFrameworkAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeUsing(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not UsingDirectiveSyntax usingDirective)
-        {
-            return;
-        }
-
+        var usingDirective = (context.Node as UsingDirectiveSyntax)!;
         var name = usingDirective.Name?.ToString() ?? string.Empty;
         foreach (var prefix in ForbiddenPrefixes)
         {

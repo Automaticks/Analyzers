@@ -52,11 +52,7 @@ public sealed class CyclomaticComplexityAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeAccessor(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not AccessorDeclarationSyntax accessor)
-        {
-            return;
-        }
-
+        var accessor = (context.Node as AccessorDeclarationSyntax)!;
         var bodyNode = GetBodyNode(accessor.Body, accessor.ExpressionBody);
         if (bodyNode is null)
         {
@@ -64,37 +60,23 @@ public sealed class CyclomaticComplexityAnalyzer : DiagnosticAnalyzer
         }
 
         var keyword = accessor.Keyword.Text;
-        string memberName;
-        if (accessor.Parent?.Parent is PropertyDeclarationSyntax property)
-        {
-            memberName = keyword + " accessor of '" + property.Identifier.Text + "'";
-        }
-        else if (accessor.Parent?.Parent is IndexerDeclarationSyntax)
-        {
-            memberName = keyword + " accessor of indexer";
-        }
-        else
-        {
-            memberName = keyword + " accessor";
-        }
+        var memberName = accessor.Parent!.Parent is PropertyDeclarationSyntax property
+            ? keyword + " accessor of '" + property.Identifier.Text + "'"
+            : keyword + " accessor of indexer";
 
         AnalyzeMember(context, bodyNode, memberName, accessor.Keyword.GetLocation());
     }
 
     private void AnalyzeConversionOperator(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not ConversionOperatorDeclarationSyntax op)
-        {
-            return;
-        }
-
+        var op = (context.Node as ConversionOperatorDeclarationSyntax)!;
         var bodyNode = GetBodyNode(op.Body, op.ExpressionBody);
         if (bodyNode is null)
         {
             return;
         }
 
-        var memberName = "operator " + op.Type;
+        var memberName = "operator " + op.Type.ToString();
         AnalyzeMember(context, bodyNode, memberName, op.ImplicitOrExplicitKeyword.GetLocation());
     }
 
@@ -117,11 +99,7 @@ public sealed class CyclomaticComplexityAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeMethod(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not MethodDeclarationSyntax method)
-        {
-            return;
-        }
-
+        var method = (context.Node as MethodDeclarationSyntax)!;
         var bodyNode = GetBodyNode(method.Body, method.ExpressionBody);
         if (bodyNode is null)
         {
@@ -133,11 +111,7 @@ public sealed class CyclomaticComplexityAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeOperator(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not OperatorDeclarationSyntax op)
-        {
-            return;
-        }
-
+        var op = (context.Node as OperatorDeclarationSyntax)!;
         var bodyNode = GetBodyNode(op.Body, op.ExpressionBody);
         if (bodyNode is null)
         {

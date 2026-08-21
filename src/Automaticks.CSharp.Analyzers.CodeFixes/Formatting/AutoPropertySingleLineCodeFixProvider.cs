@@ -1,4 +1,4 @@
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -32,21 +32,11 @@ public sealed class AutoPropertySingleLineCodeFixProvider : CodeFixProvider
     /// <inheritdoc />
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
-        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken);
-        if (root is null)
-        {
-            return;
-        }
-
+        var root = (await context.Document.GetSyntaxRootAsync(context.CancellationToken))!;
         foreach (var diagnostic in context.Diagnostics)
         {
             var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
-            var property = node.FirstAncestorOrSelf<PropertyDeclarationSyntax>();
-            if (property?.AccessorList is null)
-            {
-                continue;
-            }
-
+            var property = node.FirstAncestorOrSelf<PropertyDeclarationSyntax>()!;
             var action = CodeAction.Create(
                 Title,
                 cancellationToken => MakeSingleLineAsync(context.Document, property, cancellationToken),
@@ -84,12 +74,7 @@ public sealed class AutoPropertySingleLineCodeFixProvider : CodeFixProvider
         PropertyDeclarationSyntax property,
         CancellationToken cancellationToken)
     {
-        var accessorList = property.AccessorList;
-        if (accessorList is null)
-        {
-            return document;
-        }
-
+        var accessorList = property.AccessorList!;
         var startToken = property.Modifiers.Count > 0
             ? property.Modifiers[0]
             : property.Type.GetFirstToken();

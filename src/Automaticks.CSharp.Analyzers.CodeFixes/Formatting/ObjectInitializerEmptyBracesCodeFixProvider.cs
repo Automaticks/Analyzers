@@ -1,4 +1,4 @@
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
@@ -32,17 +32,12 @@ public sealed class ObjectInitializerEmptyBracesCodeFixProvider : CodeFixProvide
     /// <inheritdoc />
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
-        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken);
-        if (root is null)
-        {
-            return;
-        }
-
+        var root = (await context.Document.GetSyntaxRootAsync(context.CancellationToken))!;
         foreach (var diagnostic in context.Diagnostics)
         {
             var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
             var initializer = node.FirstAncestorOrSelf<InitializerExpressionSyntax>();
-            if (initializer?.Parent is not ObjectCreationExpressionSyntax creation)
+            if (initializer!.Parent is not ObjectCreationExpressionSyntax creation)
             {
                 continue;
             }
@@ -60,12 +55,7 @@ public sealed class ObjectInitializerEmptyBracesCodeFixProvider : CodeFixProvide
         ObjectCreationExpressionSyntax creation,
         CancellationToken cancellationToken)
     {
-        var root = await document.GetSyntaxRootAsync(cancellationToken);
-        if (root is null)
-        {
-            return document;
-        }
-
+        var root = (await document.GetSyntaxRootAsync(cancellationToken))!;
         var argumentList = creation.ArgumentList ?? SyntaxFactory.ArgumentList();
         var replacement = creation
             .WithType(creation.Type.WithoutTrailingTrivia())

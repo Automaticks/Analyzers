@@ -1,4 +1,4 @@
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 
 namespace Automaticks.Threading.Tasks.Analyzers.Tests;
@@ -8,6 +8,106 @@ namespace Automaticks.Threading.Tasks.Analyzers.Tests;
 /// </summary>
 public class UnobservedTaskAnalyzerTests
 {
+    /// <summary>
+    ///     Tests that Analyze_DiscardAssignmentAsSubExpression_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_DiscardAssignmentAsSubExpression_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System.Threading.Tasks;
+                              namespace MyApp {
+                                  public class Foo {
+                                      public Task DoWorkAsync() => Task.CompletedTask;
+                                      public void Caller() {
+                                          if ((_ = DoWorkAsync()) != null) { }
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new UnobservedTaskAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTA010")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_GenericMethodReturningTypeParameter_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_GenericMethodReturningTypeParameter_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo {
+                                      public T GetValue<T>() => default(T);
+                                      public void Caller<TResult>() { GetValue<TResult>(); }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new UnobservedTaskAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTA010")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_NonTaskGenericReturnType_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_NonTaskGenericReturnType_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System.Collections.Generic;
+                              namespace MyApp {
+                                  public class Foo {
+                                      public List<int> GetListAsync() => new List<int>();
+                                      public void Caller() { GetListAsync(); }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new UnobservedTaskAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTA010")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_TaskMethodAssignedToExistingVariable_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_TaskMethodAssignedToExistingVariable_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System.Threading.Tasks;
+                              namespace MyApp {
+                                  public class Foo {
+                                      public Task DoWorkAsync() => Task.CompletedTask;
+                                      public void Caller() {
+                                          Task t = Task.CompletedTask;
+                                          t = DoWorkAsync();
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new UnobservedTaskAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTA010")).IsFalse();
+    }
+
     /// <summary>
     ///     Tests that Analyze_TaskMethodAssignedToVariable_ReportsNoDiagnostic.
     /// </summary>
@@ -175,6 +275,28 @@ public class UnobservedTaskAnalyzerTests
         var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
         await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTA010")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_UndeclaredMethodInvocation_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_UndeclaredMethodInvocation_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo {
+                                      public void Caller() { Undeclared(); }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new UnobservedTaskAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTA010")).IsFalse();
     }
 
     /// <summary>

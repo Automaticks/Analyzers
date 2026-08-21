@@ -10,6 +10,28 @@ namespace Automaticks.Testing.Analyzers.Tests;
 public class CompositeBitmaskTestAnalyzerTests
 {
     /// <summary>
+    ///     Tests that Analyze_ComparisonOperatorNotEqualityOrInequality_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ComparisonOperatorNotEqualityOrInequality_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo {
+                                      public bool Bar(int flags) { return (flags & 6) > 0; }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new CompositeBitmaskTestAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTST006")).IsFalse();
+    }
+
+    /// <summary>
     ///     Tests that Analyze_CompositeMaskComparedToZero_ReportsDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -79,6 +101,53 @@ public class CompositeBitmaskTestAnalyzerTests
     }
 
     /// <summary>
+    ///     Tests that Analyze_HasFlagArgumentCountMismatch_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_HasFlagArgumentCountMismatch_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo {
+                                      public int Bar(int a, int b) { return System.Math.Max(a, b); }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new CompositeBitmaskTestAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTST006")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_HasFlagOnNonEnumType_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_HasFlagOnNonEnumType_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public struct CustomFlags {
+                                      public bool HasFlag(CustomFlags other) { return false; }
+                                  }
+                                  public class Foo {
+                                      public bool Bar(CustomFlags flags) { return flags.HasFlag(flags); }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new CompositeBitmaskTestAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTST006")).IsFalse();
+    }
+
+    /// <summary>
     ///     Tests that Analyze_HasFlagWithCompositeValue_ReportsDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -129,6 +198,28 @@ public class CompositeBitmaskTestAnalyzerTests
     }
 
     /// <summary>
+    ///     Tests that Analyze_NeitherSideIsZeroLiteral_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_NeitherSideIsZeroLiteral_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo {
+                                      public bool Bar(int flags) { return (flags & 6) != 1; }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new CompositeBitmaskTestAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTST006")).IsFalse();
+    }
+
+    /// <summary>
     ///     Tests that Analyze_NonConstantMask_ReportsNoDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -140,6 +231,28 @@ public class CompositeBitmaskTestAnalyzerTests
                               namespace MyApp {
                                   public class Foo {
                                       public bool Bar(int flags, int mask) { return (flags & mask) != 0; }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new CompositeBitmaskTestAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTST006")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_OneArgumentMethodNotNamedHasFlag_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_OneArgumentMethodNotNamedHasFlag_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo {
+                                      public int Bar(string text) { return int.Parse(text); }
                                   }
                               }
                               """;
@@ -170,5 +283,52 @@ public class CompositeBitmaskTestAnalyzerTests
         var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
         await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTST006")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_UnresolvedInvocationShapedAsHasFlag_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_UnresolvedInvocationShapedAsHasFlag_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo {
+                                      public bool Bar(int flags) { return Undefined(flags); }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new CompositeBitmaskTestAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTST006")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_ZeroLiteralOnLeftSide_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ZeroLiteralOnLeftSide_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo {
+                                      public bool Bar(int flags) { return 0 != (flags & 6); }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new CompositeBitmaskTestAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasIdWithMessageSubstring(
+            diagnostics,
+            "ATXTST006",
+            "2 bits set")).IsTrue();
     }
 }

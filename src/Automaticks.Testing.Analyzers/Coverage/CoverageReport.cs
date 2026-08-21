@@ -106,6 +106,17 @@ public sealed class CoverageReport
 
     private void Parse(string reportXml)
     {
+        try
+        {
+            ParseCore(reportXml);
+        }
+        catch (XmlException)
+        {
+        }
+    }
+
+    private void ParseCore(string reportXml)
+    {
         var settings = new XmlReaderSettings
         {
             DtdProcessing = DtdProcessing.Prohibit,
@@ -164,7 +175,7 @@ public sealed class CoverageReport
         var hits = int.TryParse(reader.GetAttribute("hits"), out var parsed) ? parsed : 0;
         var lineNumber = int.TryParse(reader.GetAttribute("number"), out var number) ? number : 0;
         currentFile.AddLine(lineNumber, hits);
-        currentMethod?.AddLine(hits, reader.GetAttribute("condition-coverage"));
+        currentMethod?.AddLine(lineNumber, hits, reader.GetAttribute("condition-coverage"));
     }
 
     private MethodCoverage? ReadMethod(XmlReader reader, FileCoverage? currentFile)

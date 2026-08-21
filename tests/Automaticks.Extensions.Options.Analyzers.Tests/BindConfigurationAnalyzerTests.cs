@@ -1,4 +1,4 @@
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 
 namespace Automaticks.Extensions.Options.Analyzers.Tests;
@@ -8,6 +8,114 @@ namespace Automaticks.Extensions.Options.Analyzers.Tests;
 /// </summary>
 public sealed class BindConfigurationAnalyzerTests
 {
+    /// <summary>
+    ///     Tests that Analyze_ArrayReceiverType_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ArrayReceiverType_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public static class ArrayExtensions {
+                                      public static void BindConfiguration(this int[] values, string section) {}
+                                  }
+                                  public class Startup {
+                                      public void Configure(int[] values) {
+                                          values.BindConfiguration("section");
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new BindConfigurationAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXEO049")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_BareInvocationWithoutReceiver_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_BareInvocationWithoutReceiver_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Startup {
+                                      public void BindConfiguration(string section) {}
+                                      public void Configure() {
+                                          BindConfiguration("section");
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new BindConfigurationAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXEO049")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_BindConfigurationOnNamesakeTypeInDifferentNamespace_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_BindConfigurationOnNamesakeTypeInDifferentNamespace_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace Contoso.Options {
+                                  public class OptionsBuilder<T> {
+                                      public OptionsBuilder<T> BindConfiguration(string section) => this;
+                                  }
+                              }
+                              namespace MyApp {
+                                  public class MyOptions {}
+                                  public class Startup {
+                                      public void Configure(Contoso.Options.OptionsBuilder<MyOptions> builder) {
+                                          builder.BindConfiguration("MyOptions");
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new BindConfigurationAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXEO049")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_BindConfigurationOnNamespaceReceiver_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_BindConfigurationOnNamespaceReceiver_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace Microsoft.Extensions.Options {
+                              }
+                              namespace MyApp {
+                                  public class Startup {
+                                      public void Configure() {
+                                          Microsoft.Extensions.Options.BindConfiguration("section");
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new BindConfigurationAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXEO049")).IsFalse();
+    }
+
     /// <summary>
     ///     Tests that Analyze_BindConfigurationOnOptionsBuilder_ReportsDiagnostic.
     /// </summary>
@@ -180,5 +288,53 @@ public sealed class BindConfigurationAnalyzerTests
         var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
         await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXEO049")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_UndeclaredReceiver_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_UndeclaredReceiver_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Startup {
+                                      public void Configure() {
+                                          Undeclared.BindConfiguration("section");
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new BindConfigurationAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXEO049")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_UnresolvedOptionsBuilderReceiver_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_UnresolvedOptionsBuilderReceiver_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Startup {
+                                      public void Configure(OptionsBuilder<int> builder) {
+                                          builder.BindConfiguration("section");
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new BindConfigurationAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXEO049")).IsFalse();
     }
 }

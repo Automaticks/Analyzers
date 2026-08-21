@@ -30,11 +30,7 @@ public sealed class SuppressMessageCodeFixProvider : CodeFixProvider
     /// <inheritdoc />
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
-        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken);
-        if (root is null)
-        {
-            return;
-        }
+        var root = (await context.Document.GetSyntaxRootAsync(context.CancellationToken))!;
 
         foreach (var diagnostic in context.Diagnostics)
         {
@@ -58,27 +54,15 @@ public sealed class SuppressMessageCodeFixProvider : CodeFixProvider
         AttributeSyntax attribute,
         CancellationToken cancellationToken)
     {
-        var root = await document.GetSyntaxRootAsync(cancellationToken);
-        if (root is null)
-        {
-            return document;
-        }
-
-        SyntaxNode target;
-        if (attribute.Parent is AttributeListSyntax attributeList && attributeList.Attributes.Count == 1)
+        var root = (await document.GetSyntaxRootAsync(cancellationToken))!;
+        var attributeList = (attribute.Parent as AttributeListSyntax)!;
+        SyntaxNode target = attribute;
+        if (attributeList.Attributes.Count == 1)
         {
             target = attributeList;
         }
-        else
-        {
-            target = attribute;
-        }
 
-        var newRoot = root.RemoveNode(target, SyntaxRemoveOptions.KeepNoTrivia);
-        if (newRoot is null)
-        {
-            return document;
-        }
+        var newRoot = root.RemoveNode(target, SyntaxRemoveOptions.KeepNoTrivia)!;
 
         return document.WithSyntaxRoot(newRoot);
     }

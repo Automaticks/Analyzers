@@ -1,4 +1,5 @@
-﻿using Automaticks.Linq;
+﻿using Automaticks.EntityFrameworkCore.Analyzers.Tests.Stubs;
+using Automaticks.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -39,6 +40,23 @@ public class LinqUsageSuppressorTests
         var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
         await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXLQ002")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Suppressor_DiagnosticWithNoSourceTree_DoesNotSuppressDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Suppressor_DiagnosticWithNoSourceTree_DoesNotSuppressDiagnostic(CancellationToken cancellationToken)
+    {
+        var stubAnalyzer = new LinqUsageAtNoLocationAnalyzer();
+        var suppressor = new LinqUsageSuppressor();
+        var analyzers = ImmutableArray.Create<DiagnosticAnalyzer>(stubAnalyzer, suppressor);
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzers, "namespace MyApp {}", cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXLQ002")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasSuppressedId(diagnostics, "ATXLQ002")).IsFalse();
     }
 
     /// <summary>
@@ -150,6 +168,29 @@ public class LinqUsageSuppressorTests
         await Assert.That(suppressor.SupportedSuppressions.Length).IsEqualTo(1);
         await Assert.That(suppressor.SupportedSuppressions[0].Id).IsEqualTo(SuppressionIds.EFCore.LinqUsage);
         await Assert.That(suppressor.SupportedSuppressions[0].SuppressedDiagnosticId).IsEqualTo("ATXLQ002");
+    }
+
+    /// <summary>
+    ///     Tests that Suppressor_UsingAliasToNonNameType_DoesNotSuppressDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Suppressor_UsingAliasToNonNameType_DoesNotSuppressDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System.Linq;
+                              using MyAlias = int[];
+                              namespace MyApp {}
+                              """;
+
+        var linqUsageAnalyzer = new LinqUsageAnalyzer();
+        var linqUsageSuppressor = new LinqUsageSuppressor();
+        var analyzers = ImmutableArray.Create<DiagnosticAnalyzer>(linqUsageAnalyzer, linqUsageSuppressor);
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzers, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXLQ002")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasSuppressedId(diagnostics, "ATXLQ002")).IsFalse();
     }
 
     /// <summary>

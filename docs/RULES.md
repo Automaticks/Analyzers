@@ -89,9 +89,15 @@ package under specific conditions. Rows marked `CodeFix` ship an automated fix; 
 | `ATXTST002` | Test class name must match the class under test | Testing | Warning | Analyzer | `Automaticks.Testing.Analyzers` |
 | `ATXTST003` | Test method name must follow the three-part convention | Testing | Warning | Analyzer | `Automaticks.Testing.Analyzers` |
 | `ATXTST004` | Task.Delay without TimeProvider is not allowed | Testing | Error | Analyzer | `Automaticks.Testing.Analyzers` |
+| `ATXTST005` | Boolean decision needs too many test cases | Testing | Warning | Analyzer | `Automaticks.Testing.Analyzers` |
 | `ATXTST006` | Bitmask test must use a single-bit mask | Testing | Warning | Analyzer | `Automaticks.Testing.Analyzers` |
+| `ATXTST007` | Default label on an exhaustive enum switch blocks full branch coverage | Testing | Warning | Analyzer | `Automaticks.Testing.Analyzers` |
+| `ATXTST008` | Conditional compilation on DEBUG hides the shipped code path from tests | Testing | Warning | Analyzer | `Automaticks.Testing.Analyzers` |
 | `ATXTST009` | Debug.Assert condition must not perform side effects | Testing | Error | Analyzer | `Automaticks.Testing.Analyzers` |
 | `ATXTST010` | Ambient dependency must be reached through an injectable seam | Testing | Warning | Analyzer | `Automaticks.Testing.Analyzers` |
+| `ATXTST011` | Test method must contain an assertion | Testing | Warning | Analyzer | `Automaticks.Testing.Analyzers` |
 | `ATXTST012` | Public member must be covered by a test | Testing | Warning | Analyzer | `Automaticks.Testing.Analyzers` |
 | `ATXTST013` | File line coverage must meet the configured minimum | Testing | Warning | Analyzer | `Automaticks.Testing.Analyzers` |
 | `ATXTST014` | TimeProvider.System is not allowed in tests | Testing | Warning | Analyzer | `Automaticks.Testing.Analyzers` |
+| `ATXTST015` | Method branch coverage must meet the configured minimum | Testing | Warning | Analyzer | `Automaticks.Testing.Analyzers` |
+| `ATXTST016` | Supplied coverage report must be usable | Testing | Warning | Analyzer | `Automaticks.Testing.Analyzers` |

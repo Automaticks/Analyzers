@@ -1,4 +1,4 @@
-using Automaticks.CSharp.Formatting;
+﻿using Automaticks.CSharp.Formatting;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
@@ -37,21 +37,11 @@ public sealed class TypeMemberOrderCodeFixProvider : CodeFixProvider
     /// <inheritdoc />
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
-        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken);
-        if (root is null)
-        {
-            return;
-        }
-
+        var root = (await context.Document.GetSyntaxRootAsync(context.CancellationToken))!;
         foreach (var diagnostic in context.Diagnostics)
         {
             var token = root.FindToken(diagnostic.Location.SourceSpan.Start);
-            var typeDeclaration = token.Parent?.FirstAncestorOrSelf<TypeDeclarationSyntax>();
-            if (typeDeclaration is null)
-            {
-                continue;
-            }
-
+            var typeDeclaration = token.Parent!.FirstAncestorOrSelf<TypeDeclarationSyntax>()!;
             var action = CodeAction.Create(
                 Title,
                 cancellationToken => SortMembersAsync(context.Document, typeDeclaration, cancellationToken),
@@ -92,13 +82,8 @@ public sealed class TypeMemberOrderCodeFixProvider : CodeFixProvider
         TypeDeclarationSyntax typeDeclaration,
         CancellationToken cancellationToken)
     {
-        var root = await document.GetSyntaxRootAsync(cancellationToken);
-        var semanticModel = await document.GetSemanticModelAsync(cancellationToken);
-        if (root is null || semanticModel is null)
-        {
-            return document;
-        }
-
+        var root = (await document.GetSyntaxRootAsync(cancellationToken))!;
+        var semanticModel = (await document.GetSemanticModelAsync(cancellationToken))!;
         var ordered = BuildOrderedMembers(typeDeclaration, semanticModel);
         var newTypeDeclaration = typeDeclaration.WithMembers(SyntaxFactory.List(ordered));
         var newRoot = root.ReplaceNode(typeDeclaration, newTypeDeclaration);

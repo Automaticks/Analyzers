@@ -48,11 +48,7 @@ public sealed class ExplicitConstructorAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeType(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not TypeDeclarationSyntax typeDeclaration)
-        {
-            return;
-        }
-
+        var typeDeclaration = (context.Node as TypeDeclarationSyntax)!;
         if (typeDeclaration.ParameterList is null)
         {
             return;

@@ -7,13 +7,13 @@ using System.Collections.Immutable;
 namespace Automaticks.CSharp.LanguageFeatures;
 
 /// <summary>
-///     Flags methods and local functions whose body is an expression body, forcing a block body instead.
+///     Flags any member whose body is an expression body, forcing a block body instead.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class ExpressionBodiedMethodAnalyzer : DiagnosticAnalyzer
 {
     /// <summary>
-    ///     The diagnostic rule reported when a method or local function uses an expression body.
+    ///     The diagnostic rule reported when a member uses an expression body.
     /// </summary>
     public static readonly DiagnosticDescriptor Rule;
 
@@ -21,12 +21,12 @@ public sealed class ExpressionBodiedMethodAnalyzer : DiagnosticAnalyzer
     {
         var rule = new DiagnosticDescriptor(
             DiagnosticIds.CSharp.ExpressionBodiedMethod,
-            "Expression-bodied methods are forbidden",
+            "Expression-bodied members are forbidden",
             "'{0}' must not use an expression body. Convert it to a block body. A code fix is available (dotnet format analyzers --diagnostics ATXCS075).",
             "CSharp",
             DiagnosticSeverity.Error,
             true,
-            "An expression body hides the return behind `=>`, so diffs grow noisier as logic changes and it becomes easy to miss that a method has grown non-trivial. Convert the method or local function to a block body with an explicit `return` (or a bare statement for `void`/`async Task`) instead.");
+            "An expression body hides the body behind `=>`, so diffs grow noisier as logic changes and it becomes easy to miss that a member has grown non-trivial. Convert the member to a block body with an explicit `return` (or a bare statement where nothing is returned) instead.");
         Rule = rule;
     }
 
@@ -35,42 +35,61 @@ public sealed class ExpressionBodiedMethodAnalyzer : DiagnosticAnalyzer
     {
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
         context.EnableConcurrentExecution();
-        context.RegisterSyntaxNodeAction(AnalyzeMethod, SyntaxKind.MethodDeclaration);
-        context.RegisterSyntaxNodeAction(AnalyzeLocalFunction, SyntaxKind.LocalFunctionStatement);
+        context.RegisterSyntaxNodeAction(AnalyzeArrowExpressionClause, SyntaxKind.ArrowExpressionClause);
     }
 
     /// <inheritdoc />
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
 
-    private void AnalyzeLocalFunction(SyntaxNodeAnalysisContext context)
+    private void AnalyzeArrowExpressionClause(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not LocalFunctionStatementSyntax localFunction)
-        {
-            return;
-        }
-
-        var expressionBody = localFunction.ExpressionBody;
-        if (expressionBody is null)
-        {
-            return;
-        }
-
-        context.ReportDiagnostic(Diagnostic.Create(Rule, expressionBody.GetLocation(), localFunction.Identifier.Text));
+        var arrow = (context.Node as ArrowExpressionClauseSyntax)!;
+        context.ReportDiagnostic(Diagnostic.Create(Rule, arrow.GetLocation(), GetMemberName(arrow.Parent!)));
     }
 
-    private void AnalyzeMethod(SyntaxNodeAnalysisContext context)
+    private string GetMemberName(SyntaxNode member)
     {
-        if (context.Node is not MethodDeclarationSyntax method)
+        if (member is MethodDeclarationSyntax method)
         {
-            return;
+            return method.Identifier.Text;
         }
 
-        var expressionBody = method.ExpressionBody;
-        if (expressionBody is null)
+        if (member is LocalFunctionStatementSyntax localFunction)
         {
-            return;
+            return localFunction.Identifier.Text;
         }
 
-        context.ReportDiagnostic(Diagnostic.Create(Rule, expressionBody.GetLocation(), method.Identifier.Text));
+        if (member is PropertyDeclarationSyntax property)
+        {
+            return property.Identifier.Text;
+        }
+
+        if (member is IndexerDeclarationSyntax)
+        {
+            return "this[]";
+        }
+
+        if (member is OperatorDeclarationSyntax operatorDeclaration)
+        {
+            return "operator " + operatorDeclaration.OperatorToken.Text;
+        }
+
+        if (member is ConversionOperatorDeclarationSyntax conversionOperator)
+        {
+            return "operator " + conversionOperator.Type.ToString();
+        }
+
+        if (member is ConstructorDeclarationSyntax constructor)
+        {
+            return constructor.Identifier.Text;
+        }
+
+        if (member is DestructorDeclarationSyntax destructor)
+        {
+            return "~" + destructor.Identifier.Text;
+        }
+
+        var accessor = (member as AccessorDeclarationSyntax)!;
+        return accessor.Keyword.Text;
     }
 }

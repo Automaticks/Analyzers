@@ -41,11 +41,7 @@ public sealed class BindConfigurationAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeInvocation(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not InvocationExpressionSyntax invocation)
-        {
-            return;
-        }
-
+        var invocation = (context.Node as InvocationExpressionSyntax)!;
         if (invocation.Expression is not MemberAccessExpressionSyntax memberAccess)
         {
             return;
@@ -82,7 +78,7 @@ public sealed class BindConfigurationAnalyzer : DiagnosticAnalyzer
             return false;
         }
 
-        var namespaceName = namedType.ContainingNamespace?.ToDisplayString() ?? string.Empty;
+        var namespaceName = namedType.ContainingNamespace.ToDisplayString();
         return string.Equals(namespaceName, "Microsoft.Extensions.Options", StringComparison.Ordinal);
     }
 }

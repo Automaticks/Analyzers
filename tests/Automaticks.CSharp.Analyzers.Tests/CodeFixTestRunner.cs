@@ -196,6 +196,25 @@ public static class CodeFixTestRunner
         return actions.Count;
     }
 
+    /// <summary>Applies the fix and returns the resulting document file path.</summary>
+    /// <param name="request">The analyzer, provider, and source to fix.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task that resolves to the document file path after the fix.</returns>
+    public static async Task<string> GetFixedDocumentFilePathAsync(
+        CodeFixRequest request,
+        CancellationToken cancellationToken)
+    {
+        var document = CreateDocument(request);
+        var diagnostics = await GetFixableDiagnosticsAsync(request, document, cancellationToken);
+        if (diagnostics.Count == 0)
+        {
+            throw new InvalidOperationException("The analyzer reported no fixable diagnostic for this source.");
+        }
+
+        var fixedDocument = await ApplyOneAsync(request, document, diagnostics[0], cancellationToken);
+        return fixedDocument.FilePath ?? string.Empty;
+    }
+
     /// <summary>Applies the fix and returns the resulting document name.</summary>
     /// <param name="request">The analyzer, provider, and source to fix.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -274,6 +293,18 @@ public static class CodeFixTestRunner
             $"The fix introduced {after - before} compiler error(s). Fixed source:{Environment.NewLine}{text}");
     }
 
+    private static int CompareByLocation(Diagnostic left, Diagnostic right)
+    {
+        var leftPath = left.Location.SourceTree is null ? string.Empty : left.Location.SourceTree.FilePath;
+        var rightPath = right.Location.SourceTree is null ? string.Empty : right.Location.SourceTree.FilePath;
+        var pathComparison = string.CompareOrdinal(leftPath, rightPath);
+        if (pathComparison != 0)
+        {
+            return pathComparison;
+        }
+
+        return left.Location.SourceSpan.Start.CompareTo(right.Location.SourceSpan.Start);
+    }
     private static async Task<int> CountCompilerErrorsAsync(Document document, CancellationToken cancellationToken)
     {
         var compilation = await document.Project.GetCompilationAsync(cancellationToken)
@@ -358,6 +389,7 @@ public static class CodeFixTestRunner
             }
         }
 
+        matches.Sort(CompareByLocation);
         return matches;
     }
 

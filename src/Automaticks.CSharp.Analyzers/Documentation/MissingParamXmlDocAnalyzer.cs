@@ -107,10 +107,11 @@ public sealed class MissingParamXmlDocAnalyzer : DiagnosticAnalyzer
 
     private bool CanRequireDocumentation(SyntaxNode node)
     {
-        return !HasOverrideModifier(node) &&
+        var canRequireDocumentation = !HasOverrideModifier(node) &&
                !HasExplicitInterfaceSpecifier(node) &&
                HasPublicOrProtectedAccess(node) &&
                CanBePubliclyAccessed(node);
+        return canRequireDocumentation;
     }
 
     private string GetMemberName(SyntaxNode node)

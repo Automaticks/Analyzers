@@ -1,5 +1,6 @@
 ﻿using Automaticks.CSharp.CodeFixes.Documentation;
 using Microsoft.CodeAnalysis.CodeFixes;
+using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -128,6 +129,39 @@ public class MissingReturnsXmlDocCodeFixProviderTests
         var remaining = await CodeFixTestRunner.CountFixableAsync(verifyRequest, cancellationToken);
 
         await Assert.That(remaining).IsEqualTo(0);
+    }
+
+    /// <summary>
+    ///     Tests that a span with no enclosing method offers no fix.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task CountActionsForSpan_NoEnclosingMethod_ReportsZero(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Foo { }
+                              }
+                              """;
+
+        var analyzer = new MissingReturnsXmlDocAnalyzer();
+        var provider = new MissingReturnsXmlDocCodeFixProvider();
+        var request = new CodeFixRequest
+        {
+            Analyzer = analyzer,
+            Provider = provider,
+            Source = source
+        };
+        var start = source.IndexOf("namespace", StringComparison.Ordinal);
+        var span = new TextSpan(start, "namespace".Length);
+        var count = await CodeFixTestRunner.CountActionsForSpanAsync(
+            request,
+            MissingReturnsXmlDocAnalyzer.Rule,
+            span,
+            cancellationToken);
+
+        await Assert.That(count).IsEqualTo(0);
     }
 
     /// <summary>

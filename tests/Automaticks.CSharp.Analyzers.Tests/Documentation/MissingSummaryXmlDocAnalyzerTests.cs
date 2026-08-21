@@ -374,6 +374,43 @@ public class MissingSummaryXmlDocAnalyzerTests
     }
 
     /// <summary>
+    ///     Tests that Analyze_PublicEventWithCustomAccessorsWithoutDocComment_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_PublicEventWithCustomAccessorsWithoutDocComment_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public delegate void MyHandler();
+
+                                  /// <summary>
+                                  ///     A class.
+                                  /// </summary>
+                                  public class Foo {
+                                      private MyHandler? _changed;
+
+                                      /// <summary>
+                                      ///     Foo.
+                                      /// </summary>
+                                      public Foo() {}
+
+                                      public event MyHandler? Changed {
+                                          add { _changed += value; }
+                                          remove { _changed -= value; }
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new MissingSummaryXmlDocAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS051")).IsTrue();
+    }
+
+    /// <summary>
     ///     Tests that Analyze_PublicEventWithoutDocComment_ReportsDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -433,6 +470,33 @@ public class MissingSummaryXmlDocAnalyzerTests
         var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
         await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS051")).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_PublicMethodInPrivateNestedClass_NoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_PublicMethodInPrivateNestedClass_NoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  /// <summary>
+                                  ///     A class.
+                                  /// </summary>
+                                  public class Outer {
+                                      private class Inner {
+                                          public void DoSomething() { }
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new MissingSummaryXmlDocAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS051")).IsFalse();
     }
 
     /// <summary>

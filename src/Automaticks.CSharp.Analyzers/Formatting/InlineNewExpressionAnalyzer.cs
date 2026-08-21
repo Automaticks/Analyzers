@@ -2,7 +2,6 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
-using System;
 using System.Collections.Immutable;
 
 namespace Automaticks.CSharp.Formatting;
@@ -50,11 +49,7 @@ public sealed class InlineNewExpressionAnalyzer : DiagnosticAnalyzer
 
     private void Analyze(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not ExpressionSyntax node)
-        {
-            return;
-        }
-
+        var node = (context.Node as ExpressionSyntax)!;
         if (HasExemptContext(node))
         {
             return;
@@ -65,30 +60,25 @@ public sealed class InlineNewExpressionAnalyzer : DiagnosticAnalyzer
 
     private ExpressionSyntax GetEffectiveExpression(ExpressionSyntax node)
     {
-        SyntaxNode current = node;
+        var current = node;
 
         while (true)
         {
             var parent = current.Parent;
 
-            if (parent is ParenthesizedExpressionSyntax)
+            if (parent is ParenthesizedExpressionSyntax parenthesized)
             {
-                current = parent;
+                current = parenthesized;
                 continue;
             }
 
             if (parent is PostfixUnaryExpressionSyntax postfix && postfix.IsKind(SyntaxKind.SuppressNullableWarningExpression))
             {
-                current = parent;
+                current = postfix;
                 continue;
             }
 
-            if (current is ExpressionSyntax effectiveExpression)
-            {
-                return effectiveExpression;
-            }
-
-            throw new InvalidOperationException($"Expected an expression but found '{current.GetType().Name}'.");
+            return current;
         }
     }
 
@@ -100,8 +90,7 @@ public sealed class InlineNewExpressionAnalyzer : DiagnosticAnalyzer
             ImplicitObjectCreationExpressionSyntax impl => impl.NewKeyword,
             ArrayCreationExpressionSyntax arr => arr.NewKeyword,
             ImplicitArrayCreationExpressionSyntax implArr => implArr.NewKeyword,
-            AnonymousObjectCreationExpressionSyntax anon => anon.NewKeyword,
-            _ => throw new InvalidOperationException($"Unexpected creation expression type: {node.GetType().Name}")
+            _ => (node as AnonymousObjectCreationExpressionSyntax)!.NewKeyword
         };
     }
 
@@ -142,10 +131,13 @@ public sealed class InlineNewExpressionAnalyzer : DiagnosticAnalyzer
             case ThrowExpressionSyntax:
                 return true;
 
-            case EqualsValueClauseSyntax { Parent: VariableDeclaratorSyntax { Parent: VariableDeclarationSyntax varDecl } }:
+            case EqualsValueClauseSyntax { Parent: VariableDeclaratorSyntax declarator }:
+            {
+                var varDecl = (declarator.Parent as VariableDeclarationSyntax)!;
                 return varDecl.Parent is LocalDeclarationStatementSyntax
                     || varDecl.Parent is ForStatementSyntax
                     || varDecl.Parent is UsingStatementSyntax;
+            }
 
             default:
                 return HasTopLevelSimpleAssignmentParent(effective);
@@ -154,9 +146,10 @@ public sealed class InlineNewExpressionAnalyzer : DiagnosticAnalyzer
 
     private bool HasTopLevelSimpleAssignmentParent(ExpressionSyntax effective)
     {
-        return effective.Parent is AssignmentExpressionSyntax assignment
+        var isSimpleAssignmentStatement = effective.Parent is AssignmentExpressionSyntax assignment
             && assignment.IsKind(SyntaxKind.SimpleAssignmentExpression)
             && assignment.Right == effective
             && assignment.Parent is ExpressionStatementSyntax;
+        return isSimpleAssignmentStatement;
     }
 }

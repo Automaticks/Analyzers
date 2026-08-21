@@ -44,11 +44,7 @@ public sealed class ProviderFactoryPropertyAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeType(SymbolAnalysisContext context)
     {
-        if (context.Symbol is not INamedTypeSymbol type)
-        {
-            return;
-        }
-
+        var type = (context.Symbol as INamedTypeSymbol)!;
         var hasMatchingSuffix = false;
         foreach (var suffix in ForbiddenSuffixes)
         {
@@ -76,16 +72,7 @@ public sealed class ProviderFactoryPropertyAnalyzer : DiagnosticAnalyzer
                 continue;
             }
 
-            Location location;
-            if (property.Locations.Length > 0)
-            {
-                location = property.Locations[0];
-            }
-            else
-            {
-                location = Location.None;
-            }
-
+            var location = property.Locations[0];
             context.ReportDiagnostic(Diagnostic.Create(Rule, location, type.Name, property.Name));
         }
     }

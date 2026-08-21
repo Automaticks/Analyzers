@@ -66,10 +66,7 @@ public sealed class EventHandlerDeclarationAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeType(SymbolAnalysisContext context)
     {
-        if (context.Symbol is not INamedTypeSymbol type)
-        {
-            return;
-        }
+        var type = (context.Symbol as INamedTypeSymbol)!;
 
         foreach (var member in type.GetMembers())
         {
@@ -79,12 +76,7 @@ public sealed class EventHandlerDeclarationAnalyzer : DiagnosticAnalyzer
 
     private Location GetReportLocation(ImmutableArray<Location> locations)
     {
-        if (locations.Length > 0)
-        {
-            return locations[0];
-        }
-
-        return Location.None;
+        return locations[0];
     }
 
     private bool HasAddOrRemoveHandlerCall(ExpressionSyntax expression)
@@ -151,10 +143,11 @@ public sealed class EventHandlerDeclarationAnalyzer : DiagnosticAnalyzer
         var eventHandlerType = compilation.GetTypeByMetadataName("System.EventHandler");
         var eventHandlerOfTType = compilation.GetTypeByMetadataName("System.EventHandler`1");
 
-        return (eventHandlerType is not null && SymbolEqualityComparer.Default.Equals(type, eventHandlerType))
-               || (type is INamedTypeSymbol { IsGenericType: true } namedType && eventHandlerOfTType is not null
-                                                                              && SymbolEqualityComparer.Default.Equals(
-                                                                                  namedType.ConstructUnboundGenericType(),
-                                                                                  eventHandlerOfTType.ConstructUnboundGenericType()));
+        var isPlainEventHandler = SymbolEqualityComparer.Default.Equals(type, eventHandlerType);
+        var isGenericEventHandler = type is INamedTypeSymbol { IsGenericType: true } namedType && eventHandlerOfTType is not null
+                                                                          && SymbolEqualityComparer.Default.Equals(
+                                                                              namedType.ConstructUnboundGenericType(),
+                                                                              eventHandlerOfTType.ConstructUnboundGenericType());
+        return isPlainEventHandler || isGenericEventHandler;
     }
 }

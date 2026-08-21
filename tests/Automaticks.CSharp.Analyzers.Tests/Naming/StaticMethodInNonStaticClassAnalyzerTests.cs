@@ -9,6 +9,28 @@ namespace Automaticks.CSharp.Analyzers.Tests.Naming;
 public class StaticMethodInNonStaticClassAnalyzerTests
 {
     /// <summary>
+    ///     Tests that Analyze_ExtensionMethodInNonStaticClass_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ExtensionMethodInNonStaticClass_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class FooExtensions {
+                                      public static void Bar(this object obj) {}
+                                  }
+                              }
+                              """;
+
+        var analyzer = new StaticMethodInNonStaticClassAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS011")).IsFalse();
+    }
+
+    /// <summary>
     ///     Tests that Analyze_ExtensionMethodInStaticClass_ReportsNoDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -85,6 +107,28 @@ public class StaticMethodInNonStaticClassAnalyzerTests
         const string source = """
                               namespace MyApp {
                                   public static class Foo {
+                                      public static void Bar() {}
+                                  }
+                              }
+                              """;
+
+        var analyzer = new StaticMethodInNonStaticClassAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS011")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_StaticMethodInStruct_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_StaticMethodInStruct_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public struct Foo {
                                       public static void Bar() {}
                                   }
                               }

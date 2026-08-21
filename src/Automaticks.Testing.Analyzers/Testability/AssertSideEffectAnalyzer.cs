@@ -40,11 +40,7 @@ public sealed class AssertSideEffectAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeInvocation(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not InvocationExpressionSyntax invocation)
-        {
-            return;
-        }
-
+        var invocation = (context.Node as InvocationExpressionSyntax)!;
         var condition = GetAssertedCondition(invocation);
         if (condition is null)
         {
@@ -114,7 +110,7 @@ public sealed class AssertSideEffectAnalyzer : DiagnosticAnalyzer
         }
 
         var debugType = context.SemanticModel.Compilation.GetTypeByMetadataName("System.Diagnostics.Debug");
-        return debugType is not null && SymbolEqualityComparer.Default.Equals(method.ContainingType, debugType);
+        return SymbolEqualityComparer.Default.Equals(method.ContainingType, debugType);
     }
 
     private bool HasMutatingOperator(SyntaxToken operatorToken)

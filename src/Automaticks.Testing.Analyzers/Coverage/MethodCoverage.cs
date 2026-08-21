@@ -1,19 +1,46 @@
-﻿namespace Automaticks.Testing.Coverage;
+﻿using System.Collections.Generic;
+
+namespace Automaticks.Testing.Coverage;
 
 /// <summary>
-///     Accumulated coverage counters for a single method taken from a coverage report.
+///     Merged coverage counters for a single method taken from one or more coverage reports.
 /// </summary>
 public sealed class MethodCoverage
 {
+    private readonly Dictionary<int, int> _branchTotalsByLine;
+    private readonly Dictionary<int, int> _coveredBranchesByLine;
+    private readonly Dictionary<int, int> _hitsByLine;
+
     /// <summary>
     ///     Gets the number of branches recorded as taken.
     /// </summary>
-    public int CoveredBranches { get; private set; }
+    public int CoveredBranches
+    {
+        get
+        {
+            return Sum(_coveredBranchesByLine);
+        }
+    }
 
     /// <summary>
     ///     Gets the number of executed lines.
     /// </summary>
-    public int CoveredLines { get; private set; }
+    public int CoveredLines
+    {
+        get
+        {
+            var covered = 0;
+            foreach (var entry in _hitsByLine)
+            {
+                if (entry.Value > 0)
+                {
+                    covered += 1;
+                }
+            }
+
+            return covered;
+        }
+    }
 
     /// <summary>
     ///     Gets a value indicating whether any line of the method was executed.
@@ -28,12 +55,18 @@ public sealed class MethodCoverage
     /// <summary>
     ///     Gets the number of branches present.
     /// </summary>
-    public int TotalBranches { get; private set; }
+    public int TotalBranches
+    {
+        get
+        {
+            return Sum(_branchTotalsByLine);
+        }
+    }
 
     /// <summary>
     ///     Gets the number of reported lines.
     /// </summary>
-    public int TotalLines { get; private set; }
+    public int TotalLines => _hitsByLine.Count;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="MethodCoverage" /> class.
@@ -42,26 +75,20 @@ public sealed class MethodCoverage
     public MethodCoverage(string name)
     {
         Name = name;
+        _branchTotalsByLine = new Dictionary<int, int>();
+        _coveredBranchesByLine = new Dictionary<int, int>();
+        _hitsByLine = new Dictionary<int, int>();
     }
 
     /// <summary>
-    ///     Records one reported line belonging to this method.
+    ///     Records one reported line, keeping the best result seen for that line.
     /// </summary>
+    /// <param name="lineNumber">The one-based source line number.</param>
     /// <param name="hits">The number of times the line was executed.</param>
     /// <param name="conditionCoverage">The Cobertura condition-coverage attribute, when present.</param>
-    public void AddLine(int hits, string? conditionCoverage)
+    public void AddLine(int lineNumber, int hits, string? conditionCoverage)
     {
-        TotalLines += 1;
-        if (hits > 0)
-        {
-            CoveredLines += 1;
-        }
-
-        AddBranches(conditionCoverage);
-    }
-
-    private void AddBranches(string? conditionCoverage)
-    {
+        Record(_hitsByLine, lineNumber, hits);
         if (string.IsNullOrEmpty(conditionCoverage))
         {
             return;
@@ -89,8 +116,27 @@ public sealed class MethodCoverage
         var totalText = conditionCoverage.Substring(slash + 1, close - slash - 1);
         if (int.TryParse(coveredText, out var covered) && int.TryParse(totalText, out var total))
         {
-            CoveredBranches += covered;
-            TotalBranches += total;
+            Record(_coveredBranchesByLine, lineNumber, covered);
+            Record(_branchTotalsByLine, lineNumber, total);
         }
+    }
+
+    private void Record(Dictionary<int, int> values, int lineNumber, int value)
+    {
+        if (!values.TryGetValue(lineNumber, out var existing) || value > existing)
+        {
+            values[lineNumber] = value;
+        }
+    }
+
+    private int Sum(Dictionary<int, int> values)
+    {
+        var total = 0;
+        foreach (var entry in values)
+        {
+            total += entry.Value;
+        }
+
+        return total;
     }
 }

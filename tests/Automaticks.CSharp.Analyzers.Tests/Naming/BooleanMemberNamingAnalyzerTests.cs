@@ -396,6 +396,31 @@ public class BooleanMemberNamingAnalyzerTests
     }
 
     /// <summary>
+    ///     Tests that Analyze_LocalExplicitInterfacePropertyImplementation_ReportsDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_LocalExplicitInterfacePropertyImplementation_ReportsDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public interface IFoo {
+                                      bool Enabled { get; }
+                                  }
+                                  public class Foo : IFoo {
+                                      bool IFoo.Enabled { get; } = true;
+                                  }
+                              }
+                              """;
+
+        var analyzer = new BooleanMemberNamingAnalyzer();
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS062")).IsTrue();
+    }
+
+    /// <summary>
     ///     Tests that Analyze_LocalInterfacePropertyImplementation_ReportsDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>

@@ -40,11 +40,7 @@ public sealed class InterfaceDefaultImplementationAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeInterface(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not InterfaceDeclarationSyntax interfaceDeclaration)
-        {
-            return;
-        }
-
+        var interfaceDeclaration = (context.Node as InterfaceDeclarationSyntax)!;
         var interfaceName = interfaceDeclaration.Identifier.Text;
 
         foreach (var member in interfaceDeclaration.Members)
@@ -132,12 +128,7 @@ public sealed class InterfaceDefaultImplementationAnalyzer : DiagnosticAnalyzer
             return true;
         }
 
-        if (indexer.AccessorList == null)
-        {
-            return false;
-        }
-
-        foreach (var accessor in indexer.AccessorList.Accessors)
+        foreach (var accessor in indexer.AccessorList!.Accessors)
         {
             if (accessor.Body != null || accessor.ExpressionBody != null)
             {
@@ -150,9 +141,10 @@ public sealed class InterfaceDefaultImplementationAnalyzer : DiagnosticAnalyzer
 
     private bool HasImplementation(MethodDeclarationSyntax method)
     {
+        var hasStaticImplementation = HasStaticModifier(method.Modifiers) && !HasAbstractModifier(method.Modifiers);
         return method.Body != null
                || method.ExpressionBody != null
-               || (HasStaticModifier(method.Modifiers) && !HasAbstractModifier(method.Modifiers));
+               || hasStaticImplementation;
     }
 
     private bool HasImplementation(PropertyDeclarationSyntax property)
@@ -163,12 +155,7 @@ public sealed class InterfaceDefaultImplementationAnalyzer : DiagnosticAnalyzer
             return true;
         }
 
-        if (property.AccessorList == null)
-        {
-            return false;
-        }
-
-        foreach (var accessor in property.AccessorList.Accessors)
+        foreach (var accessor in property.AccessorList!.Accessors)
         {
             if (accessor.Body != null || accessor.ExpressionBody != null)
             {

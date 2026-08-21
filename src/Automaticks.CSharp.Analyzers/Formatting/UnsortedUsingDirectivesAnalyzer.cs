@@ -45,11 +45,7 @@ public sealed class UnsortedUsingDirectivesAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeCompilationUnit(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not CompilationUnitSyntax compilationUnit)
-        {
-            return;
-        }
-
+        var compilationUnit = (context.Node as CompilationUnitSyntax)!;
         string? previousName = null;
 
         foreach (var usingDirective in compilationUnit.Usings)
@@ -59,7 +55,7 @@ public sealed class UnsortedUsingDirectivesAnalyzer : DiagnosticAnalyzer
                 continue;
             }
 
-            var currentName = usingDirective.Name?.ToString() ?? string.Empty;
+            var currentName = usingDirective.Name!.ToString();
 
             if (previousName is not null &&
                 string.Compare(currentName, previousName, StringComparison.OrdinalIgnoreCase) < 0)

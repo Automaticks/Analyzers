@@ -1,5 +1,6 @@
 ﻿using Automaticks.CSharp.CodeFixes.Documentation;
 using Microsoft.CodeAnalysis.CodeFixes;
+using Microsoft.CodeAnalysis.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -92,6 +93,87 @@ public class MissingBlankLineBeforeXmlDocCodeFixProviderTests
         var remaining = await CodeFixTestRunner.CountFixableAsync(verifyRequest, cancellationToken);
 
         await Assert.That(remaining).IsEqualTo(0);
+    }
+
+    /// <summary>
+    ///     Tests that a document without any line break falls back to inserting a newline.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task ApplyFixForSpan_DocumentWithoutLineBreaks_InsertsNewlineFallback(CancellationToken cancellationToken)
+    {
+        const string source = "public class Foo { public void Bar() { } }";
+        var analyzer = new MissingBlankLineBeforeXmlDocAnalyzer();
+        var provider = new MissingBlankLineBeforeXmlDocCodeFixProvider();
+        var request = new CodeFixRequest
+        {
+            Analyzer = analyzer,
+            Provider = provider,
+            Source = source
+        };
+        var span = new TextSpan(0, 0);
+        var fixedSource = await CodeFixTestRunner.ApplyFixForSpanAsync(
+            request,
+            MissingBlankLineBeforeXmlDocAnalyzer.Rule,
+            span,
+            cancellationToken);
+
+        await Assert.That(fixedSource).IsEqualTo("\n" + source);
+    }
+
+    /// <summary>
+    ///     Tests that an empty document skips the position clamp and still inserts a newline.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task ApplyFixForSpan_EmptyDocument_SkipsClamp(CancellationToken cancellationToken)
+    {
+        const string source = "";
+        var analyzer = new MissingBlankLineBeforeXmlDocAnalyzer();
+        var provider = new MissingBlankLineBeforeXmlDocCodeFixProvider();
+        var request = new CodeFixRequest
+        {
+            Analyzer = analyzer,
+            Provider = provider,
+            Source = source
+        };
+        var span = new TextSpan(0, 0);
+        var fixedSource = await CodeFixTestRunner.ApplyFixForSpanAsync(
+            request,
+            MissingBlankLineBeforeXmlDocAnalyzer.Rule,
+            span,
+            cancellationToken);
+
+        await Assert.That(fixedSource).IsEqualTo("\n");
+    }
+
+    /// <summary>
+    ///     Tests that a span at the end of a non-empty document clamps to the last line.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task ApplyFixForSpan_PositionAtDocumentEnd_ClampsToLastLine(CancellationToken cancellationToken)
+    {
+        const string source = "namespace MyApp {\n    public class Foo { }\n}\n";
+        var analyzer = new MissingBlankLineBeforeXmlDocAnalyzer();
+        var provider = new MissingBlankLineBeforeXmlDocCodeFixProvider();
+        var request = new CodeFixRequest
+        {
+            Analyzer = analyzer,
+            Provider = provider,
+            Source = source
+        };
+        var span = new TextSpan(source.Length, 0);
+        var fixedSource = await CodeFixTestRunner.ApplyFixForSpanAsync(
+            request,
+            MissingBlankLineBeforeXmlDocAnalyzer.Rule,
+            span,
+            cancellationToken);
+
+        await Assert.That(fixedSource).IsEqualTo("namespace MyApp {\n    public class Foo { }\n\n}\n");
     }
 
     /// <summary>

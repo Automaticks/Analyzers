@@ -1,4 +1,4 @@
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
@@ -33,16 +33,11 @@ public sealed class InterfaceDefaultImplementationCodeFixProvider : CodeFixProvi
     /// <inheritdoc />
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
-        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken);
-        if (root is null)
-        {
-            return;
-        }
-
+        var root = (await context.Document.GetSyntaxRootAsync(context.CancellationToken))!;
         foreach (var diagnostic in context.Diagnostics)
         {
             var token = root.FindToken(diagnostic.Location.SourceSpan.Start);
-            var member = token.Parent?.FirstAncestorOrSelf<MemberDeclarationSyntax>();
+            var member = token.Parent!.FirstAncestorOrSelf<MemberDeclarationSyntax>();
             if (member is not MethodDeclarationSyntax && member is not PropertyDeclarationSyntax)
             {
                 continue;
@@ -72,13 +67,8 @@ public sealed class InterfaceDefaultImplementationCodeFixProvider : CodeFixProvi
                 .WithAccessorList(accessorList);
         }
 
-        if (property.AccessorList is null)
-        {
-            return property;
-        }
-
         var rebuilt = new List<AccessorDeclarationSyntax>();
-        foreach (var accessor in property.AccessorList.Accessors)
+        foreach (var accessor in property.AccessorList!.Accessors)
         {
             rebuilt.Add(accessor.WithBody(null).WithExpressionBody(null).WithSemicolonToken(semicolon));
         }
@@ -92,12 +82,7 @@ public sealed class InterfaceDefaultImplementationCodeFixProvider : CodeFixProvi
         MemberDeclarationSyntax member,
         CancellationToken cancellationToken)
     {
-        var root = await document.GetSyntaxRootAsync(cancellationToken);
-        if (root is null)
-        {
-            return document;
-        }
-
+        var root = (await document.GetSyntaxRootAsync(cancellationToken))!;
         MemberDeclarationSyntax replacement;
         if (member is MethodDeclarationSyntax method)
         {
@@ -106,13 +91,9 @@ public sealed class InterfaceDefaultImplementationCodeFixProvider : CodeFixProvi
                 .WithExpressionBody(null)
                 .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken));
         }
-        else if (member is PropertyDeclarationSyntax property)
-        {
-            replacement = BuildContractProperty(property);
-        }
         else
         {
-            return document;
+            replacement = BuildContractProperty((member as PropertyDeclarationSyntax)!);
         }
 
         var newRoot = root.ReplaceNode(member, replacement.WithTriviaFrom(member));

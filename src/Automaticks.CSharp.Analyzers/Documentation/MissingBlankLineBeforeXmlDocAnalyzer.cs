@@ -89,13 +89,6 @@ public sealed class MissingBlankLineBeforeXmlDocAnalyzer : DiagnosticAnalyzer
         MemberDeclarationSyntax previous,
         MemberDeclarationSyntax current)
     {
-        var leadingTrivia = current.GetFirstToken().LeadingTrivia;
-
-        if (!HasFirstXmlDocTrivia(leadingTrivia, out var xmlDocTrivia))
-        {
-            return null;
-        }
-
         var sawNewline = false;
 
         foreach (var trivia in previous.GetLastToken().TrailingTrivia)
@@ -110,7 +103,7 @@ public sealed class MissingBlankLineBeforeXmlDocAnalyzer : DiagnosticAnalyzer
             }
         }
 
-        foreach (var trivia in leadingTrivia)
+        foreach (var trivia in current.GetFirstToken().LeadingTrivia)
         {
             if (trivia.IsKind(SyntaxKind.EndOfLineTrivia))
             {
@@ -124,7 +117,7 @@ public sealed class MissingBlankLineBeforeXmlDocAnalyzer : DiagnosticAnalyzer
             else if (trivia.IsKind(SyntaxKind.SingleLineDocumentationCommentTrivia) ||
                      trivia.IsKind(SyntaxKind.MultiLineDocumentationCommentTrivia))
             {
-                return xmlDocTrivia.GetLocation();
+                return trivia.GetLocation();
             }
             else if (!trivia.IsKind(SyntaxKind.WhitespaceTrivia))
             {
@@ -133,21 +126,5 @@ public sealed class MissingBlankLineBeforeXmlDocAnalyzer : DiagnosticAnalyzer
         }
 
         return null;
-    }
-
-    private bool HasFirstXmlDocTrivia(SyntaxTriviaList triviaList, out SyntaxTrivia xmlDocTrivia)
-    {
-        foreach (var trivia in triviaList)
-        {
-            if (trivia.IsKind(SyntaxKind.SingleLineDocumentationCommentTrivia) ||
-                trivia.IsKind(SyntaxKind.MultiLineDocumentationCommentTrivia))
-            {
-                xmlDocTrivia = trivia;
-                return true;
-            }
-        }
-
-        xmlDocTrivia = default;
-        return false;
     }
 }

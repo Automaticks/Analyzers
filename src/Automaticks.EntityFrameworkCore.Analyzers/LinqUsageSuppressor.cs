@@ -1,4 +1,4 @@
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using System;
@@ -35,11 +35,7 @@ public sealed class LinqUsageSuppressor : DiagnosticSuppressor
             }
 
             var root = tree.GetRoot(context.CancellationToken);
-            if (root is not CompilationUnitSyntax compilationUnit)
-            {
-                continue;
-            }
-
+            var compilationUnit = (root as CompilationUnitSyntax)!;
             foreach (var usingDirective in compilationUnit.Usings)
             {
                 var name = usingDirective.Name?.ToString() ?? string.Empty;

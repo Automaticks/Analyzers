@@ -40,11 +40,7 @@ public sealed class UnobservedTaskAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeInvocation(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not InvocationExpressionSyntax invocation)
-        {
-            return;
-        }
-
+        var invocation = (context.Node as InvocationExpressionSyntax)!;
         if (context.SemanticModel.GetSymbolInfo(invocation).Symbol is not IMethodSymbol method)
         {
             return;
@@ -64,10 +60,10 @@ public sealed class UnobservedTaskAnalyzer : DiagnosticAnalyzer
     private bool HasDiscardedResult(InvocationExpressionSyntax invocation)
     {
         var parent = invocation.Parent;
-        return parent is ExpressionStatementSyntax
-               || (parent is AssignmentExpressionSyntax assignment
-                   && assignment.Right == invocation
-                   && assignment is { Left: IdentifierNameSyntax { Identifier.Text: "_" }, Parent: ExpressionStatementSyntax });
+        var isDiscardAssignment = parent is AssignmentExpressionSyntax assignment
+            && assignment.Right == invocation
+            && assignment is { Left: IdentifierNameSyntax { Identifier.Text: "_" }, Parent: ExpressionStatementSyntax };
+        return parent is ExpressionStatementSyntax || isDiscardAssignment;
     }
 
     private bool HasTaskReturnType(IMethodSymbol method, Compilation compilation)
@@ -95,7 +91,7 @@ public sealed class UnobservedTaskAnalyzer : DiagnosticAnalyzer
         }
 
         var unboundType = namedType.ConstructUnboundGenericType();
-        return SymbolEqualityComparer.Default.Equals(unboundType, taskOfGenericType?.ConstructUnboundGenericType())
-               || SymbolEqualityComparer.Default.Equals(unboundType, valueTaskOfGenericType?.ConstructUnboundGenericType());
+        return SymbolEqualityComparer.Default.Equals(unboundType, taskOfGenericType!.ConstructUnboundGenericType())
+               || SymbolEqualityComparer.Default.Equals(unboundType, valueTaskOfGenericType!.ConstructUnboundGenericType());
     }
 }

@@ -46,11 +46,7 @@ public sealed class ParameterDefaultValueAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeAnonymousMethod(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not AnonymousMethodExpressionSyntax anonymousMethod)
-        {
-            return;
-        }
-
+        var anonymousMethod = (context.Node as AnonymousMethodExpressionSyntax)!;
         if (anonymousMethod.ParameterList is null)
         {
             return;
@@ -67,11 +63,7 @@ public sealed class ParameterDefaultValueAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeIndexer(SymbolAnalysisContext context)
     {
-        if (context.Symbol is not IPropertySymbol property)
-        {
-            return;
-        }
-
+        var property = (context.Symbol as IPropertySymbol)!;
         if (!property.IsIndexer)
         {
             return;
@@ -94,18 +86,14 @@ public sealed class ParameterDefaultValueAnalyzer : DiagnosticAnalyzer
                 continue;
             }
 
-            var location = param.Locations.Length > 0 ? param.Locations[0] : Location.None;
+            var location = param.Locations[0];
             context.ReportDiagnostic(Diagnostic.Create(Rule, location, param.Name));
         }
     }
 
     private void AnalyzeLambda(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not ParenthesizedLambdaExpressionSyntax lambda)
-        {
-            return;
-        }
-
+        var lambda = (context.Node as ParenthesizedLambdaExpressionSyntax)!;
         foreach (var parameter in lambda.ParameterList.Parameters)
         {
             if (parameter.Default is not null)
@@ -117,11 +105,7 @@ public sealed class ParameterDefaultValueAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeLocalFunction(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not LocalFunctionStatementSyntax localFunction)
-        {
-            return;
-        }
-
+        var localFunction = (context.Node as LocalFunctionStatementSyntax)!;
         foreach (var parameter in localFunction.ParameterList.Parameters)
         {
             if (parameter.Default is not null)
@@ -133,11 +117,7 @@ public sealed class ParameterDefaultValueAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeMethod(SymbolAnalysisContext context)
     {
-        if (context.Symbol is not IMethodSymbol method)
-        {
-            return;
-        }
-
+        var method = (context.Symbol as IMethodSymbol)!;
         if (method.MethodKind is not (MethodKind.Ordinary or MethodKind.Constructor or MethodKind.ExplicitInterfaceImplementation))
         {
             return;
@@ -284,7 +264,7 @@ public sealed class ParameterDefaultValueAnalyzer : DiagnosticAnalyzer
                 continue;
             }
 
-            var location = param.Locations.Length > 0 ? param.Locations[0] : Location.None;
+            var location = param.Locations[0];
             context.ReportDiagnostic(Diagnostic.Create(Rule, location, param.Name));
         }
     }

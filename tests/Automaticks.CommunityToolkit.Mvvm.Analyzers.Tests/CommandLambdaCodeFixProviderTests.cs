@@ -1,4 +1,5 @@
-﻿using Automaticks.CommunityToolkit.Mvvm.CodeFixes;
+﻿using Automaticks.CommunityToolkit.Mvvm.Analyzers.Tests.Stubs;
+using Automaticks.CommunityToolkit.Mvvm.CodeFixes;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -465,6 +466,44 @@ public sealed class CommandLambdaCodeFixProviderTests
         var offered = await CodeFixTestRunner.CountOfferedActionsAsync(request, cancellationToken);
 
         await Assert.That(offered).IsEqualTo(0);
+    }
+
+    /// <summary>
+    ///     Tests that a diagnostic reported directly on a lambda, with no enclosing ArgumentSyntax, still gets fixed.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task CountOfferedActions_DiagnosticOnLambdaWithoutArgumentWrapper_OffersFix(CancellationToken cancellationToken)
+    {
+        var source = FrameworkStubs + """
+
+                                      namespace MyApp {
+                                          using CommunityToolkit.Mvvm.Input;
+                                          public class ViewModel {
+                                              public RelayCommand SaveCommand { get; }
+
+                                              public ViewModel() {
+                                                  System.Action doWork = () => Store();
+                                                  SaveCommand = new RelayCommand(doWork);
+                                              }
+
+                                              public void Store() { }
+                                          }
+                                      }
+                                      """;
+
+        var analyzer = new CommandLambdaAtLocalDeclarationAnalyzer();
+        var provider = new CommandLambdaCodeFixProvider();
+        var request = new CodeFixRequest
+        {
+            Analyzer = analyzer,
+            Provider = provider,
+            Source = source
+        };
+        var offered = await CodeFixTestRunner.CountOfferedActionsAsync(request, cancellationToken);
+
+        await Assert.That(offered).IsEqualTo(1);
     }
 
     /// <summary>

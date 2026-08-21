@@ -37,11 +37,7 @@ public sealed class SuppressionCommentCodeFixProvider : CodeFixProvider
     /// <inheritdoc />
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
-        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken);
-        if (root is null)
-        {
-            return;
-        }
+        var root = (await context.Document.GetSyntaxRootAsync(context.CancellationToken))!;
 
         foreach (var diagnostic in context.Diagnostics)
         {
@@ -104,12 +100,7 @@ public sealed class SuppressionCommentCodeFixProvider : CodeFixProvider
         int triviaStart,
         CancellationToken cancellationToken)
     {
-        var root = await document.GetSyntaxRootAsync(cancellationToken);
-        if (root is null)
-        {
-            return document;
-        }
-
+        var root = (await document.GetSyntaxRootAsync(cancellationToken))!;
         var trivia = root.FindTrivia(triviaStart);
         var token = trivia.Token;
         var leading = token.LeadingTrivia;

@@ -43,11 +43,7 @@ public sealed class ParamsParameterAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeParameter(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not ParameterSyntax parameter)
-        {
-            return;
-        }
-
+        var parameter = (context.Node as ParameterSyntax)!;
         if (!parameter.Modifiers.Any(SyntaxKind.ParamsKeyword))
         {
             return;

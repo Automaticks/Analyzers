@@ -1,4 +1,4 @@
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
@@ -33,21 +33,11 @@ public sealed class SingleBlankLineBetweenPropertiesCodeFixProvider : CodeFixPro
     /// <inheritdoc />
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
-        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken);
-        if (root is null)
-        {
-            return;
-        }
-
+        var root = (await context.Document.GetSyntaxRootAsync(context.CancellationToken))!;
         foreach (var diagnostic in context.Diagnostics)
         {
             var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
-            var member = node.FirstAncestorOrSelf<MemberDeclarationSyntax>();
-            if (member is null)
-            {
-                continue;
-            }
-
+            var member = node.FirstAncestorOrSelf<MemberDeclarationSyntax>()!;
             var action = CodeAction.Create(
                 Title,
                 cancellationToken => InsertBlankLineAsync(context.Document, member, cancellationToken),
@@ -61,10 +51,11 @@ public sealed class SingleBlankLineBetweenPropertiesCodeFixProvider : CodeFixPro
         var position = member.SpanStart;
         foreach (var trivia in member.GetLeadingTrivia())
         {
-            if (trivia.IsKind(SyntaxKind.SingleLineDocumentationCommentTrivia) ||
+            var isDocOrCommentTrivia = trivia.IsKind(SyntaxKind.SingleLineDocumentationCommentTrivia) ||
                 trivia.IsKind(SyntaxKind.MultiLineDocumentationCommentTrivia) ||
                 trivia.IsKind(SyntaxKind.SingleLineCommentTrivia) ||
-                trivia.IsKind(SyntaxKind.MultiLineCommentTrivia))
+                trivia.IsKind(SyntaxKind.MultiLineCommentTrivia);
+            if (isDocOrCommentTrivia)
             {
                 position = trivia.SpanStart;
                 break;

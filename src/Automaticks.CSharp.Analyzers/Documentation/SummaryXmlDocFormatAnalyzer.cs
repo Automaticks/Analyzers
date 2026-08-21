@@ -52,11 +52,7 @@ public sealed class SummaryXmlDocFormatAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeDocComment(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not DocumentationCommentTriviaSyntax docComment)
-        {
-            return;
-        }
-
+        var docComment = (context.Node as DocumentationCommentTriviaSyntax)!;
         foreach (var node in docComment.Content)
         {
             if (node is XmlElementSyntax element &&
@@ -110,11 +106,6 @@ public sealed class SummaryXmlDocFormatAnalyzer : DiagnosticAnalyzer
             }
 
             var tokens = xmlText.TextTokens;
-            if (tokens.Count == 0)
-            {
-                continue;
-            }
-
             if (isFirstTextNode)
             {
                 isFirstTextNode = false;

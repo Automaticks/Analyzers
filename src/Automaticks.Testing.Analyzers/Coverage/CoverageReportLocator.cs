@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 
 namespace Automaticks.Testing.Coverage;
@@ -46,6 +47,34 @@ public static class CoverageReportLocator
         }
 
         return merged is not null && merged.IsPopulated ? merged : null;
+    }
+
+    /// <summary>
+    ///     Finds additional files marked as a coverage report that yielded no usable entries.
+    /// </summary>
+    /// <param name="options">The analyzer options carrying the additional files.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The paths of marked files that are empty, malformed, or contain no file entries.</returns>
+    public static IReadOnlyList<string> FindUnusableReportPaths(AnalyzerOptions options, CancellationToken cancellationToken)
+    {
+        var unusablePaths = new List<string>();
+        foreach (var additionalFile in options.AdditionalFiles)
+        {
+            if (!HasCoverageReportMarker(options, additionalFile))
+            {
+                continue;
+            }
+
+            var text = additionalFile.GetText(cancellationToken);
+            var content = text is null ? string.Empty : text.ToString();
+            var report = new CoverageReport(content);
+            if (!report.IsPopulated)
+            {
+                unusablePaths.Add(additionalFile.Path);
+            }
+        }
+
+        return unusablePaths;
     }
 
     private static bool HasCoverageReportMarker(AnalyzerOptions options, AdditionalText additionalFile)

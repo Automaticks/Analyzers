@@ -61,11 +61,7 @@ public sealed class ObjectInitializerCodeStyleAnalyzer : DiagnosticAnalyzer
 
     private void Analyze(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not InitializerExpressionSyntax initializer)
-        {
-            return;
-        }
-
+        var initializer = (context.Node as InitializerExpressionSyntax)!;
         if (initializer.Expressions.Count == 0)
         {
             context.ReportDiagnostic(Diagnostic.Create(EmptyBracesRule, initializer.OpenBraceToken.GetLocation()));
@@ -108,8 +104,9 @@ public sealed class ObjectInitializerCodeStyleAnalyzer : DiagnosticAnalyzer
             var sharesWithCloseBrace = endLines[index] == closeBraceLine;
             var sharesWithPrevious = index > 0 && startLines[index] == endLines[index - 1];
             var sharesWithNext = index < count - 1 && endLines[index] == startLines[index + 1];
+            var sharesLineWithNeighbor = sharesWithOpenBrace || sharesWithCloseBrace || sharesWithPrevious || sharesWithNext;
 
-            if (sharesWithOpenBrace || sharesWithCloseBrace || sharesWithPrevious || sharesWithNext)
+            if (sharesLineWithNeighbor)
             {
                 context.ReportDiagnostic(Diagnostic.Create(FormatRule, initializer.Expressions[index].GetLocation()));
             }
@@ -121,7 +118,7 @@ public sealed class ObjectInitializerCodeStyleAnalyzer : DiagnosticAnalyzer
         var openBraceLine = GetLine(initializer.OpenBraceToken);
         var tokenBeforeOpen = initializer.OpenBraceToken.GetPreviousToken();
 
-        if (!tokenBeforeOpen.IsKind(SyntaxKind.None) && GetLine(tokenBeforeOpen) == openBraceLine)
+        if (GetLine(tokenBeforeOpen) == openBraceLine)
         {
             context.ReportDiagnostic(Diagnostic.Create(FormatRule, initializer.OpenBraceToken.GetLocation()));
         }

@@ -1,5 +1,6 @@
 ﻿using Automaticks.CSharp.CodeFixes.Documentation;
 using Microsoft.CodeAnalysis.CodeFixes;
+using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -142,6 +143,68 @@ public class MissingSummaryXmlDocCodeFixProviderTests
         var formatDiagnostics = await AnalyzerTestRunner.AnalyzeAsync(formatAnalyzer, fixedSource, cancellationToken);
 
         await Assert.That(DiagnosticCollectionAssertions.HasId(formatDiagnostics, "ATXCS050")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that a document without any line break falls back to inserting a newline.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task ApplyFixForSpan_DocumentWithoutLineBreaks_FallsBackToNewline(CancellationToken cancellationToken)
+    {
+        const string source = "public class Foo { public void Bar() { } }";
+        var analyzer = new MissingSummaryXmlDocAnalyzer();
+        var provider = new MissingSummaryXmlDocCodeFixProvider();
+        var request = new CodeFixRequest
+        {
+            Analyzer = analyzer,
+            Provider = provider,
+            Source = source
+        };
+        var start = source.IndexOf("Bar", StringComparison.Ordinal);
+        var span = new TextSpan(start, "Bar".Length);
+        var fixedSource = await CodeFixTestRunner.ApplyFixForSpanAsync(
+            request,
+            MissingSummaryXmlDocAnalyzer.Rule,
+            span,
+            cancellationToken);
+
+        await Assert.That(fixedSource).Contains("/// <summary>\n");
+        await Assert.That(fixedSource).Contains("/// </summary>\n");
+    }
+
+    /// <summary>
+    ///     Tests that a span with no enclosing member offers no fix.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task CountActionsForSpan_NoEnclosingMember_ReportsZero(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              using System;
+                              namespace MyApp {
+                              }
+                              """;
+
+        var analyzer = new MissingSummaryXmlDocAnalyzer();
+        var provider = new MissingSummaryXmlDocCodeFixProvider();
+        var request = new CodeFixRequest
+        {
+            Analyzer = analyzer,
+            Provider = provider,
+            Source = source
+        };
+        var start = source.IndexOf("System", StringComparison.Ordinal);
+        var span = new TextSpan(start, "System".Length);
+        var count = await CodeFixTestRunner.CountActionsForSpanAsync(
+            request,
+            MissingSummaryXmlDocAnalyzer.Rule,
+            span,
+            cancellationToken);
+
+        await Assert.That(count).IsEqualTo(0);
     }
 
     /// <summary>

@@ -45,11 +45,7 @@ public sealed class DuplicateUsingDirectiveAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeCompilationUnit(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not CompilationUnitSyntax compilationUnit)
-        {
-            return;
-        }
-
+        var compilationUnit = (context.Node as CompilationUnitSyntax)!;
         var seen = new HashSet<string>(StringComparer.Ordinal);
 
         foreach (var usingDirective in compilationUnit.Usings)

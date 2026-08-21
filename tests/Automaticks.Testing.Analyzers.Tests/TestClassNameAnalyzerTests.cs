@@ -1,4 +1,4 @@
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 
 namespace Automaticks.Testing.Analyzers.Tests;
@@ -20,6 +20,125 @@ public class TestClassNameAnalyzerTests
                               namespace MyApp.Tests {
                                   public class SomeHelperTests {
                                       public void NotATest() {}
+                                  }
+                              }
+                              """;
+
+        var analyzer = new TestClassNameAnalyzer();
+        var options = new AnalysisOptions
+{
+    IsTestProject = true
+};
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, options, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTST002")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_ClassNamedTests_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ClassNamedTests_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace TUnit.Core { public class TestAttribute : System.Attribute {} }
+                              namespace MyApp.Tests {
+                                  public class Tests {
+                                      [TUnit.Core.Test]
+                                      public void Method_Scenario_Result() {}
+                                  }
+                              }
+                              """;
+
+        var analyzer = new TestClassNameAnalyzer();
+        var options = new AnalysisOptions
+{
+    IsTestProject = true
+};
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, options, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTST002")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_ClassNameWithNoPascalWords_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ClassNameWithNoPascalWords_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace TUnit.Core { public class TestAttribute : System.Attribute {} }
+                              namespace MyApp.Tests {
+                                  public class _Tests {
+                                      [TUnit.Core.Test]
+                                      public void Method_Scenario_Result() {}
+                                  }
+                              }
+                              """;
+
+        var analyzer = new TestClassNameAnalyzer();
+        var options = new AnalysisOptions
+{
+    IsTestProject = true
+};
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, options, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTST002")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_ClassWithNonMethodMember_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ClassWithNonMethodMember_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace TUnit.Core { public class TestAttribute : System.Attribute {} }
+                              namespace MyApp { public class Widget {} }
+                              namespace MyApp.Tests {
+                                  public class WidgetTests {
+                                      public int Value { get; set; }
+                                      [TUnit.Core.Test]
+                                      public void Method_Scenario_Result() {}
+                                  }
+                              }
+                              """;
+
+        var analyzer = new TestClassNameAnalyzer();
+        var options = new AnalysisOptions
+{
+    IsTestProject = true
+};
+        var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, options, cancellationToken);
+
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXTST002")).IsFalse();
+    }
+
+    /// <summary>
+    ///     Tests that Analyze_ClassWithUnrelatedAttributeBeforeTestAttribute_ReportsNoDiagnostic.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task Analyze_ClassWithUnrelatedAttributeBeforeTestAttribute_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace TUnit.Core {
+                                  public class TestAttribute : System.Attribute {}
+                                  public class CategoryAttribute : System.Attribute {}
+                              }
+                              namespace MyApp { public class Gadget {} }
+                              namespace MyApp.Tests {
+                                  public class GadgetTests {
+                                      [TUnit.Core.Category]
+                                      [TUnit.Core.Test]
+                                      public void Method_Scenario_Result() {}
                                   }
                               }
                               """;

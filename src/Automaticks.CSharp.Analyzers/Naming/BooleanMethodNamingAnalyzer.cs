@@ -49,11 +49,7 @@ public sealed class BooleanMethodNamingAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeLocalFunction(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not LocalFunctionStatementSyntax localFunc)
-        {
-            return;
-        }
-
+        var localFunc = (context.Node as LocalFunctionStatementSyntax)!;
         var name = localFunc.Identifier.Text;
 
         if (HasAllowedPrefix(name))
@@ -61,11 +57,7 @@ public sealed class BooleanMethodNamingAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        var symbol = context.SemanticModel.GetDeclaredSymbol(localFunc) as IMethodSymbol;
-        if (symbol is null)
-        {
-            return;
-        }
+        var symbol = (context.SemanticModel.GetDeclaredSymbol(localFunc) as IMethodSymbol)!;
 
         if (!HasBooleanType(symbol.ReturnType))
         {
@@ -77,11 +69,7 @@ public sealed class BooleanMethodNamingAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeMethod(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not MethodDeclarationSyntax method)
-        {
-            return;
-        }
-
+        var method = (context.Node as MethodDeclarationSyntax)!;
         var name = method.Identifier.Text;
 
         if (HasAllowedPrefix(name))
@@ -89,11 +77,7 @@ public sealed class BooleanMethodNamingAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        var symbol = context.SemanticModel.GetDeclaredSymbol(method);
-        if (symbol is null)
-        {
-            return;
-        }
+        var symbol = context.SemanticModel.GetDeclaredSymbol(method)!;
 
         if (!HasBooleanType(symbol.ReturnType))
         {
@@ -147,8 +131,7 @@ public sealed class BooleanMethodNamingAnalyzer : DiagnosticAnalyzer
 
         if (type is INamedTypeSymbol { IsValueType: true, ConstructedFrom.SpecialType: SpecialType.System_Nullable_T } namedType)
         {
-            return namedType.TypeArguments.Length == 1 &&
-                   namedType.TypeArguments[0].SpecialType == SpecialType.System_Boolean;
+            return namedType.TypeArguments[0].SpecialType == SpecialType.System_Boolean;
         }
 
         return false;
