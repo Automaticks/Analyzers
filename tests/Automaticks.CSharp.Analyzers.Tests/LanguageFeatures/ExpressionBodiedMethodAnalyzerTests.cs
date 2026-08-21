@@ -101,12 +101,12 @@ public class ExpressionBodiedMethodAnalyzerTests
     }
 
     /// <summary>
-    ///     Tests that Analyze_ExpressionBodiedAccessor_ReportsNoDiagnostic.
+    ///     Tests that Analyze_ExpressionBodiedAccessor_ReportsDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_ExpressionBodiedAccessor_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    public async Task Analyze_ExpressionBodiedAccessor_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp
@@ -126,16 +126,16 @@ public class ExpressionBodiedMethodAnalyzerTests
         var analyzer = new ExpressionBodiedMethodAnalyzer();
         var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS075")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS075")).IsTrue();
     }
 
     /// <summary>
-    ///     Tests that Analyze_ExpressionBodiedConstructor_ReportsNoDiagnostic.
+    ///     Tests that Analyze_ExpressionBodiedConstructor_ReportsDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_ExpressionBodiedConstructor_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    public async Task Analyze_ExpressionBodiedConstructor_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp
@@ -152,16 +152,16 @@ public class ExpressionBodiedMethodAnalyzerTests
         var analyzer = new ExpressionBodiedMethodAnalyzer();
         var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS075")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS075")).IsTrue();
     }
 
     /// <summary>
-    ///     Tests that Analyze_ExpressionBodiedConversionOperator_ReportsNoDiagnostic.
+    ///     Tests that Analyze_ExpressionBodiedConversionOperator_ReportsDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_ExpressionBodiedConversionOperator_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    public async Task Analyze_ExpressionBodiedConversionOperator_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp
@@ -176,16 +176,16 @@ public class ExpressionBodiedMethodAnalyzerTests
         var analyzer = new ExpressionBodiedMethodAnalyzer();
         var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS075")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS075")).IsTrue();
     }
 
     /// <summary>
-    ///     Tests that Analyze_ExpressionBodiedFinalizer_ReportsNoDiagnostic.
+    ///     Tests that Analyze_ExpressionBodiedFinalizer_ReportsDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_ExpressionBodiedFinalizer_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    public async Task Analyze_ExpressionBodiedFinalizer_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp
@@ -204,16 +204,16 @@ public class ExpressionBodiedMethodAnalyzerTests
         var analyzer = new ExpressionBodiedMethodAnalyzer();
         var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS075")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS075")).IsTrue();
     }
 
     /// <summary>
-    ///     Tests that Analyze_ExpressionBodiedIndexer_ReportsNoDiagnostic.
+    ///     Tests that Analyze_ExpressionBodiedIndexer_ReportsDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_ExpressionBodiedIndexer_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    public async Task Analyze_ExpressionBodiedIndexer_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp
@@ -230,7 +230,7 @@ public class ExpressionBodiedMethodAnalyzerTests
         var analyzer = new ExpressionBodiedMethodAnalyzer();
         var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS075")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS075")).IsTrue();
     }
 
     /// <summary>
@@ -286,12 +286,12 @@ public class ExpressionBodiedMethodAnalyzerTests
     }
 
     /// <summary>
-    ///     Tests that Analyze_ExpressionBodiedOperator_ReportsNoDiagnostic.
+    ///     Tests that Analyze_ExpressionBodiedOperator_ReportsDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_ExpressionBodiedOperator_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    public async Task Analyze_ExpressionBodiedOperator_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp
@@ -306,16 +306,16 @@ public class ExpressionBodiedMethodAnalyzerTests
         var analyzer = new ExpressionBodiedMethodAnalyzer();
         var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS075")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS075")).IsTrue();
     }
 
     /// <summary>
-    ///     Tests that Analyze_ExpressionBodiedProperty_ReportsNoDiagnostic.
+    ///     Tests that Analyze_ExpressionBodiedProperty_ReportsDiagnostic.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task representing the asynchronous test operation.</returns>
     [Test]
-    public async Task Analyze_ExpressionBodiedProperty_ReportsNoDiagnostic(CancellationToken cancellationToken)
+    public async Task Analyze_ExpressionBodiedProperty_ReportsDiagnostic(CancellationToken cancellationToken)
     {
         const string source = """
                               namespace MyApp
@@ -332,7 +332,7 @@ public class ExpressionBodiedMethodAnalyzerTests
         var analyzer = new ExpressionBodiedMethodAnalyzer();
         var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS075")).IsFalse();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS075")).IsTrue();
     }
 
     /// <summary>
