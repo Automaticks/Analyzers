@@ -101,9 +101,49 @@ public static class DiagnosticIds
         public const string ExplicitConstructor = "ATXCS037";
 
         /// <summary>
-        ///     Diagnostic ID for <c>ATXCS075</c>: expression-bodied methods and local functions are forbidden.
+        ///     Diagnostic ID for <c>ATXCS083</c>: expression-bodied accessors are forbidden.
+        /// </summary>
+        public const string ExpressionBodiedAccessor = "ATXCS083";
+
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXCS081</c>: expression-bodied constructors are forbidden.
+        /// </summary>
+        public const string ExpressionBodiedConstructor = "ATXCS081";
+
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXCS080</c>: expression-bodied conversion operators are forbidden.
+        /// </summary>
+        public const string ExpressionBodiedConversionOperator = "ATXCS080";
+
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXCS082</c>: expression-bodied destructors are forbidden.
+        /// </summary>
+        public const string ExpressionBodiedDestructor = "ATXCS082";
+
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXCS078</c>: expression-bodied indexers are forbidden.
+        /// </summary>
+        public const string ExpressionBodiedIndexer = "ATXCS078";
+
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXCS076</c>: expression-bodied local functions are forbidden.
+        /// </summary>
+        public const string ExpressionBodiedLocalFunction = "ATXCS076";
+
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXCS075</c>: expression-bodied methods are forbidden.
         /// </summary>
         public const string ExpressionBodiedMethod = "ATXCS075";
+
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXCS079</c>: expression-bodied operators are forbidden.
+        /// </summary>
+        public const string ExpressionBodiedOperator = "ATXCS079";
+
+        /// <summary>
+        ///     Diagnostic ID for <c>ATXCS077</c>: expression-bodied properties are forbidden.
+        /// </summary>
+        public const string ExpressionBodiedProperty = "ATXCS077";
 
         /// <summary>
         ///     Diagnostic ID for <c>ATXCS031</c>: type name does not match the file name.

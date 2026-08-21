@@ -1,4 +1,5 @@
-﻿using Automaticks.CSharp.CodeFixes.LanguageFeatures;
+﻿using Automaticks.CSharp.CodeFixes.LanguageFeatures.ExpressionBodies;
+using Automaticks.CSharp.LanguageFeatures.ExpressionBodies;
 using Microsoft.CodeAnalysis.CodeFixes;
 using System.Threading;
 using System.Threading.Tasks;
