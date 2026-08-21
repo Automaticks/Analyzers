@@ -37,13 +37,8 @@ public sealed class QualifiedTypeReferenceCodeFixProvider : CodeFixProvider
     /// <inheritdoc />
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
-        var semanticModel = await context.Document.GetSemanticModelAsync(context.CancellationToken);
-        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken);
-        if (semanticModel is null || root is null)
-        {
-            return;
-        }
-
+        var semanticModel = (await context.Document.GetSemanticModelAsync(context.CancellationToken))!;
+        var root = (await context.Document.GetSyntaxRootAsync(context.CancellationToken))!;
         foreach (var diagnostic in context.Diagnostics)
         {
             var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
@@ -170,12 +165,7 @@ public sealed class QualifiedTypeReferenceCodeFixProvider : CodeFixProvider
         string? namespaceNameToAdd,
         CancellationToken cancellationToken)
     {
-        var root = await document.GetSyntaxRootAsync(cancellationToken);
-        if (root is not CompilationUnitSyntax compilationUnit)
-        {
-            return document;
-        }
-
+        var compilationUnit = (await document.GetSyntaxRootAsync(cancellationToken) as CompilationUnitSyntax)!;
         var flaggedNode = compilationUnit.FindNode(nodeSpan, getInnermostNodeForTie: true);
         var parts = GetQualificationParts(flaggedNode);
         var replaced = compilationUnit.ReplaceNode(flaggedNode, parts.SimpleName.WithTriviaFrom(flaggedNode));

@@ -76,4 +76,69 @@ public class QualifiedTypeReferenceCodeFixProviderInsertionTests
         await Assert.That(fixedSource).Contains("StringBuilder Builder;");
     }
 
+    /// <summary>
+    ///     Tests that a namespace holding the simple name is not taken for the type.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task CountOfferedActions_SimpleNameHeldByNamespace_OffersNoFix(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp.Console {
+                                  public class Marker { }
+                              }
+                              namespace MyApp {
+                                  public class Shape {
+                                      public void Draw() {
+                                          System.Console.WriteLine();
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new QualifiedTypeReferenceAnalyzer();
+        var provider = new QualifiedTypeReferenceCodeFixProvider();
+        var request = new CodeFixRequest
+        {
+            Analyzer = analyzer,
+            Provider = provider,
+            Source = source
+        };
+        var offered = await CodeFixTestRunner.CountOfferedActionsAsync(request, cancellationToken);
+
+        await Assert.That(offered).IsEqualTo(0);
+    }
+
+    /// <summary>
+    ///     Tests that no fix is offered when another type already holds the simple name.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous test operation.</returns>
+    [Test]
+    public async Task CountOfferedActions_SimpleNameHeldByOtherType_OffersNoFix(CancellationToken cancellationToken)
+    {
+        const string source = """
+                              namespace MyApp {
+                                  public class Console { }
+                                  public class Shape {
+                                      public void Draw() {
+                                          System.Console.WriteLine();
+                                      }
+                                  }
+                              }
+                              """;
+
+        var analyzer = new QualifiedTypeReferenceAnalyzer();
+        var provider = new QualifiedTypeReferenceCodeFixProvider();
+        var request = new CodeFixRequest
+        {
+            Analyzer = analyzer,
+            Provider = provider,
+            Source = source
+        };
+        var offered = await CodeFixTestRunner.CountOfferedActionsAsync(request, cancellationToken);
+
+        await Assert.That(offered).IsEqualTo(0);
+    }
 }
