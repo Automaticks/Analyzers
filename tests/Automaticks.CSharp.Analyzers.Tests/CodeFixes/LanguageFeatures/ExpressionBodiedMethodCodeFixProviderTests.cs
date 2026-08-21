@@ -110,8 +110,8 @@ public class ExpressionBodiedMethodCodeFixProviderTests
                               }
                               """;
 
-        var analyzer = new ExpressionBodiedMethodAnalyzer();
-        var provider = new ExpressionBodiedMethodCodeFixProvider();
+        var analyzer = new ExpressionBodiedLocalFunctionAnalyzer();
+        var provider = new ExpressionBodiedLocalFunctionCodeFixProvider();
         var request = new CodeFixRequest
         {
             Analyzer = analyzer,

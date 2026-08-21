@@ -1,4 +1,4 @@
-using Automaticks.CSharp.LanguageFeatures.ExpressionBodies;
+﻿using Automaticks.CSharp.LanguageFeatures.ExpressionBodies;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -124,10 +124,10 @@ public class ExpressionBodiedMethodAnalyzerTests
                               }
                               """;
 
-        var analyzer = new ExpressionBodiedMethodAnalyzer();
+        var analyzer = new ExpressionBodiedAccessorAnalyzer();
         var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS075")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS083")).IsTrue();
     }
 
     /// <summary>
@@ -150,10 +150,10 @@ public class ExpressionBodiedMethodAnalyzerTests
                               }
                               """;
 
-        var analyzer = new ExpressionBodiedMethodAnalyzer();
+        var analyzer = new ExpressionBodiedConstructorAnalyzer();
         var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS075")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS081")).IsTrue();
     }
 
     /// <summary>
@@ -174,10 +174,10 @@ public class ExpressionBodiedMethodAnalyzerTests
                               }
                               """;
 
-        var analyzer = new ExpressionBodiedMethodAnalyzer();
+        var analyzer = new ExpressionBodiedConversionOperatorAnalyzer();
         var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS075")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS080")).IsTrue();
     }
 
     /// <summary>
@@ -202,10 +202,10 @@ public class ExpressionBodiedMethodAnalyzerTests
                               }
                               """;
 
-        var analyzer = new ExpressionBodiedMethodAnalyzer();
+        var analyzer = new ExpressionBodiedDestructorAnalyzer();
         var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS075")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS082")).IsTrue();
     }
 
     /// <summary>
@@ -228,10 +228,10 @@ public class ExpressionBodiedMethodAnalyzerTests
                               }
                               """;
 
-        var analyzer = new ExpressionBodiedMethodAnalyzer();
+        var analyzer = new ExpressionBodiedIndexerAnalyzer();
         var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS075")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS078")).IsTrue();
     }
 
     /// <summary>
@@ -256,10 +256,10 @@ public class ExpressionBodiedMethodAnalyzerTests
                               }
                               """;
 
-        var analyzer = new ExpressionBodiedMethodAnalyzer();
+        var analyzer = new ExpressionBodiedLocalFunctionAnalyzer();
         var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(DiagnosticCollectionAssertions.HasIdWithMessageSubstring(diagnostics, "ATXCS075", "HasPositive")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasIdWithMessageSubstring(diagnostics, "ATXCS076", "HasPositive")).IsTrue();
     }
 
     /// <summary>
@@ -304,10 +304,10 @@ public class ExpressionBodiedMethodAnalyzerTests
                               }
                               """;
 
-        var analyzer = new ExpressionBodiedMethodAnalyzer();
+        var analyzer = new ExpressionBodiedOperatorAnalyzer();
         var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS075")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS079")).IsTrue();
     }
 
     /// <summary>
@@ -330,10 +330,10 @@ public class ExpressionBodiedMethodAnalyzerTests
                               }
                               """;
 
-        var analyzer = new ExpressionBodiedMethodAnalyzer();
+        var analyzer = new ExpressionBodiedPropertyAnalyzer();
         var diagnostics = await AnalyzerTestRunner.AnalyzeAsync(analyzer, source, cancellationToken);
 
-        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS075")).IsTrue();
+        await Assert.That(DiagnosticCollectionAssertions.HasId(diagnostics, "ATXCS077")).IsTrue();
     }
 
     /// <summary>
