@@ -83,7 +83,7 @@ public sealed class QualifiedTypeReferenceCodeFixProvider : CodeFixProvider
             }
 
             lastRegularIndex = index;
-            var existingName = usings[index].Name?.ToString() ?? string.Empty;
+            var existingName = usings[index].Name!.ToString();
             if (string.Compare(namespaceName, existingName, StringComparison.OrdinalIgnoreCase) < 0)
             {
                 return index;
@@ -112,16 +112,8 @@ public sealed class QualifiedTypeReferenceCodeFixProvider : CodeFixProvider
         classification = new ClassificationResult(null, string.Empty);
 
         var parts = GetQualificationParts(node);
-        if (semanticModel.GetSymbolInfo(node).Symbol is not INamedTypeSymbol targetType)
-        {
-            return false;
-        }
-
-        if (semanticModel.GetSymbolInfo(parts.Left).Symbol is not INamespaceSymbol namespaceSymbol)
-        {
-            return false;
-        }
-
+        var targetType = (semanticModel.GetSymbolInfo(node).Symbol as INamedTypeSymbol)!;
+        var namespaceSymbol = (semanticModel.GetSymbolInfo(parts.Left).Symbol as INamespaceSymbol)!;
         var simpleName = parts.SimpleName.Identifier.ValueText;
         var visibleSymbols = semanticModel.LookupNamespacesAndTypes(node.SpanStart, null, simpleName);
 
