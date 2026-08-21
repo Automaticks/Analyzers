@@ -174,7 +174,7 @@ public sealed class CoverageReport
 
         var hits = int.TryParse(reader.GetAttribute("hits"), out var parsed) ? parsed : 0;
         var lineNumber = int.TryParse(reader.GetAttribute("number"), out var number) ? number : 0;
-        currentFile.AddLine(lineNumber, hits);
+        currentFile.AddLine(lineNumber, hits, reader.GetAttribute("condition-coverage"));
         currentMethod?.AddLine(lineNumber, hits, reader.GetAttribute("condition-coverage"));
     }
 

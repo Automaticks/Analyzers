@@ -8,9 +8,23 @@ namespace Automaticks.Testing.Coverage;
 /// </summary>
 public sealed class FileCoverage
 {
+    private readonly Dictionary<int, int> _branchTotalsByLine;
     private readonly HashSet<int> _countedLines;
+    private readonly Dictionary<int, int> _coveredBranchesByLine;
     private readonly HashSet<int> _coveredLineNumbers;
     private readonly Dictionary<string, MethodCoverage> _methods;
+
+    /// <summary>
+    ///     Gets the percentage of taken branches, or -1 when the file reports no branches.
+    /// </summary>
+    public int BranchPercentage
+    {
+        get
+        {
+            var total = Sum(_branchTotalsByLine);
+            return total == 0 ? -1 : Sum(_coveredBranchesByLine) * 100 / total;
+        }
+    }
 
     /// <summary>
     ///     Gets the number of executed lines.
@@ -46,7 +60,9 @@ public sealed class FileCoverage
     {
         ReportedPath = reportedPath;
         _methods = new Dictionary<string, MethodCoverage>(StringComparer.Ordinal);
+        _branchTotalsByLine = new Dictionary<int, int>();
         _countedLines = new HashSet<int>();
+        _coveredBranchesByLine = new Dictionary<int, int>();
         _coveredLineNumbers = new HashSet<int>();
     }
 
@@ -55,7 +71,8 @@ public sealed class FileCoverage
     /// </summary>
     /// <param name="lineNumber">The one-based source line number.</param>
     /// <param name="hits">The number of times the line was executed.</param>
-    public void AddLine(int lineNumber, int hits)
+    /// <param name="conditionCoverage">The Cobertura condition-coverage attribute, when present.</param>
+    public void AddLine(int lineNumber, int hits, string? conditionCoverage)
     {
         if (_countedLines.Add(lineNumber))
         {
@@ -66,6 +83,15 @@ public sealed class FileCoverage
         {
             CoveredLines += 1;
         }
+
+        var counts = ConditionCoverageParser.Parse(conditionCoverage);
+        if (counts.Total == 0)
+        {
+            return;
+        }
+
+        Record(_coveredBranchesByLine, lineNumber, counts.Covered);
+        Record(_branchTotalsByLine, lineNumber, counts.Total);
     }
 
     /// <summary>
@@ -92,5 +118,24 @@ public sealed class FileCoverage
         }
 
         return method;
+    }
+
+    private void Record(Dictionary<int, int> values, int lineNumber, int value)
+    {
+        if (!values.TryGetValue(lineNumber, out var existing) || value > existing)
+        {
+            values[lineNumber] = value;
+        }
+    }
+
+    private int Sum(Dictionary<int, int> values)
+    {
+        var total = 0;
+        foreach (var entry in values)
+        {
+            total += entry.Value;
+        }
+
+        return total;
     }
 }

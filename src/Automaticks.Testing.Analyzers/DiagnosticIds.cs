@@ -36,6 +36,11 @@ public static class DiagnosticIds
         public const string ExcessiveDecisionConditions = "ATXTST005";
 
         /// <summary>
+        ///     Diagnostic ID for <c>ATXTST017</c>: file branch coverage is below the configured minimum.
+        /// </summary>
+        public const string FileBranchCoverage = "ATXTST017";
+
+        /// <summary>
         ///     Diagnostic ID for <c>ATXTST013</c>: file line coverage is below the configured minimum.
         /// </summary>
         public const string FileLineCoverage = "ATXTST013";
