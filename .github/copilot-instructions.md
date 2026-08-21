@@ -1,21 +1,16 @@
 ﻿# Copilot instructions
 
-Roslyn analyzer packages. Every analyzer in `src/` runs against this repository itself, with
-`TreatWarningsAsErrors=true`, so a rule you add immediately governs the code you write.
+Roslyn analyzer packages. Every analyzer in `src/` runs against this repository, with
+`TreatWarningsAsErrors=true`, so a rule you add governs the code you write.
 
 ## The dogfood cache will mislead you
 
-`.dogfood/` holds copies of the built analyzer DLLs so each project can load its siblings.
-**It is a single shared directory that is not branch-aware and survives `git checkout`.**
+`.dogfood/` holds copies of the built analyzer DLLs so each project can load its siblings. **It is
+one shared directory, not branch-aware, and survives `git checkout`.** So analyzers built on another
+branch keep firing here, and the first build after a clean can fail with `CS8034 ... being used by
+another process` when the copy target races `csc`.
 
-Consequences, both observed:
-
-- Analyzers built on one branch keep applying after you switch. A rule that exists only on another
-  branch will fire here, on source that has no such rule — and "fixing" those hits is wasted work.
-- The first build after a clean can fail with `CS8034 ... being used by another process` or
-  `MSB3026`, because the cache-copy target races with running `csc` processes.
-
-So: **purge it after switching branches, and re-run a build before believing a failure.**
+**Purge it after switching branches, and re-run a build before believing a failure.**
 
 ```powershell
 Remove-Item .dogfood -Recurse -Force
@@ -23,23 +18,19 @@ dotnet build          # first pass repopulates the cache
 dotnet build          # second pass is the trustworthy one
 ```
 
-CI is unaffected — every run starts from a clean checkout.
-
-## Run one build at a time
-
-Two concurrent `dotnet build` invocations race on that same cache. Never chain two builds in one
-command just to grep different things; run them sequentially.
+CI is unaffected — every run starts from a clean checkout. Two concurrent `dotnet build` invocations
+race on that same cache, so never chain two builds in one command; run them sequentially.
 
 `dotnet test` needs `--project <path-to-.csproj>`; passing a directory errors out.
 
 ## Coverage gates
 
-`ATXTST012` (public member never executed), `ATXTST013` (file line coverage), `ATXTST015` (method
-branch coverage) and `ATXTST016` (report unusable) read a Cobertura report from a previous test run.
-They stay silent when no report is supplied, so a clean clone still builds.
+`ATXTST012` (public member never executed), `ATXTST013` and `ATXTST017` (file line and branch
+coverage), `ATXTST015` (method branch coverage) and `ATXTST016` (report unusable) read a Cobertura
+report from a previous test run. They stay silent when no report is supplied.
 
 This repository requires **100% line and 100% branch coverage** (`.editorconfig`). A defensive
-branch no test can reach is not an exemption — either make it reachable or delete it.
+branch no test can reach is not an exemption — make it reachable or delete it.
 
 ```powershell
 dotnet build
@@ -49,8 +40,16 @@ dotnet build --no-restore "-p:AutomaticksCoverageReport=$root/tests/**/TestResul
 ```
 
 The report path **must be absolute**. MSBuild resolves a wildcard relative to each project
-directory, so a repo-relative glob silently matches nothing and the gate passes while checking
-nothing at all.
+directory, so a repo-relative glob matches nothing and the gate passes checking nothing.
+
+A package never dogfoods itself, so the coverage rules do not run on
+`Automaticks.Testing.Analyzers`. Merge reports by hand when changing it.
+
+## Correctness beats compatibility
+
+Breaking consumers is an acceptable price for a correct rule. Never soften a rule, ship it disabled,
+or leave a defect standing because upgrading costs downstream work. Say what breaks, then change it
+anyway.
 
 ## Conventions that break the build
 
@@ -72,10 +71,10 @@ Files are UTF-8. Prefer the editing tools over PowerShell writes so encoding is 
 ## Let the code fixes do the work
 
 Most rules ship a fix, and `Directory.Build.targets` loads the `*.CodeFixes.dll` assemblies so they
-work here, not only for consumers. Mechanical breaks like member order are cheaper to fix this way:
+work here too. Mechanical breaks like member order are cheapest to fix this way:
 
 ```powershell
 dotnet format analyzers Analyzers.slnx --diagnostics ATXCS064 --severity error --include <file>
 ```
 
-Build first: fixes are read from `.dogfood`, so an edit is invisible until the cache refreshes.
+Build first: fixes come from `.dogfood`, so an edit is invisible until the cache refreshes.

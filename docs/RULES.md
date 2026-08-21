@@ -106,6 +106,7 @@ package under specific conditions. Rows marked `CodeFix` ship an automated fix; 
 | `ATXTST011` | Test method must contain an assertion | Testing | Warning | Analyzer | `Automaticks.Testing.Analyzers` |
 | `ATXTST012` | Public member must be covered by a test | Testing | Warning | Analyzer | `Automaticks.Testing.Analyzers` |
 | `ATXTST013` | File line coverage must meet the configured minimum | Testing | Warning | Analyzer | `Automaticks.Testing.Analyzers` |
+| `ATXTST017` | File branch coverage must meet the configured minimum | Testing | Warning | Analyzer | `Automaticks.Testing.Analyzers` |
 | `ATXTST014` | TimeProvider.System is not allowed in tests | Testing | Warning | Analyzer | `Automaticks.Testing.Analyzers` |
 | `ATXTST015` | Method branch coverage must meet the configured minimum | Testing | Warning | Analyzer | `Automaticks.Testing.Analyzers` |
 | `ATXTST016` | Supplied coverage report must be usable | Testing | Warning | Analyzer | `Automaticks.Testing.Analyzers` |

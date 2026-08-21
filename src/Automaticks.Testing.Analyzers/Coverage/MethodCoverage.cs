@@ -101,36 +101,14 @@ public sealed class MethodCoverage
     public void AddLine(int lineNumber, int hits, string? conditionCoverage)
     {
         Record(_hitsByLine, lineNumber, hits);
-        if (string.IsNullOrEmpty(conditionCoverage))
+        var counts = ConditionCoverageParser.Parse(conditionCoverage);
+        if (counts.Total == 0)
         {
             return;
         }
 
-        var open = conditionCoverage!.IndexOf('(');
-        if (open < 0)
-        {
-            return;
-        }
-
-        var slash = conditionCoverage.IndexOf('/', open + 1);
-        if (slash < 0)
-        {
-            return;
-        }
-
-        var close = conditionCoverage.IndexOf(')', slash + 1);
-        if (close < 0)
-        {
-            return;
-        }
-
-        var coveredText = conditionCoverage.Substring(open + 1, slash - open - 1);
-        var totalText = conditionCoverage.Substring(slash + 1, close - slash - 1);
-        if (int.TryParse(coveredText, out var covered) && int.TryParse(totalText, out var total))
-        {
-            Record(_coveredBranchesByLine, lineNumber, covered);
-            Record(_branchTotalsByLine, lineNumber, total);
-        }
+        Record(_coveredBranchesByLine, lineNumber, counts.Covered);
+        Record(_branchTotalsByLine, lineNumber, counts.Total);
     }
 
     private void Record(Dictionary<int, int> values, int lineNumber, int value)

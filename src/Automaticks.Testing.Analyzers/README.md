@@ -27,13 +27,14 @@ dotnet add package Automaticks.Testing.Analyzers
 | `ATXTST011` | Test method must contain an assertion | Testing | Warning | Analyzer |
 | `ATXTST012` | Public member must be covered by a test | Testing | Warning | Analyzer |
 | `ATXTST013` | File line coverage must meet the configured minimum | Testing | Warning | Analyzer |
+| `ATXTST017` | File branch coverage must meet the configured minimum | Testing | Warning | Analyzer |
 | `ATXTST014` | TimeProvider.System is not allowed in tests | Testing | Warning | Analyzer |
 | `ATXTST015` | Method branch coverage must meet the configured minimum | Testing | Warning | Analyzer |
 | `ATXTST016` | Supplied coverage report must be usable | Testing | Warning | Analyzer |
 
 ## Coverage rules
 
-`ATXTST012`, `ATXTST013`, and `ATXTST015` read a Cobertura report produced by a previous test run.
+`ATXTST012`, `ATXTST013`, `ATXTST015` and `ATXTST017` read a Cobertura report produced by a previous test run.
 A Roslyn analyzer cannot measure coverage itself, and it is not allowed to read the file system, so
 the report must be handed to the compiler as an `AdditionalFiles` item.
 
