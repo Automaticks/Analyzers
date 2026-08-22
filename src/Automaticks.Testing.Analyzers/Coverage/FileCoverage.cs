@@ -120,6 +120,25 @@ public sealed class FileCoverage
         return method;
     }
 
+    /// <summary>
+    ///     Determines whether any line in the inclusive range was executed.
+    /// </summary>
+    /// <param name="startLineNumber">The first one-based source line number.</param>
+    /// <param name="endLineNumber">The last one-based source line number.</param>
+    /// <returns><see langword="true" /> when at least one line in the range ran.</returns>
+    public bool HasCoveredLine(int startLineNumber, int endLineNumber)
+    {
+        for (var lineNumber = startLineNumber; lineNumber <= endLineNumber; lineNumber++)
+        {
+            if (_coveredLineNumbers.Contains(lineNumber))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private void Record(Dictionary<int, int> values, int lineNumber, int value)
     {
         if (!values.TryGetValue(lineNumber, out var existing) || value > existing)

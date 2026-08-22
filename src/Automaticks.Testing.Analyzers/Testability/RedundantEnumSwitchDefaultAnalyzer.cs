@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using Automaticks.Testing.Coverage;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -20,11 +21,11 @@ public sealed class RedundantEnumSwitchDefaultAnalyzer : DiagnosticAnalyzer
         var rule = new DiagnosticDescriptor(
             DiagnosticIds.Testing.RedundantEnumSwitchDefault,
             "Default label on an exhaustive enum switch blocks full branch coverage",
-            "Every member of '{0}' already has its own case, so this default is reachable only by casting an out-of-range value, which ordinary tests never do. Drop the default, or add a test that casts an undefined value.",
+            "Every member of '{0}' already has its own case, so this default runs only when a value outside the enum is cast in. Cover it with a test that passes an out-of-range value.",
             "Testing",
             DiagnosticSeverity.Warning,
             true,
-            "When every declared enum member has its own case, the default branch can only be reached through an invalid cast such as `(Color)99`, something ordinary test cases never produce. That branch therefore permanently blocks full branch coverage. Remove the default so the compiler proves exhaustiveness, or add a test that exercises the cast.");
+            "When every declared enum member has its own case, the default branch runs only when a caller casts in a value the enum does not declare. Leaving that branch untested blocks full branch coverage. Keep the branch and add a test that passes an out-of-range value: an enum does not constrain its underlying value at runtime, so deleting the branch turns invalid input into a silent fall-through. This rule goes quiet once a supplied coverage report shows the branch was executed, and warns as usual when no report is supplied.");
         Rule = rule;
     }
 
@@ -33,8 +34,7 @@ public sealed class RedundantEnumSwitchDefaultAnalyzer : DiagnosticAnalyzer
     {
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
         context.EnableConcurrentExecution();
-        context.RegisterSyntaxNodeAction(AnalyzeSwitchStatement, SyntaxKind.SwitchStatement);
-        context.RegisterSyntaxNodeAction(AnalyzeSwitchExpression, SyntaxKind.SwitchExpression);
+        context.RegisterCompilationStartAction(RegisterCompilationStart);
     }
 
     /// <inheritdoc />
@@ -46,7 +46,7 @@ public sealed class RedundantEnumSwitchDefaultAnalyzer : DiagnosticAnalyzer
         }
     }
 
-    private void AnalyzeSwitchExpression(SyntaxNodeAnalysisContext context)
+    private void AnalyzeSwitchExpression(SyntaxNodeAnalysisContext context, CoverageReport? report)
     {
         var switchExpression = (context.Node as SwitchExpressionSyntax)!;
         var enumType = GetEnumType(context, switchExpression.GoverningExpression);
@@ -78,10 +78,15 @@ public sealed class RedundantEnumSwitchDefaultAnalyzer : DiagnosticAnalyzer
             return;
         }
 
+        if (HasCoveredDefault(context, report, defaultNode))
+        {
+            return;
+        }
+
         context.ReportDiagnostic(Diagnostic.Create(Rule, defaultNode.GetLocation(), enumType.Name));
     }
 
-    private void AnalyzeSwitchStatement(SyntaxNodeAnalysisContext context)
+    private void AnalyzeSwitchStatement(SyntaxNodeAnalysisContext context, CoverageReport? report)
     {
         var switchStatement = (context.Node as SwitchStatementSyntax)!;
         var enumType = GetEnumType(context, switchStatement.Expression);
@@ -116,6 +121,11 @@ public sealed class RedundantEnumSwitchDefaultAnalyzer : DiagnosticAnalyzer
             return;
         }
 
+        if (HasCoveredDefault(context, report, defaultNode))
+        {
+            return;
+        }
+
         context.ReportDiagnostic(Diagnostic.Create(Rule, defaultNode.GetLocation(), enumType.Name));
     }
 
@@ -146,6 +156,23 @@ public sealed class RedundantEnumSwitchDefaultAnalyzer : DiagnosticAnalyzer
         return context.SemanticModel.GetSymbolInfo(constantPattern.Expression, context.CancellationToken).Symbol as IFieldSymbol;
     }
 
+    private bool HasCoveredDefault(SyntaxNodeAnalysisContext context, CoverageReport? report, SyntaxNode defaultNode)
+    {
+        if (report is null)
+        {
+            return false;
+        }
+
+        var file = report.FindFile(context.Node.SyntaxTree.FilePath);
+        if (file is null)
+        {
+            return false;
+        }
+
+        var lineSpan = defaultNode.Parent!.GetLocation().GetLineSpan();
+        return file.HasCoveredLine(lineSpan.StartLinePosition.Line + 1, lineSpan.EndLinePosition.Line + 1);
+    }
+
     private bool IsExhaustive(INamedTypeSymbol enumType, HashSet<IFieldSymbol> handledMembers)
     {
         foreach (var member in enumType.GetMembers())
@@ -157,5 +184,16 @@ public sealed class RedundantEnumSwitchDefaultAnalyzer : DiagnosticAnalyzer
         }
 
         return true;
+    }
+
+    private void RegisterCompilationStart(CompilationStartAnalysisContext context)
+    {
+        var report = CoverageReportLocator.Find(context.Options, context.CancellationToken);
+        context.RegisterSyntaxNodeAction(
+            nodeContext => AnalyzeSwitchStatement(nodeContext, report),
+            SyntaxKind.SwitchStatement);
+        context.RegisterSyntaxNodeAction(
+            nodeContext => AnalyzeSwitchExpression(nodeContext, report),
+            SyntaxKind.SwitchExpression);
     }
 }

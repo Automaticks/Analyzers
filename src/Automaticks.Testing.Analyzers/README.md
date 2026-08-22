@@ -47,8 +47,11 @@ The package ships MSBuild targets that turn `AutomaticksCoverageReport` into the
 `AutomaticksCoverageReport` accepts a single path or a wildcard; a solution-wide test run emits one
 report per test project and the analyzers merge them. Use an **absolute** path for a wildcard —
 MSBuild resolves a glob relative to each project directory, so a repo-relative glob silently matches
-nothing and the rules would appear to pass. All three rules stay silent when no report is supplied,
+nothing and the rules would appear to pass. All four rules stay silent when no report is supplied,
 so a clean clone still builds before any test run has happened.
+
+`ATXTST007` reads the same report, but only to suppress itself: it warns as usual when no report is
+supplied and goes quiet once the report shows the default branch was executed.
 
 Set the `ATXTST013` and `ATXTST015` thresholds in `.editorconfig`:
 
