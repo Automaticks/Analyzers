@@ -38,14 +38,14 @@ public static class AsyncReturnTypeHelper
             return false;
         }
 
-        var unboundType = namedType.ConstructUnboundGenericType();
+        var definition = namedType.OriginalDefinition;
 
-        if (SymbolEqualityComparer.Default.Equals(unboundType, taskOfTType!.ConstructUnboundGenericType()))
+        if (SymbolEqualityComparer.Default.Equals(definition, taskOfTType))
         {
             return true;
         }
 
-        if (SymbolEqualityComparer.Default.Equals(unboundType, valueTaskOfTType!.ConstructUnboundGenericType()))
+        if (SymbolEqualityComparer.Default.Equals(definition, valueTaskOfTType))
         {
             return true;
         }

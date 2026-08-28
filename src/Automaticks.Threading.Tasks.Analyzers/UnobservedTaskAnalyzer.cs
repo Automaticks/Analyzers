@@ -96,8 +96,8 @@ public sealed class UnobservedTaskAnalyzer : DiagnosticAnalyzer
             return false;
         }
 
-        var unboundType = namedType.ConstructUnboundGenericType();
-        return SymbolEqualityComparer.Default.Equals(unboundType, taskOfGenericType!.ConstructUnboundGenericType())
-               || SymbolEqualityComparer.Default.Equals(unboundType, valueTaskOfGenericType!.ConstructUnboundGenericType());
+        var definition = namedType.OriginalDefinition;
+        return SymbolEqualityComparer.Default.Equals(definition, taskOfGenericType)
+               || SymbolEqualityComparer.Default.Equals(definition, valueTaskOfGenericType);
     }
 }

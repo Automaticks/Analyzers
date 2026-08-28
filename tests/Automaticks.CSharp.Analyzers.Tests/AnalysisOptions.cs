@@ -20,4 +20,7 @@ public readonly struct AnalysisOptions
 
     /// <summary>Gets a value indicating whether the project under test is a test project.</summary>
     public bool IsTestProject { get; init; }
+
+    /// <summary>Gets the metadata references that replace the default platform references.</summary>
+    public IReadOnlyList<MetadataReference>? PlatformReferences { get; init; }
 }

@@ -103,9 +103,12 @@ public static class AnalyzerTestRunner
         AnalysisOptions options,
         CancellationToken cancellationToken)
     {
-        var references = options.AdditionalReferences != null
-            ? GetPlatformReferences().AddRange(options.AdditionalReferences)
+        var basePlatformReferences = options.PlatformReferences != null
+            ? ImmutableArray.CreateRange(options.PlatformReferences)
             : GetPlatformReferences();
+        var references = options.AdditionalReferences != null
+            ? basePlatformReferences.AddRange(options.AdditionalReferences)
+            : basePlatformReferences;
         var compilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
         var compilation = CSharpCompilation.Create(
             "TestAssembly",
